@@ -20,6 +20,7 @@
 - [x] Ordem livre, ocultação e seções personalizadas em todos os formatos.
 - [x] Skills em categorias, tabela, tags e níveis informados manualmente.
 - [x] Experiências e projetos em bullets, parágrafos ou métricas priorizadas.
+- [x] Fichas de evidências recolhíveis, duplicáveis e reordenáveis com histórico reversível.
 - [x] Sumário lateral responsivo, com seção ativa e faixa persistente no mobile, edição focada e preview A4 com zoom e quebras.
 - [x] Matcher com senioridade, obrigatórios, desejáveis, forças e lacunas.
 - [x] Auditoria ATS de extensão, resumo, bullets, links, seções essenciais e risco do layout.
