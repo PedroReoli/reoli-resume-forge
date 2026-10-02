@@ -31,11 +31,11 @@ flowchart LR
 ## Fluxo de dados
 
 1. O perfil nasce de um arquétipo embarcado, de um JSON importado ou de um perfil vazio.
-2. React normaliza perfis antigos e mantém um único estado estruturado. Formulários, modais e conteúdo editável do A4 atualizam esse mesmo estado; a biblioteca mantém a escolha de template em rascunho e só altera o perfil após confirmação explícita.
+2. React normaliza perfis antigos e mantém um único estado estruturado. Formulários, modais e conteúdo editável do A4 atualizam esse mesmo estado; a biblioteca mantém a escolha de template em rascunho e só altera o perfil após confirmação explícita. A paleta é aplicada separadamente, como um preset seguro que pode ser combinado com qualquer layout.
 3. Após 420 ms sem edição, a GUI envia perfil e Job Description ao core via IPC.
 4. O core valida limites, extrai requisitos, cruza evidências e devolve um relatório serializável.
 5. Ao adaptar, o core ordena bullets e tecnologias pela relevância, com proveniência e sem criar texto novo.
-6. O exportador serializa o mesmo perfil, ordem, visibilidade, seções personalizadas e template para o formato escolhido. Assim, uma variante JSON reabre com a mesma composição visual.
+6. O exportador serializa o mesmo perfil, ordem, visibilidade, seções personalizadas, template e paleta para o formato escolhido. PDF e DOCX resolvem os mesmos presets cromáticos usados no preview; assim, uma variante JSON reabre e exporta com a mesma composição visual.
 
 ## Limites de segurança
 
@@ -54,7 +54,7 @@ O preview pode mostrar skills em tabela, mas usa `caption`, `th` e escopo semân
 
 ## Contrato modular 2.0
 
-`ResumeProfile.layout` guarda `section_order`, `hidden_sections`, apresentações de skills/experiências/projetos, densidade e níveis informados pelo usuário. `ResumeProfile.config.template` guarda um dos oito modelos visuais e integra salvamento, importação, histórico, GUI e CLI. Blocos opcionais vivem em `custom_sections`; IDs `custom:<id>` entram na mesma ordem das seções nativas. Perfis 1.x são normalizados no frontend e usam defaults Serde no core Rust.
+`ResumeProfile.layout` guarda `section_order`, `hidden_sections`, apresentações de skills/experiências/projetos, densidade e níveis informados pelo usuário. `ResumeProfile.config.template` guarda um dos oito modelos visuais; `config.palette` guarda um dos seis presets cromáticos. Ambos integram salvamento, importação, histórico, GUI e CLI. O core resolve as cores a partir de IDs conhecidos, em vez de confiar em valores arbitrários importados, para preservar contraste. Blocos opcionais vivem em `custom_sections`; IDs `custom:<id>` entram na mesma ordem das seções nativas. Perfis 1.x são normalizados no frontend e usam defaults Serde no core Rust.
 
 Os diálogos compartilham `useDialogFocus`: foco inicial previsível, contenção de `Tab`/`Shift+Tab`, fechamento com `Esc` e retorno ao controle de origem. Esse contrato mantém a biblioteca de modelos e os editores focados operáveis sem mouse.
 

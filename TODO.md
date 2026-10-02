@@ -17,6 +17,7 @@
 
 - [x] Classic Reoli com tipografia, paleta, densidade e hierarquia do gerador do Vault.
 - [x] Oito templates disponíveis na GUI, PDF, DOCX e CLI.
+- [x] Seis paletas profissionais persistentes, combináveis com qualquer template e consistentes no preview, PDF e DOCX.
 - [x] Ordem livre, ocultação e seções personalizadas em todos os formatos.
 - [x] Skills em categorias, tabela, tags e níveis informados manualmente.
 - [x] Experiências e projetos em bullets, parágrafos ou métricas priorizadas.

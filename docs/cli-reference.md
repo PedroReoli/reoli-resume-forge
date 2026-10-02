@@ -6,6 +6,7 @@
 - Erro: mensagem em `stderr` e código de saída `2`.
 - `--format` aceita uma lista separada por vírgulas: `pdf,docx,json,md`.
 - `--template` aceita os oito IDs da tabela abaixo. Quando omitido, a CLI usa `config.template` do perfil e, para perfis antigos sem esse campo, `classic`.
+- A CLI respeita `config.palette` do perfil em PDF e DOCX. A paleta é parte da variante, não uma flag efêmera; perfis antigos usam as cores nativas do template.
 - `--out` aponta para um diretório. Ele é criado quando necessário.
 - Entradas locais são limitadas a 1 MiB.
 
