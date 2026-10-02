@@ -1,7 +1,7 @@
-import { Trash2 } from 'lucide-react';
 import type { Experience } from '../../types/resume';
 import { EditorField, EditorTextArea, FocusButton } from './EditorFields';
 import type { FocusedEditorConfig } from './FocusedEditorModal';
+import { RecordActionBar } from './RecordActionBar';
 import { RecordEditorCard } from './RecordEditorCard';
 import { splitLines, splitList } from './editorText';
 
@@ -13,6 +13,8 @@ interface ExperienceEditorCardProps {
   keywordSuggestions: string[];
   onToggle: () => void;
   onUpdate: (patch: Partial<Experience>) => void;
+  onMove: (direction: -1 | 1) => void;
+  onDuplicate: () => void;
   onRemove: () => void;
   onOpenFocus: (config: FocusedEditorConfig) => void;
 }
@@ -25,6 +27,8 @@ export function ExperienceEditorCard({
   keywordSuggestions,
   onToggle,
   onUpdate,
+  onMove,
+  onDuplicate,
   onRemove,
   onOpenFocus,
 }: ExperienceEditorCardProps) {
@@ -51,6 +55,16 @@ export function ExperienceEditorCard({
       expanded={expanded}
       onToggle={onToggle}
     >
+      <RecordActionBar
+        itemLabel="experiência"
+        canMoveUp={index > 0}
+        canMoveDown={index < total - 1}
+        canRemove={total > 1}
+        onMoveUp={() => onMove(-1)}
+        onMoveDown={() => onMove(1)}
+        onDuplicate={onDuplicate}
+        onRemove={onRemove}
+      />
       <div className="record-focus-actions">
         <FocusButton label="Editar contexto em foco" onClick={() => onOpenFocus({
           title: `${item.role || 'Experiência'} — contexto`,
@@ -77,11 +91,6 @@ export function ExperienceEditorCard({
       <EditorTextArea label="Contexto" value={item.summary} rows={3} onChange={(summary) => onUpdate({ summary })} />
       <EditorTextArea label="Resultados (uma linha por item)" value={item.bullets.join('\n')} rows={5} onChange={(value) => onUpdate({ bullets: splitLines(value) })} />
       <EditorField label="Tecnologias" value={item.technologies.join(', ')} onChange={(value) => onUpdate({ technologies: splitList(value) })} />
-      {total > 1 ? (
-        <button className="remove-button" type="button" onClick={onRemove}>
-          <Trash2 size={14} /> Remover experiência
-        </button>
-      ) : null}
     </RecordEditorCard>
   );
 }

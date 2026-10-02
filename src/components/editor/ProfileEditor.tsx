@@ -1,5 +1,6 @@
 import { Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { insertRecord, moveRecord } from '../../domain/recordCollection';
 import { removeCustomSection } from '../../domain/resumeLayout';
 import type { Certification, Education, Experience, Language, Project, ResumeProfile } from '../../types/resume';
 import { SectionHeading } from '../common/SectionHeading';
@@ -87,6 +88,19 @@ export function ProfileEditor({
     });
     onProfile({ ...profile, experience: profile.experience.filter((_, itemIndex) => itemIndex !== index) });
   };
+  const moveExperience = (index: number, direction: -1 | 1) => {
+    const target = index + direction;
+    if (target < 0 || target >= profile.experience.length) return;
+    setExpandedExperience(target);
+    onProfile({ ...profile, experience: moveRecord(profile.experience, index, target) });
+  };
+  const duplicateExperience = (index: number) => {
+    const target = index + 1;
+    const source = profile.experience[index];
+    const duplicate = { ...source, bullets: [...source.bullets], technologies: [...source.technologies] };
+    setExpandedExperience(target);
+    onProfile({ ...profile, experience: insertRecord(profile.experience, target, duplicate) });
+  };
   const addProject = () => {
     const nextIndex = profile.projects.length;
     setExpandedProject(nextIndex);
@@ -101,6 +115,19 @@ export function ProfileEditor({
       return current;
     });
     onProfile({ ...profile, projects: profile.projects.filter((_, itemIndex) => itemIndex !== index) });
+  };
+  const moveProject = (index: number, direction: -1 | 1) => {
+    const target = index + direction;
+    if (target < 0 || target >= profile.projects.length) return;
+    setExpandedProject(target);
+    onProfile({ ...profile, projects: moveRecord(profile.projects, index, target) });
+  };
+  const duplicateProject = (index: number) => {
+    const target = index + 1;
+    const source = profile.projects[index];
+    const duplicate = { ...source, metrics: [...source.metrics], technologies: [...source.technologies] };
+    setExpandedProject(target);
+    onProfile({ ...profile, projects: insertRecord(profile.projects, target, duplicate) });
   };
 
   return (
@@ -192,6 +219,8 @@ export function ProfileEditor({
             keywordSuggestions={keywordSuggestions}
             onToggle={() => setExpandedExperience((current) => current === index ? null : index)}
             onUpdate={(patch) => updateExperience(index, patch)}
+            onMove={(direction) => moveExperience(index, direction)}
+            onDuplicate={() => duplicateExperience(index)}
             onRemove={() => removeExperience(index)}
             onOpenFocus={openFocus}
           />
@@ -209,10 +238,13 @@ export function ProfileEditor({
             key={index}
             item={item}
             index={index}
+            total={profile.projects.length}
             expanded={expandedProject === index}
             keywordSuggestions={keywordSuggestions}
             onToggle={() => setExpandedProject((current) => current === index ? null : index)}
             onUpdate={(patch) => updateProject(index, patch)}
+            onMove={(direction) => moveProject(index, direction)}
+            onDuplicate={() => duplicateProject(index)}
             onRemove={() => removeProject(index)}
             onOpenFocus={openFocus}
           />

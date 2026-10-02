@@ -1,17 +1,20 @@
-import { Trash2 } from 'lucide-react';
 import type { Project } from '../../types/resume';
 import { EditorField, EditorTextArea, FocusButton } from './EditorFields';
 import type { FocusedEditorConfig } from './FocusedEditorModal';
+import { RecordActionBar } from './RecordActionBar';
 import { RecordEditorCard } from './RecordEditorCard';
 import { splitLines, splitList } from './editorText';
 
 interface ProjectEditorCardProps {
   item: Project;
   index: number;
+  total: number;
   expanded: boolean;
   keywordSuggestions: string[];
   onToggle: () => void;
   onUpdate: (patch: Partial<Project>) => void;
+  onMove: (direction: -1 | 1) => void;
+  onDuplicate: () => void;
   onRemove: () => void;
   onOpenFocus: (config: FocusedEditorConfig) => void;
 }
@@ -19,10 +22,13 @@ interface ProjectEditorCardProps {
 export function ProjectEditorCard({
   item,
   index,
+  total,
   expanded,
   keywordSuggestions,
   onToggle,
   onUpdate,
+  onMove,
+  onDuplicate,
   onRemove,
   onOpenFocus,
 }: ProjectEditorCardProps) {
@@ -42,6 +48,15 @@ export function ProjectEditorCard({
       expanded={expanded}
       onToggle={onToggle}
     >
+      <RecordActionBar
+        itemLabel="projeto"
+        canMoveUp={index > 0}
+        canMoveDown={index < total - 1}
+        onMoveUp={() => onMove(-1)}
+        onMoveDown={() => onMove(1)}
+        onDuplicate={onDuplicate}
+        onRemove={onRemove}
+      />
       <div className="record-focus-actions">
         <FocusButton label="Editar métricas em foco" onClick={() => onOpenFocus({
           title: `${item.name || 'Projeto'} — resultados`,
@@ -55,9 +70,6 @@ export function ProjectEditorCard({
       <EditorTextArea label="Descrição" value={item.description} rows={3} onChange={(description) => onUpdate({ description })} />
       <EditorTextArea label="Métricas (uma linha por item)" value={item.metrics.join('\n')} rows={4} onChange={(value) => onUpdate({ metrics: splitLines(value) })} />
       <EditorField label="Tecnologias" value={item.technologies.join(', ')} onChange={(value) => onUpdate({ technologies: splitList(value) })} />
-      <button className="remove-button" type="button" onClick={onRemove}>
-        <Trash2 size={14} /> Remover projeto
-      </button>
     </RecordEditorCard>
   );
 }
