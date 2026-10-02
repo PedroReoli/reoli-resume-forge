@@ -17,6 +17,8 @@ Coleções aceitas: `target_keywords`, `skills`, `soft_skills`, `experience`, `p
 
 Perfis antigos sem `config.palette` continuam válidos e recebem `template`, sem alteração visual. A CLI não possui uma flag separada de paleta: ela respeita a paleta armazenada no perfil ou arquétipo selecionado.
 
+As aparências prontas da GUI não adicionam um campo opaco ao schema. Ao selecionar Reoli Clássico, Tech Focus, Product Clean, Leadership Bold, Editorial ou Visual Split, a aplicação atualiza em conjunto `config.template`, `config.palette`, `layout.density`, `layout.skills_style`, `layout.experience_style`, `layout.projects_style` e `layout.emphasize_metrics`. Conteúdo, ordem e visibilidade permanecem intactos. O JSON resultante continua legível e pode ser ajustado ou exportado pela CLI sem depender da GUI.
+
 Na CLI, uma flag `--template` explícita substitui o valor salvo no perfil somente naquela exportação; sem a flag, o compilador usa `config.template` e depois o fallback `classic`. Essa troca de layout não remove a paleta persistida.
 
 Limites do core: resumo de até 4.000 caracteres e no máximo 30 experiências ou 30 projetos. Campos desconhecidos dentro de `config` são preservados pelo modelo Rust; não armazene segredos no perfil.

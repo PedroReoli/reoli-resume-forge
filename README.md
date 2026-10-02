@@ -10,6 +10,7 @@ Editor desktop e compilador headless, local-first, para criar currículos legív
 - Tailoring conservador: reordena apenas evidências existentes e nunca fabrica experiências, tecnologias ou métricas.
 - Oito layouts em uma galeria visual comparativa: **Classic Reoli**, Tech Minimalist, Modern Split, Executive Bold, Academic, Clean Slate, Compact Linear e Executive Accent; a escolha acompanha a variante JSON salva.
 - Seis paletas profissionais independentes do layout — identidade nativa do modelo, Reoli Navy, Forest, Cobalt, Burgundy e Graphite — preservadas no JSON e aplicadas com o mesmo contraste no preview, PDF e DOCX.
+- Seis aparências prontas — Reoli Clássico, Tech Focus, Product Clean, Leadership Bold, Editorial e Visual Split — que combinam modelo, paleta, densidade e apresentação das seções em um clique, com desfazer em uma única etapa.
 - Histórico local com desfazer/refazer, atalhos seguros e confirmação antes de substituir um trabalho em edição.
 - Experiências e projetos em fichas recolhíveis, com progresso de preenchimento e contagem de evidências sem alongar toda a área de trabalho.
 - Ordem livre, ocultação e blocos opcionais para projetos, voluntariado, cursos, publicações, prêmios e conteúdo personalizado.
@@ -35,7 +36,7 @@ O arquivo é distribuído sem sidecars. A GUI usa o Microsoft Edge WebView2 inst
 ## Interface
 
 1. Escolha um arquétipo e compare os oito layouts pela galeria visual. A escolha fica em rascunho até **Usar modelo**; cancelar ou pressionar `Esc` preserva o currículo atual. Também é possível importar um perfil JSON.
-2. Em **Composição**, combine qualquer um dos oito layouts com uma das seis paletas profissionais. Depois, reordene, oculte ou adicione seções pelo sumário; em telas estreitas, a faixa compacta permanece visível e acompanha automaticamente o bloco em edição.
+2. Em **Formatação do documento**, comece por uma das seis aparências prontas ou combine manualmente qualquer um dos oito layouts com uma das seis paletas profissionais. Depois, reordene, oculte ou adicione seções pelo sumário; em telas estreitas, a faixa compacta permanece visível e acompanha automaticamente o bloco em edição.
 3. Expanda somente a experiência ou projeto em edição; mova, duplique ou remova fichas para priorizar evidências e altere os campos à esquerda, no modal de foco ou diretamente sobre a página A4. Use `Ctrl+Z` e `Ctrl+Y` fora dos campos para navegar pelo histórico.
 4. Cole a descrição completa da vaga para calcular obrigatórios, desejáveis, senioridade, forças e lacunas.
 5. Use **Criar versão adaptada** para priorizar fatos já presentes no perfil.
