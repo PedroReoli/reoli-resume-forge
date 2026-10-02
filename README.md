@@ -4,7 +4,7 @@ Editor desktop e compilador headless, local-first, para criar currículos legív
 
 ## O que entrega
 
-- GUI Dark Tech em split view, com sumário navegável, editor estruturado, página A4 e edição inline bidirecional.
+- GUI Dark Tech em split view, com sumário que acompanha a seção ativa e permanece acessível no mobile, editor estruturado, página A4 e edição inline bidirecional.
 - Cinco arquétipos nativos: frontend, full stack Node.js, full stack .NET, tech lead e internacional em inglês.
 - Matcher ATS determinístico, com requisitos obrigatórios ponderados e indicação dos termos atendidos/ausentes.
 - Tailoring conservador: reordena apenas evidências existentes e nunca fabrica experiências, tecnologias ou métricas.
@@ -34,7 +34,7 @@ O arquivo é distribuído sem sidecars. A GUI usa o Microsoft Edge WebView2 inst
 ## Interface
 
 1. Escolha um arquétipo e compare os oito layouts pela galeria visual, ou importe um perfil JSON.
-2. Reordene, oculte ou adicione seções pelo sumário lateral; ajuste a densidade e a apresentação de cada bloco.
+2. Reordene, oculte ou adicione seções pelo sumário; em telas estreitas, a faixa compacta permanece visível e acompanha automaticamente o bloco em edição.
 3. Expanda somente a experiência ou projeto em edição, altere os campos à esquerda, no modal de foco ou diretamente sobre a página A4; use `Ctrl+Z` e `Ctrl+Y` fora dos campos para navegar pelo histórico.
 4. Cole a descrição completa da vaga para calcular obrigatórios, desejáveis, senioridade, forças e lacunas.
 5. Use **Criar versão adaptada** para priorizar fatos já presentes no perfil.
