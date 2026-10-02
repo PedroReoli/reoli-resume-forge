@@ -3,11 +3,38 @@ import type {
   CustomSectionKind,
   ResumeLayoutConfig,
   ResumeLocale,
+  ResumePalette,
+  ResumeColors,
   ResumeProfile,
   ResumeTemplate,
 } from '../types/resume';
 
 export const DEFAULT_RESUME_TEMPLATE: ResumeTemplate = 'classic';
+export const DEFAULT_RESUME_PALETTE: ResumePalette = 'template';
+
+export const RESUME_PALETTE_IDS: readonly ResumePalette[] = [
+  'template',
+  'reoli-navy',
+  'forest',
+  'cobalt',
+  'burgundy',
+  'graphite',
+];
+
+export const RESUME_PALETTES: Array<{
+  id: ResumePalette;
+  label: string;
+  description: string;
+  colors?: ResumeColors;
+  swatches: readonly [string, string, string];
+}> = [
+  { id: 'template', label: 'Do modelo', description: 'Preserva a assinatura cromática original.', swatches: ['#1f374d', '#3178c6', '#b3852e'] },
+  { id: 'reoli-navy', label: 'Reoli Navy', description: 'Azul institucional herdado do Vault.', colors: { primary: '#1F374D', dark: '#142636', soft: '#E7EEF3', divider: '#CBD5DD' }, swatches: ['#142636', '#1f374d', '#cbd5dd'] },
+  { id: 'forest', label: 'Forest', description: 'Verde sóbrio para produto e liderança.', colors: { primary: '#174A3B', dark: '#102F27', soft: '#E6F0EB', divider: '#B8CCC1' }, swatches: ['#102f27', '#174a3b', '#b8ccc1'] },
+  { id: 'cobalt', label: 'Cobalt', description: 'Azul técnico com contraste limpo.', colors: { primary: '#245F9E', dark: '#173C65', soft: '#E8F0F8', divider: '#B8CCE1' }, swatches: ['#173c65', '#245f9e', '#b8cce1'] },
+  { id: 'burgundy', label: 'Burgundy', description: 'Vinho editorial para perfis autorais.', colors: { primary: '#6B3340', dark: '#45202A', soft: '#F4E9EC', divider: '#D8BBC2' }, swatches: ['#45202a', '#6b3340', '#d8bbc2'] },
+  { id: 'graphite', label: 'Graphite', description: 'Neutro rigoroso e altamente versátil.', colors: { primary: '#343A40', dark: '#202429', soft: '#ECEEEF', divider: '#C8CDD1' }, swatches: ['#202429', '#343a40', '#c8cdd1'] },
+];
 
 export const RESUME_TEMPLATE_IDS: readonly ResumeTemplate[] = [
   'classic',
@@ -75,12 +102,16 @@ export function createDefaultLayout(): ResumeLayoutConfig {
 export function normalizeResumeProfile(raw: ResumeProfile): ResumeProfile {
   const customSections = Array.isArray(raw.custom_sections) ? raw.custom_sections : [];
   const layout = normalizeLayout(raw.layout, customSections);
+  const palette = normalizeResumePalette(raw.config?.palette);
+  const paletteColors = RESUME_PALETTES.find((option) => option.id === palette)?.colors;
   return {
     ...raw,
     config: {
       ...raw.config,
       locale: normalizeLocale(raw.config?.locale),
       template: normalizeResumeTemplate(raw.config?.template),
+      palette,
+      ...(paletteColors ? { colors: { ...paletteColors } } : {}),
       section_names: raw.config?.section_names ?? {},
       tech_label: raw.config?.tech_label ?? 'Tecnologias',
     },
@@ -106,6 +137,31 @@ export function normalizeResumeTemplate(value: unknown): ResumeTemplate {
 
 export function profileTemplate(profile: ResumeProfile): ResumeTemplate {
   return normalizeResumeTemplate(profile.config?.template);
+}
+
+export function isResumePalette(value: unknown): value is ResumePalette {
+  return typeof value === 'string' && RESUME_PALETTE_IDS.includes(value as ResumePalette);
+}
+
+export function normalizeResumePalette(value: unknown): ResumePalette {
+  return isResumePalette(value) ? value : DEFAULT_RESUME_PALETTE;
+}
+
+export function profilePalette(profile: ResumeProfile): ResumePalette {
+  return normalizeResumePalette(profile.config?.palette);
+}
+
+export function applyResumePalette(profile: ResumeProfile, palette: ResumePalette): ResumeProfile {
+  const colors = RESUME_PALETTES.find((option) => option.id === palette)?.colors;
+  if (profilePalette(profile) === palette) return profile;
+  return {
+    ...profile,
+    config: {
+      ...profile.config,
+      palette,
+      ...(colors ? { colors: { ...colors } } : {}),
+    },
+  };
 }
 
 export function applyResumeTemplate(

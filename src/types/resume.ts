@@ -10,12 +10,29 @@ export type ResumeTemplate =
   | 'executive-bold'
   | 'academic';
 
+export type ResumePalette =
+  | 'template'
+  | 'reoli-navy'
+  | 'forest'
+  | 'cobalt'
+  | 'burgundy'
+  | 'graphite';
+
+export interface ResumeColors {
+  primary: string;
+  dark: string;
+  soft: string;
+  divider: string;
+}
+
 export interface ResumeConfig {
   tech_label: string;
   section_names: Record<string, string>;
   locale?: ResumeLocale;
   template?: ResumeTemplate;
-  [key: string]: JsonValue | Record<string, string> | undefined;
+  palette?: ResumePalette;
+  colors?: ResumeColors;
+  [key: string]: JsonValue | Record<string, string> | ResumeColors | undefined;
 }
 
 export interface Person {

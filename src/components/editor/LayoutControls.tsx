@@ -1,7 +1,10 @@
-import { Gauge, LayoutGrid, Rows3, Sparkles } from 'lucide-react';
+import { Gauge, LayoutGrid, Palette, Rows3, Sparkles } from 'lucide-react';
+import type { CSSProperties } from 'react';
+import { applyResumePalette, profilePalette, RESUME_PALETTES } from '../../domain/resumeLayout';
 import type {
   NarrativeLayout,
   ResumeDensity,
+  ResumePalette,
   ResumeProfile,
   SkillsLayout,
 } from '../../types/resume';
@@ -31,6 +34,7 @@ const DENSITY_OPTIONS: Array<{ id: ResumeDensity; label: string }> = [
 ];
 
 export function LayoutControls({ profile, onProfile }: LayoutControlsProps) {
+  const palette = profilePalette(profile);
   const patchLayout = (patch: Partial<ResumeProfile['layout']>) => {
     onProfile({ ...profile, layout: { ...profile.layout, ...patch } });
   };
@@ -39,9 +43,12 @@ export function LayoutControls({ profile, onProfile }: LayoutControlsProps) {
     <details className="layout-controls">
       <summary>
         <span><LayoutGrid size={15} /> Formatação do documento</span>
-        <small>{densityLabel(profile.layout.density)}</small>
+        <small>{densityLabel(profile.layout.density)} · {paletteLabel(palette)}</small>
       </summary>
       <div className="layout-control-grid">
+        <ControlGroup label="Paleta" icon={Palette}>
+          <PaletteControl value={palette} onChange={(value) => onProfile(applyResumePalette(profile, value))} />
+        </ControlGroup>
         <ControlGroup label="Competências" icon={LayoutGrid}>
           <Segmented
             value={profile.layout.skills_style}
@@ -107,6 +114,34 @@ export function LayoutControls({ profile, onProfile }: LayoutControlsProps) {
   );
 }
 
+function PaletteControl({ value, onChange }: { value: ResumePalette; onChange: (value: ResumePalette) => void }) {
+  return (
+    <div className="palette-control">
+      {RESUME_PALETTES.map((option) => (
+        <button
+          key={option.id}
+          type="button"
+          aria-label={`${option.label}: ${option.description}`}
+          aria-pressed={value === option.id}
+          title={option.description}
+          onClick={() => onChange(option.id)}
+        >
+          <span
+            className="palette-swatches"
+            aria-hidden="true"
+            style={{
+              '--swatch-a': option.swatches[0],
+              '--swatch-b': option.swatches[1],
+              '--swatch-c': option.swatches[2],
+            } as CSSProperties}
+          ><i /><i /><i /></span>
+          <span>{option.label}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function ControlGroup({ label, icon: Icon, children }: { label: string; icon: typeof Gauge; children: React.ReactNode }) {
   return (
     <div className="layout-control-group">
@@ -151,4 +186,8 @@ function skillNames(profile: ResumeProfile): string[] {
 
 function densityLabel(value: ResumeDensity): string {
   return DENSITY_OPTIONS.find((option) => option.id === value)?.label ?? value;
+}
+
+function paletteLabel(value: ResumePalette): string {
+  return RESUME_PALETTES.find((option) => option.id === value)?.label ?? value;
 }

@@ -1,0 +1,194 @@
+.palette-control {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.palette-control button {
+  display: grid;
+  min-width: 0;
+  min-height: 37px;
+  grid-template-columns: 31px minmax(0, 1fr);
+  align-items: center;
+  gap: 7px;
+  padding: 4px 7px;
+  border: 1px solid var(--line);
+  background: #101713;
+  color: var(--muted);
+  font-size: 8.5px;
+  text-align: left;
+}
+
+.palette-control button:hover {
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+
+.palette-control button[aria-pressed="true"] {
+  border-color: #76927e;
+  background: #19261e;
+  box-shadow: inset 0 0 0 1px rgb(168 207 177 / 18%);
+  color: var(--accent-bright);
+}
+
+.palette-control button > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.palette-swatches {
+  display: grid;
+  height: 21px;
+  grid-template-columns: repeat(3, 1fr);
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 16%);
+  border-radius: 2px;
+}
+
+.palette-swatches i:nth-child(1) { background: var(--swatch-a); }
+.palette-swatches i:nth-child(2) { background: var(--swatch-b); }
+.palette-swatches i:nth-child(3) { background: var(--swatch-c); }
+
+.palette-reoli-navy {
+  --resume-primary: #1f374d;
+  --resume-dark: #142636;
+  --resume-soft: #e7eef3;
+  --resume-divider: #cbd5dd;
+}
+
+.palette-forest {
+  --resume-primary: #174a3b;
+  --resume-dark: #102f27;
+  --resume-soft: #e6f0eb;
+  --resume-divider: #b8ccc1;
+}
+
+.palette-cobalt {
+  --resume-primary: #245f9e;
+  --resume-dark: #173c65;
+  --resume-soft: #e8f0f8;
+  --resume-divider: #b8cce1;
+}
+
+.palette-burgundy {
+  --resume-primary: #6b3340;
+  --resume-dark: #45202a;
+  --resume-soft: #f4e9ec;
+  --resume-divider: #d8bbc2;
+}
+
+.palette-graphite {
+  --resume-primary: #343a40;
+  --resume-dark: #202429;
+  --resume-soft: #eceeef;
+  --resume-divider: #c8cdd1;
+}
+
+.resume-sheet:not(.palette-template) .resume-name,
+.resume-sheet:not(.palette-template) .resume-section > h2,
+.resume-sheet:not(.palette-template) .resume-company,
+.resume-sheet:not(.palette-template) .resume-skill-table th {
+  color: var(--resume-primary);
+}
+
+.resume-sheet:not(.palette-template) .resume-section > h2,
+.resume-sheet:not(.palette-template) .resume-skill-table th,
+.resume-sheet:not(.palette-template) .resume-skill-table td {
+  border-color: var(--resume-divider);
+}
+
+.resume-sheet:not(.palette-template) .resume-skill-tags span,
+.resume-sheet:not(.palette-template) .soft-skill-list span {
+  border-color: var(--resume-divider);
+  background: color-mix(in srgb, var(--resume-soft) 72%, white);
+}
+
+.resume-sheet:not(.palette-template) .skill-level i b {
+  background: var(--resume-primary);
+}
+
+.resume-sheet:not(.palette-template).emphasize-metrics .resume-bullet-list .has-metric,
+.resume-sheet:not(.palette-template).emphasize-metrics .resume-tech {
+  color: var(--resume-dark);
+}
+
+.template-classic:not(.palette-template) .resume-headline,
+.template-classic:not(.palette-template) .resume-role,
+.template-tech-minimalist:not(.palette-template) .resume-headline,
+.template-tech-minimalist:not(.palette-template) .resume-section > h2,
+.template-tech-minimalist:not(.palette-template) .resume-tech,
+.template-academic:not(.palette-template) .resume-role {
+  color: var(--resume-primary);
+}
+
+.template-tech-minimalist:not(.palette-template) .resume-header {
+  border-bottom-color: var(--resume-primary);
+}
+
+.template-tech-minimalist:not(.palette-template) .resume-project-grid .project-record {
+  border-color: var(--resume-divider);
+}
+
+.template-executive:not(.palette-template) .resume-header,
+.template-executive-bold:not(.palette-template) .resume-header {
+  border-bottom-color: var(--resume-primary);
+  background: var(--resume-dark);
+}
+
+.template-executive:not(.palette-template) .resume-headline,
+.template-executive-bold:not(.palette-template) .resume-headline {
+  color: var(--resume-soft);
+}
+
+.template-executive:not(.palette-template) .resume-name,
+.template-executive-bold:not(.palette-template) .resume-name,
+.template-modern-split:not(.palette-template) .resume-name {
+  color: #fff;
+}
+
+.template-executive:not(.palette-template) .resume-role,
+.template-executive-bold:not(.palette-template) .resume-role {
+  color: var(--resume-primary);
+}
+
+.template-executive-bold:not(.palette-template) .resume-section > h2 {
+  border-bottom-color: var(--resume-primary);
+}
+
+.template-modern-split:not(.palette-template) .resume-header {
+  background: var(--resume-primary);
+}
+
+.template-modern-split:not(.palette-template) .resume-split-layout > aside {
+  background: var(--resume-dark);
+}
+
+.template-modern-split:not(.palette-template) .resume-split-layout > main .resume-section > h2 {
+  color: var(--resume-primary);
+}
+
+.template-modern-split:not(.palette-template) .resume-split-layout > aside .resume-section > h2,
+.template-modern-split:not(.palette-template) .resume-split-layout > aside .resume-skill-table th,
+.template-modern-split:not(.palette-template) .resume-split-layout > aside .resume-skill-table td {
+  border-color: color-mix(in srgb, var(--resume-primary) 42%, white);
+}
+
+.template-modern-split:not(.palette-template) .resume-split-layout > aside .resume-section > h2,
+.template-modern-split:not(.palette-template) .resume-split-layout > aside .resume-skill-table th {
+  color: var(--resume-soft);
+}
+
+.template-modern-split:not(.palette-template) .resume-split-layout > aside .resume-skill-tags span,
+.template-modern-split:not(.palette-template) .resume-split-layout > aside .soft-skill-list span {
+  border-color: color-mix(in srgb, var(--resume-primary) 45%, white);
+  background: color-mix(in srgb, var(--resume-dark) 78%, white);
+}
+
+.template-academic:not(.palette-template) .resume-section > h2 {
+  border-bottom-color: var(--resume-divider);
+}
+
+@media (max-width: 560px) {
+  .palette-control { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

@@ -1,4 +1,5 @@
 use super::ResumeTemplate;
+use super::palette::PaletteColors;
 use printpdf::BuiltinFont;
 
 #[derive(Clone, Copy)]
@@ -268,5 +269,39 @@ impl PdfTheme {
                 band_rule: (0.65, 0.48, 0.50),
             },
         }
+    }
+
+    pub fn with_palette(mut self, palette: Option<PaletteColors>) -> Self {
+        if let Some(colors) = palette {
+            self.accent = colors.accent;
+            self.band_color = colors.dark;
+            self.band_rule = colors.accent;
+        }
+        self
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::core::archetypes::load_archetype;
+    use crate::core::export::palette::profile_palette;
+
+    #[test]
+    fn applies_profile_palette_to_pdf_accent_and_bands() {
+        let mut profile = load_archetype("01_frontend").unwrap();
+        profile
+            .config
+            .extra
+            .insert("palette".into(), serde_json::json!("cobalt"));
+
+        let theme = PdfTheme::for_template(ResumeTemplate::ModernSplit)
+            .with_palette(profile_palette(&profile));
+        assert_eq!(theme.accent, (36.0 / 255.0, 95.0 / 255.0, 158.0 / 255.0));
+        assert_eq!(
+            theme.band_color,
+            (23.0 / 255.0, 60.0 / 255.0, 101.0 / 255.0)
+        );
+        assert_eq!(theme.band_rule, theme.accent);
     }
 }

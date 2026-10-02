@@ -1,5 +1,6 @@
 use super::super::model::ResumeProfile;
 use super::ResumeTemplate;
+use super::palette::{PaletteColors, profile_palette};
 use super::zip_store::{self, ZipEntry};
 use std::fmt::Write;
 
@@ -8,7 +9,7 @@ pub fn render_with_template(
     template: ResumeTemplate,
 ) -> Result<Vec<u8>, String> {
     let document = document_xml(profile, template);
-    let styles = styles_xml(template);
+    let styles = styles_xml(profile, template);
     let relationships = document_relationships(profile);
     let entries = [
         ZipEntry {
@@ -457,10 +458,18 @@ impl DocxTheme {
             },
         }
     }
+
+    fn with_palette(mut self, palette: Option<PaletteColors>) -> Self {
+        if let Some(colors) = palette {
+            self.accent = colors.accent_hex;
+            self.border = colors.divider_hex;
+        }
+        self
+    }
 }
 
-fn styles_xml(template: ResumeTemplate) -> String {
-    let theme = DocxTheme::for_template(template);
+fn styles_xml(profile: &ResumeProfile, template: ResumeTemplate) -> String {
+    let theme = DocxTheme::for_template(template).with_palette(profile_palette(profile));
     format!(
         r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="{font}" w:hAnsi="{font}"/><w:sz w:val="{body_size}"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="44" w:line="{line}" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style><w:style w:type="paragraph" w:styleId="ResumeName"><w:name w:val="Resume Name"/><w:basedOn w:val="Normal"/><w:pPr><w:jc w:val="{alignment}"/><w:spacing w:after="40"/></w:pPr><w:rPr><w:b/><w:color w:val="{accent}"/><w:sz w:val="{name_size}"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="ResumeHeadline"><w:name w:val="Resume Headline"/><w:basedOn w:val="Normal"/><w:pPr><w:jc w:val="{alignment}"/><w:spacing w:after="50"/></w:pPr><w:rPr><w:b/><w:sz w:val="{headline_size}"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="ResumeContact"><w:name w:val="Resume Contact"/><w:basedOn w:val="Normal"/><w:pPr><w:jc w:val="{alignment}"/><w:spacing w:after="20"/></w:pPr><w:rPr><w:color w:val="5A5A5A"/><w:sz w:val="17"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="ResumeSection"><w:name w:val="Resume Section"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="{section_before}" w:after="45"/><w:pBdr><w:bottom w:val="single" w:sz="6" w:space="1" w:color="{border}"/></w:pBdr></w:pPr><w:rPr><w:b/><w:color w:val="{accent}"/><w:sz w:val="{section_size}"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="ResumeCompany"><w:name w:val="Resume Company"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="{company_before}" w:after="0"/></w:pPr><w:rPr><w:b/><w:color w:val="{accent}"/><w:sz w:val="20"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="ResumeRole"><w:name w:val="Resume Role"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:after="10"/></w:pPr><w:rPr><w:b/><w:sz w:val="19"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="ResumeMeta"><w:name w:val="Resume Meta"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:after="30"/></w:pPr><w:rPr><w:color w:val="5A5A5A"/><w:sz w:val="17"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="ResumeBullet"><w:name w:val="Resume Bullet"/><w:basedOn w:val="Normal"/><w:pPr><w:ind w:left="220" w:hanging="160"/><w:spacing w:after="32"/></w:pPr><w:rPr><w:sz w:val="18"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="ResumeSkill"><w:name w:val="Resume Skill"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:after="30"/></w:pPr></w:style></w:styles>"#,
         font = theme.font,
@@ -542,5 +551,18 @@ mod tests {
                 .windows("TargetMode=\"External\"".len())
                 .any(|part| part == b"TargetMode=\"External\"")
         );
+    }
+
+    #[test]
+    fn applies_profile_palette_to_docx_styles() {
+        let mut profile = load_archetype("01_frontend").unwrap();
+        profile
+            .config
+            .extra
+            .insert("palette".into(), serde_json::json!("burgundy"));
+
+        let styles = styles_xml(&profile, ResumeTemplate::TechMinimalist);
+        assert!(styles.contains(r#"w:color w:val="6B3340""#));
+        assert!(styles.contains(r#"w:color="D8BBC2""#));
     }
 }

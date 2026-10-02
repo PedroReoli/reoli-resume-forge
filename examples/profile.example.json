@@ -1,6 +1,13 @@
 {
   "config": {
     "template": "tech-minimalist",
+    "palette": "reoli-navy",
+    "colors": {
+      "primary": "#1F374D",
+      "dark": "#142636",
+      "soft": "#E7EEF3",
+      "divider": "#CBD5DD"
+    },
     "tech_label": "Tecnologias",
     "section_names": {
       "summary": "Resumo Profissional",

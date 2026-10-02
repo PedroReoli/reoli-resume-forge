@@ -1,5 +1,6 @@
 mod docx;
 mod markdown;
+mod palette;
 mod pdf;
 mod pdf_content;
 mod pdf_theme;
@@ -223,6 +224,20 @@ mod tests {
             ResumeTemplate::from_profile(&profile).unwrap(),
             Some(ResumeTemplate::ModernSplit)
         );
+    }
+
+    #[test]
+    fn preserves_the_palette_in_editable_json_variants() {
+        let mut profile = load_archetype("01_frontend").unwrap();
+        profile
+            .config
+            .extra
+            .insert("palette".into(), serde_json::json!("forest"));
+
+        let json =
+            render_with_template(&profile, ExportFormat::Json, ResumeTemplate::Classic).unwrap();
+        let document: serde_json::Value = serde_json::from_slice(&json).unwrap();
+        assert_eq!(document["config"]["palette"], "forest");
     }
 
     #[test]

@@ -1,5 +1,6 @@
 use super::super::model::ResumeProfile;
 use super::ResumeTemplate;
+use super::palette::profile_palette;
 use super::pdf_content::{
     estimate_text_width, is_safe_link, is_split_sidebar_section, join_non_empty, string_values,
     wrap,
@@ -21,7 +22,7 @@ pub fn render_with_template(
     profile: &ResumeProfile,
     template: ResumeTemplate,
 ) -> Result<Vec<u8>, String> {
-    let theme = PdfTheme::for_template(template);
+    let theme = PdfTheme::for_template(template).with_palette(profile_palette(profile));
     let mut writer = PdfWriter::new(theme);
     writer.begin_header();
     writer.header(profile, template);
@@ -253,7 +254,11 @@ impl PdfWriter {
     fn enable_split_layout(&mut self, profile: &ResumeProfile) {
         self.current.extend([
             Op::SetFillColor {
-                col: rgb(0.11, 0.34, 0.50),
+                col: rgb(
+                    self.theme.band_color.0,
+                    self.theme.band_color.1,
+                    self.theme.band_color.2,
+                ),
             },
             Op::DrawPolygon {
                 polygon: Rect::from_xywh(
