@@ -2,5 +2,6 @@
 @import "./tokens.css";
 @import "./base.css";
 @import "./workspace.css";
+@import "./workspace-chrome.css";
 @import "./resume.css";
 @import "./responsive.css";

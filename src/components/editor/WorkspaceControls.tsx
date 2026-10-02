@@ -1,4 +1,5 @@
 import { ChevronDown } from 'lucide-react';
+import { TEMPLATE_OPTIONS } from '../../domain/resumeLayout';
 import type { ArchetypeMetadata, ResumeTemplate } from '../../types/resume';
 
 interface WorkspaceControlsProps {
@@ -34,9 +35,14 @@ export function WorkspaceControls(props: WorkspaceControlsProps) {
       <label>
         <span>Idioma</span>
         <span className="select-wrap">
-          <select value={props.locale} onChange={(event) => props.onLocale(event.target.value)}>
+          <select
+            value={props.locale}
+            title="Localiza rótulos e níveis conhecidos; textos livres são preservados para não alterar fatos."
+            onChange={(event) => props.onLocale(event.target.value)}
+          >
             <option value="pt-BR">Português (Brasil)</option>
             <option value="en-US">English (US)</option>
+            <option value="es-ES">Español</option>
           </select>
           <ChevronDown size={15} aria-hidden="true" />
         </span>
@@ -48,9 +54,9 @@ export function WorkspaceControls(props: WorkspaceControlsProps) {
             value={props.template}
             onChange={(event) => props.onTemplate(event.target.value as ResumeTemplate)}
           >
-            <option value="clean">Clean Slate</option>
-            <option value="compact">Compact Linear</option>
-            <option value="executive">Executive Accent</option>
+            {TEMPLATE_OPTIONS.map((option) => (
+              <option key={option.id} value={option.id}>{option.label}</option>
+            ))}
           </select>
           <ChevronDown size={15} aria-hidden="true" />
         </span>

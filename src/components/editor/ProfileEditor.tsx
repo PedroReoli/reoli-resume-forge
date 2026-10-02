@@ -1,15 +1,29 @@
-import { Plus, Trash2 } from 'lucide-react';
-import type { Experience, ResumeProfile } from '../../types/resume';
+import { Focus, Plus, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { removeCustomSection } from '../../domain/resumeLayout';
+import type { Certification, Experience, Language, Project, ResumeProfile } from '../../types/resume';
 import { SectionHeading } from '../common/SectionHeading';
+import { FocusedEditorModal, type FocusedEditorConfig } from './FocusedEditorModal';
+import { LayoutControls } from './LayoutControls';
+import { editorSectionId } from './SectionNavigator';
 
 interface ProfileEditorProps {
   profile: ResumeProfile;
   jobDescription: string;
+  keywordSuggestions?: string[];
   onProfile: (profile: ResumeProfile) => void;
   onJobDescription: (value: string) => void;
 }
 
-export function ProfileEditor({ profile, jobDescription, onProfile, onJobDescription }: ProfileEditorProps) {
+export function ProfileEditor({
+  profile,
+  jobDescription,
+  keywordSuggestions = [],
+  onProfile,
+  onJobDescription,
+}: ProfileEditorProps) {
+  const [focusedEditor, setFocusedEditor] = useState<FocusedEditorConfig | null>(null);
+
   const updatePerson = (key: keyof ResumeProfile['person'], value: string) => {
     onProfile({ ...profile, person: { ...profile.person, [key]: value } });
   };
@@ -19,11 +33,31 @@ export function ProfileEditor({ profile, jobDescription, onProfile, onJobDescrip
     );
     onProfile({ ...profile, experience });
   };
+  const updateProject = (index: number, patch: Partial<Project>) => {
+    onProfile({
+      ...profile,
+      projects: profile.projects.map((item, itemIndex) => itemIndex === index ? { ...item, ...patch } : item),
+    });
+  };
+  const openFocus = (config: FocusedEditorConfig) => setFocusedEditor(config);
 
   return (
     <div className="profile-editor">
-      <section className="editor-section">
-        <SectionHeading title="Identidade" hint="Dados exibidos no cabeçalho" />
+      <LayoutControls profile={profile} onProfile={onProfile} />
+
+      <section className="editor-section" id="editor-identity">
+        <SectionHeading
+          title="Identidade"
+          hint="Dados exibidos no cabeçalho"
+          action={<FocusButton label="Editar headline em foco" onClick={() => openFocus({
+            title: 'Headline profissional',
+            hint: 'Posicionamento direto, área e diferenciais comprováveis.',
+            value: profile.headline,
+            multiline: false,
+            suggestions: keywordSuggestions,
+            onSave: (headline) => onProfile({ ...profile, headline }),
+          })} />}
+        />
         <div className="form-grid two-columns">
           <Field label="Nome" value={profile.person.name} onChange={(value) => updatePerson('name', value)} />
           <Field label="E-mail" value={profile.person.email} onChange={(value) => updatePerson('email', value)} />
@@ -31,16 +65,28 @@ export function ProfileEditor({ profile, jobDescription, onProfile, onJobDescrip
           <Field label="Localização" value={profile.person.location} onChange={(value) => updatePerson('location', value)} />
           <Field label="LinkedIn" value={profile.person.linkedin} onChange={(value) => updatePerson('linkedin', value)} />
           <Field label="Portfólio" value={profile.person.portfolio} onChange={(value) => updatePerson('portfolio', value)} />
+          <Field label="GitHub" value={profile.person.github} onChange={(value) => updatePerson('github', value)} />
+          <Field label="Preferência de trabalho" value={profile.person.work_preference} onChange={(value) => updatePerson('work_preference', value)} />
         </div>
         <Field label="Headline" value={profile.headline} onChange={(headline) => onProfile({ ...profile, headline })} />
       </section>
 
-      <section className="editor-section">
-        <SectionHeading title="Resumo" hint="3–5 linhas, fatos e impacto" />
+      <section className="editor-section" id={editorSectionId('summary')}>
+        <SectionHeading
+          title="Resumo"
+          hint="3–5 linhas, fatos e impacto"
+          action={<FocusButton label="Editar resumo em foco" onClick={() => openFocus({
+            title: 'Resumo profissional',
+            hint: 'Identifique seu posicionamento, evidências e proposta de valor em poucas linhas.',
+            value: profile.summary,
+            suggestions: keywordSuggestions,
+            onSave: (summary) => onProfile({ ...profile, summary }),
+          })} />}
+        />
         <TextArea label="Resumo profissional" value={profile.summary} rows={5} onChange={(summary) => onProfile({ ...profile, summary })} />
       </section>
 
-      <section className="editor-section">
+      <section className="editor-section" id={editorSectionId('skills')}>
         <SectionHeading title="Competências" hint="Separe os itens por vírgula" />
         {Object.entries(profile.skills).map(([group, raw]) => {
           const values = Array.isArray(raw) ? raw.filter((item): item is string => typeof item === 'string') : [];
@@ -51,15 +97,16 @@ export function ProfileEditor({ profile, jobDescription, onProfile, onJobDescrip
                 value={values.join(', ')}
                 onChange={(event) => onProfile({
                   ...profile,
-                  skills: {
-                    ...profile.skills,
-                    [group]: splitList(event.target.value),
-                  },
+                  skills: { ...profile.skills, [group]: splitList(event.target.value) },
                 })}
               />
             </div>
           );
         })}
+      </section>
+
+      <section className="editor-section" id={editorSectionId('soft_skills')}>
+        <SectionHeading title="Pontos fortes" hint="Competências comportamentais sustentadas por exemplos" />
         <Field
           label="Competências comportamentais"
           value={profile.soft_skills.join(', ')}
@@ -67,20 +114,37 @@ export function ProfileEditor({ profile, jobDescription, onProfile, onJobDescrip
         />
       </section>
 
-      <section className="editor-section">
+      <section className="editor-section" id={editorSectionId('experience')}>
         <SectionHeading
           title="Experiência"
-          hint="Responsabilidades objetivas e resultados mensuráveis"
+          hint="Verbo + contexto + resultado comprovável"
           action={<IconButton label="Adicionar experiência" onClick={() => onProfile({ ...profile, experience: [...profile.experience, emptyExperience()] })} />}
         />
         {profile.experience.map((item, index) => (
           <div className="record-block" key={`${item.company}-${index}`}>
             <div className="record-index">{String(index + 1).padStart(2, '0')}</div>
+            <div className="record-focus-actions">
+              <FocusButton label="Editar contexto em foco" onClick={() => openFocus({
+                title: `${item.role || 'Experiência'} — contexto`,
+                hint: 'Explique escopo, produto, equipe e responsabilidade sem repetir os resultados.',
+                value: item.summary,
+                suggestions: keywordSuggestions,
+                onSave: (summary) => updateExperience(index, { summary }),
+              })} />
+              <FocusButton label="Editar resultados em foco" onClick={() => openFocus({
+                title: `${item.role || 'Experiência'} — resultados`,
+                hint: 'Uma evidência por linha. Quantifique somente métricas que você pode comprovar.',
+                value: item.bullets.join('\n'),
+                suggestions: keywordSuggestions,
+                onSave: (value) => updateExperience(index, { bullets: splitLines(value) }),
+              })} />
+            </div>
             <div className="form-grid two-columns">
               <Field label="Empresa" value={item.company} onChange={(company) => updateExperience(index, { company })} />
               <Field label="Cargo" value={item.role} onChange={(role) => updateExperience(index, { role })} />
               <Field label="Período" value={item.dates} onChange={(dates) => updateExperience(index, { dates })} />
-              <Field label="Local / regime" value={[item.location, item.work_mode].filter(Boolean).join(' | ')} onChange={(value) => updateExperience(index, { location: value, work_mode: '' })} />
+              <Field label="Local" value={item.location} onChange={(location) => updateExperience(index, { location })} />
+              <Field label="Regime" value={item.work_mode} onChange={(work_mode) => updateExperience(index, { work_mode })} />
             </div>
             <TextArea label="Contexto" value={item.summary} rows={3} onChange={(summary) => updateExperience(index, { summary })} />
             <TextArea label="Resultados (uma linha por item)" value={item.bullets.join('\n')} rows={5} onChange={(value) => updateExperience(index, { bullets: splitLines(value) })} />
@@ -94,23 +158,88 @@ export function ProfileEditor({ profile, jobDescription, onProfile, onJobDescrip
         ))}
       </section>
 
-      <section className="editor-section">
-        <SectionHeading title="Projetos e formação" hint="Um item por linha nos campos compostos" />
-        <TextArea
-          label="Projetos — Nome | Descrição | Tecnologias"
-          value={profile.projects.map((item) => `${item.name} | ${item.description} | ${item.technologies.join(', ')}`).join('\n')}
-          rows={4}
-          onChange={(value) => onProfile({ ...profile, projects: parseProjects(value) })}
+      <section className="editor-section" id={editorSectionId('projects')}>
+        <SectionHeading
+          title="Projetos"
+          hint="Nome, descrição, métricas e tecnologias"
+          action={<IconButton label="Adicionar projeto" onClick={() => onProfile({ ...profile, projects: [...profile.projects, emptyProject()] })} />}
         />
+        {profile.projects.map((item, index) => (
+          <div className="record-block" key={`${item.name}-${index}`}>
+            <div className="record-index">P{String(index + 1).padStart(2, '0')}</div>
+            <div className="record-focus-actions">
+              <FocusButton label="Editar métricas em foco" onClick={() => openFocus({
+                title: `${item.name || 'Projeto'} — resultados`,
+                hint: 'Destaque resultados verificáveis. Nunca invente números para completar o formato.',
+                value: item.metrics.join('\n'),
+                suggestions: keywordSuggestions,
+                onSave: (value) => updateProject(index, { metrics: splitLines(value) }),
+              })} />
+            </div>
+            <Field label="Nome do projeto" value={item.name} onChange={(name) => updateProject(index, { name })} />
+            <TextArea label="Descrição" value={item.description} rows={3} onChange={(description) => updateProject(index, { description })} />
+            <TextArea label="Métricas (uma linha por item)" value={item.metrics.join('\n')} rows={4} onChange={(value) => updateProject(index, { metrics: splitLines(value) })} />
+            <Field label="Tecnologias" value={item.technologies.join(', ')} onChange={(value) => updateProject(index, { technologies: splitList(value) })} />
+            <button className="remove-button" type="button" onClick={() => onProfile({ ...profile, projects: profile.projects.filter((_, itemIndex) => itemIndex !== index) })}>
+              <Trash2 size={14} /> Remover projeto
+            </button>
+          </div>
+        ))}
+        {!profile.projects.length ? <p className="empty-hint">Nenhum projeto adicionado. Use o botão + para criar um bloco.</p> : null}
+      </section>
+
+      <section className="editor-section" id={editorSectionId('education')}>
+        <SectionHeading title="Formação" hint="Curso, instituição e período" />
         <TextArea
-          label="Formação — Curso | Instituição | Período"
+          label="Curso | Instituição | Período"
           value={profile.education.map((item) => `${item.degree} | ${item.institution} | ${item.dates}`).join('\n')}
-          rows={3}
+          rows={4}
           onChange={(value) => onProfile({ ...profile, education: parseEducation(value) })}
         />
       </section>
 
-      <section className="editor-section job-section">
+      <section className="editor-section" id={editorSectionId('certifications')}>
+        <SectionHeading title="Certificações" hint="Certificação, emissor e data" />
+        <TextArea
+          label="Certificação | Emissor | Data"
+          value={profile.certifications.map((item) => `${item.name} | ${item.issuer} | ${item.date}`).join('\n')}
+          rows={4}
+          onChange={(value) => onProfile({ ...profile, certifications: parseCertifications(value) })}
+        />
+      </section>
+
+      <section className="editor-section" id={editorSectionId('languages')}>
+        <SectionHeading title="Idiomas" hint="Idioma e nível real" />
+        <TextArea
+          label="Idioma | Nível"
+          value={profile.languages.map((item) => `${item.language} | ${item.level}`).join('\n')}
+          rows={3}
+          onChange={(value) => onProfile({ ...profile, languages: parseLanguages(value) })}
+        />
+      </section>
+
+      {profile.custom_sections.map((section) => (
+        <section className="editor-section" id={editorSectionId(`custom:${section.id}`)} key={section.id}>
+          <SectionHeading
+            title={section.title}
+            hint="Uma entrada por linha"
+            action={<button className="remove-button" type="button" onClick={() => {
+              if (window.confirm(`Remover a seção “${section.title}”?`)) onProfile(removeCustomSection(profile, section.id));
+            }}><Trash2 size={13} /> Remover</button>}
+          />
+          <TextArea
+            label="Conteúdo"
+            value={section.items.join('\n')}
+            rows={5}
+            onChange={(value) => onProfile({
+              ...profile,
+              custom_sections: profile.custom_sections.map((item) => item.id === section.id ? { ...item, items: splitLines(value) } : item),
+            })}
+          />
+        </section>
+      ))}
+
+      <section className="editor-section job-section" id="editor-job">
         <SectionHeading title="Descrição da vaga" hint="Cole o anúncio completo; nada sai deste computador" />
         <TextArea
           label="Descrição completa da vaga"
@@ -120,42 +249,26 @@ export function ProfileEditor({ profile, jobDescription, onProfile, onJobDescrip
           onChange={onJobDescription}
         />
       </section>
+
+      <FocusedEditorModal config={focusedEditor} onClose={() => setFocusedEditor(null)} />
     </div>
   );
 }
 
 function Field({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
-  return (
-    <label className="field">
-      <span>{label}</span>
-      <input value={value} onChange={(event) => onChange(event.target.value)} />
-    </label>
-  );
+  return <label className="field"><span>{label}</span><input value={value} onChange={(event) => onChange(event.target.value)} /></label>;
 }
 
-function TextArea({
-  label,
-  value,
-  rows,
-  placeholder,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  rows: number;
-  placeholder?: string;
-  onChange: (value: string) => void;
-}) {
-  return (
-    <label className="field">
-      <span>{label}</span>
-      <textarea value={value} rows={rows} placeholder={placeholder} onChange={(event) => onChange(event.target.value)} />
-    </label>
-  );
+function TextArea({ label, value, rows, placeholder, onChange }: { label: string; value: string; rows: number; placeholder?: string; onChange: (value: string) => void }) {
+  return <label className="field"><span>{label}</span><textarea value={value} rows={rows} placeholder={placeholder} onChange={(event) => onChange(event.target.value)} /></label>;
 }
 
 function IconButton({ label, onClick }: { label: string; onClick: () => void }) {
   return <button className="icon-button" type="button" aria-label={label} title={label} onClick={onClick}><Plus size={17} /></button>;
+}
+
+function FocusButton({ label, onClick }: { label: string; onClick: () => void }) {
+  return <button className="focus-button" type="button" title={label} onClick={onClick}><Focus size={14} /><span>{label}</span></button>;
 }
 
 function splitList(value: string): string[] {
@@ -163,14 +276,7 @@ function splitList(value: string): string[] {
 }
 
 function splitLines(value: string): string[] {
-  return value.split('\n').map((item) => item.trim()).filter(Boolean);
-}
-
-function parseProjects(value: string): ResumeProfile['projects'] {
-  return splitLines(value).map((line) => {
-    const [name = '', description = '', technologies = ''] = line.split('|').map((item) => item.trim());
-    return { name, description, metrics: [], technologies: splitList(technologies) };
-  });
+  return value.split('\n').map((item) => item.trim().replace(/^[-•]\s*/, '')).filter(Boolean);
 }
 
 function parseEducation(value: string): ResumeProfile['education'] {
@@ -180,6 +286,24 @@ function parseEducation(value: string): ResumeProfile['education'] {
   });
 }
 
+function parseCertifications(value: string): Certification[] {
+  return splitLines(value).map((line) => {
+    const [name = '', issuer = '', date = ''] = line.split('|').map((item) => item.trim());
+    return { name, issuer, date };
+  });
+}
+
+function parseLanguages(value: string): Language[] {
+  return splitLines(value).map((line) => {
+    const [language = '', level = ''] = line.split('|').map((item) => item.trim());
+    return { language, level };
+  });
+}
+
 function emptyExperience(): Experience {
   return { company: 'Empresa', role: 'Cargo', dates: '', location: '', work_mode: '', summary: '', bullets: [], technologies: [] };
+}
+
+function emptyProject(): Project {
+  return { name: 'Novo projeto', description: '', metrics: [], technologies: [] };
 }

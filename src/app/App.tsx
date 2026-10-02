@@ -5,6 +5,7 @@ import { ActionDock } from '../components/ActionDock';
 import { AppHeader } from '../components/AppHeader';
 import { AtsPanel } from '../components/editor/AtsPanel';
 import { ProfileEditor } from '../components/editor/ProfileEditor';
+import { SectionNavigator } from '../components/editor/SectionNavigator';
 import { WorkspaceControls } from '../components/editor/WorkspaceControls';
 import { PreviewPane } from '../components/preview/PreviewPane';
 import { useResumeWorkspace } from '../hooks/useResumeWorkspace';
@@ -16,6 +17,7 @@ export function App() {
   const fileInput = useRef<HTMLInputElement>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [mobileView, setMobileView] = useState<'editor' | 'preview'>('editor');
+  const [pageCount, setPageCount] = useState<number | null>(null);
 
   const notify = useCallback((message: string) => {
     setNotice(message);
@@ -98,21 +100,30 @@ export function App() {
             onLocale={(locale) => void workspace.selectLocale(locale)}
             onTemplate={workspace.setTemplate}
           />
+          <div className="editor-workarea">
+            <SectionNavigator profile={workspace.profile} onProfile={workspace.setProfile} />
+            <div className="editor-content">
           <ProfileEditor
             profile={workspace.profile}
             jobDescription={workspace.jobDescription}
+            keywordSuggestions={workspace.report?.missing ?? []}
             onProfile={workspace.setProfile}
             onJobDescription={workspace.setJobDescription}
           />
           <AtsPanel
             report={workspace.report}
+            profile={workspace.profile}
+            template={workspace.template}
+            pageCount={pageCount}
             canTailor={workspace.jobDescription.trim().length >= 20}
             busy={workspace.busy}
             onTailor={() => void workspace.applyTailoring().then(() => notify('Evidências reordenadas conforme a vaga.')).catch((reason: unknown) => workspace.setError(messageOf(reason)))}
           />
+            </div>
+          </div>
         </aside>
         <div className="preview-column">
-          <PreviewPane profile={workspace.profile} template={workspace.template} onProfile={workspace.setProfile} />
+          <PreviewPane profile={workspace.profile} template={workspace.template} onTemplate={workspace.setTemplate} onProfile={workspace.setProfile} onPageCount={setPageCount} />
           <ActionDock
             busy={workspace.busy}
             onPdf={() => void exportFile('pdf')}
@@ -122,7 +133,7 @@ export function App() {
         </div>
       </div>
       <footer className="status-bar">
-        <span>Reoli Resume Forge <small>v1.0.0</small></span>
+        <span>Reoli Resume Forge <small>v2.0.0</small></span>
         <span>Trabalho melhor. Futuro maior.</span>
         <span className="ready-state">{workspace.busy ? <><LoaderCircle className="spin" size={14} /> Processando</> : <><i /> Pronto</>}</span>
       </footer>
