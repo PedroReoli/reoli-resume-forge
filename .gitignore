@@ -20,6 +20,7 @@ src-tauri/target/
 !.env.example
 .impeccable/review/
 .impeccable/config.local.json
+.playwright-cli/
 
 # Saídas geradas pelo produto
 output/
