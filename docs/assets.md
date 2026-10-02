@@ -13,6 +13,8 @@ A interface usa `lucide-react`, distribuído sob licença ISC. Os ícones são i
 - **Inter Variable**: interface principal, licenciada sob SIL Open Font License 1.1 e empacotada por `@fontsource-variable/inter`.
 - **JetBrains Mono Variable**: labels, metadados e atalhos, licenciada sob SIL Open Font License 1.1 e empacotada por `@fontsource-variable/jetbrains-mono`.
 
+No documento, a opção sans moderna usa Inter no preview, a serif editorial usa Georgia/Times e a mono técnica usa JetBrains Mono. O PDF mapeia essas escolhas para Helvetica, Times e Courier nativos; o DOCX usa Arial, Georgia e Consolas. Esses fallbacks mantêm texto selecionável e evitam depender de arquivos de fonte externos no executável.
+
 Somente os arquivos referenciados pelo CSS entram no build. Não há carregamento de fontes, imagens ou trackers por rede em runtime.
 
 ## Artefatos de design

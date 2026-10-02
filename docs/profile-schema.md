@@ -17,7 +17,9 @@ Coleções aceitas: `target_keywords`, `skills`, `soft_skills`, `experience`, `p
 
 Perfis antigos sem `config.palette` continuam válidos e recebem `template`, sem alteração visual. A CLI não possui uma flag separada de paleta: ela respeita a paleta armazenada no perfil ou arquétipo selecionado.
 
-As aparências prontas da GUI não adicionam um campo opaco ao schema. Ao selecionar Reoli Clássico, Tech Focus, Product Clean, Leadership Bold, Editorial ou Visual Split, a aplicação atualiza em conjunto `config.template`, `config.palette`, `layout.density`, `layout.skills_style`, `layout.experience_style`, `layout.projects_style` e `layout.emphasize_metrics`. Conteúdo, ordem e visibilidade permanecem intactos. O JSON resultante continua legível e pode ser ajustado ou exportado pela CLI sem depender da GUI.
+`config.typeface` controla a família tipográfica de forma independente do template. Valores aceitos: `template`, `modern-sans`, `editorial-serif` e `technical-mono`. O preview usa, respectivamente, a fonte nativa do layout, Inter, Georgia e JetBrains Mono; PDF e DOCX resolvem equivalentes seguros disponíveis nos respectivos formatos. Valores desconhecidos voltam para `template`, e perfis antigos continuam visualmente inalterados.
+
+As aparências prontas da GUI não adicionam um campo opaco ao schema. Ao selecionar Reoli Clássico, Tech Focus, Product Clean, Leadership Bold, Editorial ou Visual Split, a aplicação atualiza em conjunto `config.template`, `config.palette`, `config.typeface`, `layout.density`, `layout.skills_style`, `layout.experience_style`, `layout.projects_style` e `layout.emphasize_metrics`. Conteúdo, ordem e visibilidade permanecem intactos. O JSON resultante continua legível e pode ser ajustado ou exportado pela CLI sem depender da GUI.
 
 Na CLI, uma flag `--template` explícita substitui o valor salvo no perfil somente naquela exportação; sem a flag, o compilador usa `config.template` e depois o fallback `classic`. Essa troca de layout não remove a paleta persistida.
 

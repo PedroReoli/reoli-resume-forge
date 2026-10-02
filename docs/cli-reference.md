@@ -7,6 +7,7 @@
 - `--format` aceita uma lista separada por vírgulas: `pdf,docx,json,md`.
 - `--template` aceita os oito IDs da tabela abaixo. Quando omitido, a CLI usa `config.template` do perfil e, para perfis antigos sem esse campo, `classic`.
 - A CLI respeita `config.palette` do perfil em PDF e DOCX. A paleta é parte da variante, não uma flag efêmera; perfis antigos usam as cores nativas do template.
+- A CLI também respeita `config.typeface`: `modern-sans`, `editorial-serif` e `technical-mono` são convertidas para famílias seguras em PDF e DOCX; `template` mantém a tipografia nativa do layout.
 - Aparências prontas escolhidas na GUI são salvas como campos normais de template, paleta e layout; ao receber essa variante JSON, a CLI reproduz a composição sem exigir uma flag de aparência.
 - `--out` aponta para um diretório. Ele é criado quando necessário.
 - Entradas locais são limitadas a 1 MiB.
