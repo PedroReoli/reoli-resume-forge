@@ -1,7 +1,8 @@
-import { FileJson, Plus, Redo2, ShieldCheck, Undo2 } from 'lucide-react';
+import { FileJson, Plus, Redo2, Save, ShieldCheck, Undo2 } from 'lucide-react';
 
 interface AppHeaderProps {
   onImport: () => void;
+  onSave: () => void;
   onNew: () => void;
   canUndo: boolean;
   canRedo: boolean;
@@ -9,7 +10,7 @@ interface AppHeaderProps {
   onRedo: () => void;
 }
 
-export function AppHeader({ onImport, onNew, canUndo, canRedo, onUndo, onRedo }: AppHeaderProps) {
+export function AppHeader({ onImport, onSave, onNew, canUndo, canRedo, onUndo, onRedo }: AppHeaderProps) {
   return (
     <header className="app-header">
       <div className="brand-lockup">
@@ -25,6 +26,9 @@ export function AppHeader({ onImport, onNew, canUndo, canRedo, onUndo, onRedo }:
           <button type="button" aria-label="Desfazer alteração" title="Desfazer (Ctrl+Z)" disabled={!canUndo} onClick={onUndo}><Undo2 size={15} /></button>
           <button type="button" aria-label="Refazer alteração" title="Refazer (Ctrl+Y)" disabled={!canRedo} onClick={onRedo}><Redo2 size={15} /></button>
         </div>
+        <button className="quiet-button save-profile-button" type="button" title="Salvar perfil JSON (Ctrl+S)" onClick={onSave}>
+          <Save size={16} /> Salvar perfil
+        </button>
         <button className="quiet-button" type="button" onClick={onImport}>
           <FileJson size={16} /> Importar JSON
         </button>

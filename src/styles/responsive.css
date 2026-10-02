@@ -9,6 +9,15 @@
   .template-quick-switcher { grid-template-columns: 28px minmax(105px, 145px) 28px; }
 }
 
+@media (min-width: 1041px) and (max-width: 1180px) {
+  .save-profile-button {
+    width: 36px;
+    padding: 0;
+    justify-content: center;
+    font-size: 0;
+  }
+}
+
 @media (min-width: 1041px) and (max-width: 1320px) {
   .editor-workarea { grid-template-columns: 64px minmax(0, 1fr); }
   .navigator-heading { justify-content: center; padding: 0; }

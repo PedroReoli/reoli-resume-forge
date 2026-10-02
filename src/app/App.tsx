@@ -27,7 +27,7 @@ export function App() {
   const exportFile = useCallback(async (format: ExportFormat) => {
     try {
       const path = await exportResume(workspace.profile, format, workspace.template);
-      if (path) notify(`${format.toUpperCase()} exportado com sucesso.`);
+      if (path) notify(exportSuccessMessage(format));
     } catch (reason) {
       workspace.setError(messageOf(reason));
     }
@@ -53,11 +53,12 @@ export function App() {
         else workspace.undoProfile();
         return;
       }
-      if (event.shiftKey || !['p', 'd', 'm'].includes(key)) return;
+      if (event.shiftKey || !['p', 'd', 'm', 's'].includes(key)) return;
       event.preventDefault();
       if (key === 'p') void exportFile('pdf');
       if (key === 'd') void exportFile('docx');
       if (key === 'm') void copyMarkdown();
+      if (key === 's') void exportFile('json');
     };
     window.addEventListener('keydown', shortcuts);
     return () => window.removeEventListener('keydown', shortcuts);
@@ -84,6 +85,7 @@ export function App() {
         canRedo={workspace.canRedo}
         onUndo={workspace.undoProfile}
         onRedo={workspace.redoProfile}
+        onSave={() => void exportFile('json')}
         onImport={() => fileInput.current?.click()}
         onNew={workspace.newProfile}
       />
@@ -177,4 +179,10 @@ function messageOf(reason: unknown): string {
 function isEditableTarget(target: EventTarget | null): boolean {
   return target instanceof HTMLElement
     && (target.matches('input, textarea, select') || target.isContentEditable);
+}
+
+function exportSuccessMessage(format: ExportFormat): string {
+  if (format === 'json') return 'Perfil salvo como JSON.';
+  if (format === 'markdown') return 'Markdown exportado com sucesso.';
+  return `${format.toUpperCase()} exportado com sucesso.`;
 }
