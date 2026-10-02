@@ -7,6 +7,19 @@ import type {
   ResumeTemplate,
 } from '../types/resume';
 
+export const DEFAULT_RESUME_TEMPLATE: ResumeTemplate = 'classic';
+
+export const RESUME_TEMPLATE_IDS: readonly ResumeTemplate[] = [
+  'classic',
+  'clean',
+  'compact',
+  'executive',
+  'tech-minimalist',
+  'modern-split',
+  'executive-bold',
+  'academic',
+];
+
 export const DEFAULT_SECTION_ORDER = [
   'summary',
   'skills',
@@ -67,6 +80,7 @@ export function normalizeResumeProfile(raw: ResumeProfile): ResumeProfile {
     config: {
       ...raw.config,
       locale: normalizeLocale(raw.config?.locale),
+      template: normalizeResumeTemplate(raw.config?.template),
       section_names: raw.config?.section_names ?? {},
       tech_label: raw.config?.tech_label ?? 'Tecnologias',
     },
@@ -79,6 +93,32 @@ export function normalizeResumeProfile(raw: ResumeProfile): ResumeProfile {
     languages: raw.languages ?? [],
     certifications: raw.certifications ?? [],
     custom_sections: customSections,
+  };
+}
+
+export function isResumeTemplate(value: unknown): value is ResumeTemplate {
+  return typeof value === 'string' && RESUME_TEMPLATE_IDS.includes(value as ResumeTemplate);
+}
+
+export function normalizeResumeTemplate(value: unknown): ResumeTemplate {
+  return isResumeTemplate(value) ? value : DEFAULT_RESUME_TEMPLATE;
+}
+
+export function profileTemplate(profile: ResumeProfile): ResumeTemplate {
+  return normalizeResumeTemplate(profile.config?.template);
+}
+
+export function applyResumeTemplate(
+  profile: ResumeProfile,
+  template: ResumeTemplate,
+): ResumeProfile {
+  if (profileTemplate(profile) === template && profile.config.template === template) return profile;
+  return {
+    ...profile,
+    config: {
+      ...profile.config,
+      template,
+    },
   };
 }
 

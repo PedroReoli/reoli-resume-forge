@@ -1,9 +1,20 @@
 export type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
 
+export type ResumeTemplate =
+  | 'classic'
+  | 'clean'
+  | 'compact'
+  | 'executive'
+  | 'tech-minimalist'
+  | 'modern-split'
+  | 'executive-bold'
+  | 'academic';
+
 export interface ResumeConfig {
   tech_label: string;
   section_names: Record<string, string>;
   locale?: ResumeLocale;
+  template?: ResumeTemplate;
   [key: string]: JsonValue | Record<string, string> | undefined;
 }
 
@@ -140,13 +151,4 @@ export interface TailorResult {
   }>;
 }
 
-export type ResumeTemplate =
-  | 'classic'
-  | 'clean'
-  | 'compact'
-  | 'executive'
-  | 'tech-minimalist'
-  | 'modern-split'
-  | 'executive-bold'
-  | 'academic';
 export type ExportFormat = 'pdf' | 'docx' | 'json' | 'markdown';

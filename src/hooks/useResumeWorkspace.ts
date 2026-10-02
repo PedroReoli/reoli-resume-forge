@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createBlankProfile } from '../data/blankProfile';
-import { localizeProfile, normalizeResumeProfile } from '../domain/resumeLayout';
+import {
+  applyResumeTemplate,
+  localizeProfile,
+  normalizeResumeProfile,
+  profileTemplate,
+} from '../domain/resumeLayout';
 import {
   analyzeMatch,
   fallbackArchetypes,
@@ -35,7 +40,6 @@ export function useResumeWorkspace() {
   } = useProfileHistory(initialProfile);
   const [jobDescription, setJobDescription] = useState('');
   const [report, setReport] = useState<MatchReport | null>(null);
-  const [template, setTemplate] = useState<ResumeTemplate>('classic');
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,6 +47,11 @@ export function useResumeWorkspace() {
     () => archetypes.find((item) => item.id === archetypeId),
     [archetypeId, archetypes],
   );
+  const template = profileTemplate(profile);
+
+  const setTemplate = useCallback((nextTemplate: ResumeTemplate) => {
+    setProfile((current) => applyResumeTemplate(current, nextTemplate));
+  }, [setProfile]);
 
   useEffect(() => {
     let active = true;

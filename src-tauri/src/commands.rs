@@ -44,7 +44,7 @@ pub fn render_pdf_preview(
     profile: ResumeProfile,
     template: Option<String>,
 ) -> Result<String, String> {
-    let template = parse_template(template.as_deref())?;
+    let template = parse_template(template.as_deref(), &profile)?;
     let bytes = export::render_with_template(&profile, ExportFormat::Pdf, template)?;
     Ok(base64::engine::general_purpose::STANDARD.encode(bytes))
 }
@@ -57,15 +57,16 @@ pub fn export_resume(
     path: String,
 ) -> Result<String, String> {
     let format = ExportFormat::parse(&format)?;
-    let template = parse_template(template.as_deref())?;
+    let template = parse_template(template.as_deref(), &profile)?;
     export::write_with_template(&profile, format, Path::new(&path), template)?;
     Ok(path)
 }
 
-fn parse_template(value: Option<&str>) -> Result<ResumeTemplate, String> {
-    value
-        .map(ResumeTemplate::parse)
-        .unwrap_or(Ok(ResumeTemplate::Classic))
+fn parse_template(value: Option<&str>, profile: &ResumeProfile) -> Result<ResumeTemplate, String> {
+    match value {
+        Some(value) => ResumeTemplate::parse(value),
+        None => Ok(ResumeTemplate::from_profile(profile)?.unwrap_or_default()),
+    }
 }
 
 #[tauri::command]

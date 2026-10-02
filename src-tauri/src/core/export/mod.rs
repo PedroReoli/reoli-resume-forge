@@ -12,7 +12,7 @@ use std::path::Path;
 pub use markdown::to_markdown;
 
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Serialize)]
-#[serde(rename_all = "lowercase")]
+#[serde(rename_all = "kebab-case")]
 pub enum ResumeTemplate {
     #[default]
     Classic,
@@ -40,6 +40,14 @@ impl ResumeTemplate {
                 "template desconhecido: {other}. Use classic, clean, compact, executive, tech-minimalist, modern-split, executive-bold ou academic"
             )),
         }
+    }
+
+    pub fn from_profile(profile: &ResumeProfile) -> Result<Option<Self>, String> {
+        let Some(value) = profile.config.extra.get("template") else {
+            return Ok(None);
+        };
+        let template = value.as_str().ok_or("config.template deve ser um texto")?;
+        Self::parse(template).map(Some)
     }
 }
 
@@ -201,6 +209,20 @@ mod tests {
                     .is_empty()
             );
         }
+    }
+
+    #[test]
+    fn reads_the_template_stored_in_a_profile() {
+        let mut profile = load_archetype("01_frontend").unwrap();
+        profile
+            .config
+            .extra
+            .insert("template".into(), serde_json::json!("modern-split"));
+
+        assert_eq!(
+            ResumeTemplate::from_profile(&profile).unwrap(),
+            Some(ResumeTemplate::ModernSplit)
+        );
     }
 
     #[test]

@@ -60,7 +60,7 @@ fn generate(options: &HashMap<String, String>) -> Result<(), String> {
     let model = required(options, "model")?;
     let profile = load_archetype(model)?;
     let formats = formats(options)?;
-    let template = template(options)?;
+    let template = resolve_template(options, &profile)?;
     let output = output_directory(options)?;
     let files = write_all(&profile, &formats, &output, None, template)?;
     print_success("generate", files);
@@ -78,7 +78,7 @@ fn tailor_one(options: &HashMap<String, String>) -> Result<(), String> {
         parse_bool(options.get("confirmed-us-overlap"))?,
     )?;
     let formats = formats(options)?;
-    let template = template(options)?;
+    let template = resolve_template(options, &result.profile)?;
     let output = output_directory(options)?;
     let files = write_all(&result.profile, &formats, &output, None, template)?;
     println!(
@@ -109,7 +109,7 @@ fn batch(options: &HashMap<String, String>) -> Result<(), String> {
         .cloned()
         .unwrap_or_else(|| "01_frontend".into());
     let formats = formats(options)?;
-    let default_template = template(options)?;
+    let default_template = template_option(options)?;
     let output = output_directory(options)?;
     let mut results = Vec::with_capacity(jobs.len());
 
@@ -134,7 +134,10 @@ fn batch(options: &HashMap<String, String>) -> Result<(), String> {
         )?;
         let suffix = safe_suffix(&format!("{} {}", job.company, job.job_title));
         let job_template = if job.template.trim().is_empty() {
-            default_template
+            match default_template {
+                Some(template) => template,
+                None => ResumeTemplate::from_profile(&tailored.profile)?.unwrap_or_default(),
+            }
         } else {
             ResumeTemplate::parse(&job.template)?
         };
@@ -231,11 +234,21 @@ fn formats(options: &HashMap<String, String>) -> Result<Vec<ExportFormat>, Strin
     Ok(result)
 }
 
-fn template(options: &HashMap<String, String>) -> Result<ResumeTemplate, String> {
+fn template_option(options: &HashMap<String, String>) -> Result<Option<ResumeTemplate>, String> {
     options
         .get("template")
         .map(|value| ResumeTemplate::parse(value))
-        .unwrap_or(Ok(ResumeTemplate::Classic))
+        .transpose()
+}
+
+fn resolve_template(
+    options: &HashMap<String, String>,
+    profile: &ResumeProfile,
+) -> Result<ResumeTemplate, String> {
+    if let Some(template) = template_option(options)? {
+        return Ok(template);
+    }
+    Ok(ResumeTemplate::from_profile(profile)?.unwrap_or_default())
 }
 
 fn output_directory(options: &HashMap<String, String>) -> Result<PathBuf, String> {
@@ -396,7 +409,42 @@ mod tests {
             "academic",
         ] {
             let options = HashMap::from([("template".into(), name.into())]);
-            assert!(template(&options).is_ok());
+            assert!(template_option(&options).is_ok());
         }
+    }
+
+    #[test]
+    fn resolves_template_from_profile_with_classic_fallback() {
+        let options = HashMap::new();
+        let mut profile = load_archetype("01_frontend").unwrap();
+
+        assert_eq!(
+            resolve_template(&options, &profile).unwrap(),
+            ResumeTemplate::Classic
+        );
+
+        profile
+            .config
+            .extra
+            .insert("template".into(), json!("modern-split"));
+        assert_eq!(
+            resolve_template(&options, &profile).unwrap(),
+            ResumeTemplate::ModernSplit
+        );
+    }
+
+    #[test]
+    fn explicit_template_overrides_the_profile_variant() {
+        let options = HashMap::from([("template".into(), "compact".into())]);
+        let mut profile = load_archetype("01_frontend").unwrap();
+        profile
+            .config
+            .extra
+            .insert("template".into(), json!("modern-split"));
+
+        assert_eq!(
+            resolve_template(&options, &profile).unwrap(),
+            ResumeTemplate::Compact
+        );
     }
 }
