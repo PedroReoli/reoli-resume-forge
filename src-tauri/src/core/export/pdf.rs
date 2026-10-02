@@ -393,7 +393,7 @@ impl PdfWriter {
             link: LinkAnnotation::new(
                 Rect::from_xywh(
                     Pt::from(Mm(self.theme.margin_x)),
-                    Pt::from(Mm(link_y - line_height + 0.5)),
+                    Pt::from(Mm(link_y - 1.0)),
                     Pt::from(Mm(PAGE_WIDTH - (self.theme.margin_x * 2.0))),
                     Pt::from(Mm(line_height)),
                 ),
