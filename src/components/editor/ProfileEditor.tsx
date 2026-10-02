@@ -1,11 +1,15 @@
-import { Focus, Plus, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { removeCustomSection } from '../../domain/resumeLayout';
 import type { Certification, Education, Experience, Language, Project, ResumeProfile } from '../../types/resume';
 import { SectionHeading } from '../common/SectionHeading';
+import { AddButton as IconButton, EditorField as Field, EditorTextArea as TextArea, FocusButton } from './EditorFields';
+import { ExperienceEditorCard } from './ExperienceEditorCard';
 import { FocusedEditorModal, type FocusedEditorConfig } from './FocusedEditorModal';
 import { LayoutControls } from './LayoutControls';
+import { ProjectEditorCard } from './ProjectEditorCard';
 import { editorSectionId } from './SectionNavigator';
+import { splitLines, splitList } from './editorText';
 
 interface ProfileEditorProps {
   profile: ResumeProfile;
@@ -23,6 +27,17 @@ export function ProfileEditor({
   onJobDescription,
 }: ProfileEditorProps) {
   const [focusedEditor, setFocusedEditor] = useState<FocusedEditorConfig | null>(null);
+  const [expandedExperience, setExpandedExperience] = useState<number | null>(0);
+  const [expandedProject, setExpandedProject] = useState<number | null>(profile.projects.length ? 0 : null);
+
+  useEffect(() => {
+    setExpandedExperience((current) => current !== null && current >= profile.experience.length
+      ? (profile.experience.length ? 0 : null)
+      : current);
+    setExpandedProject((current) => current !== null && current >= profile.projects.length
+      ? (profile.projects.length ? 0 : null)
+      : current);
+  }, [profile.experience.length, profile.projects.length]);
 
   const updatePerson = (key: keyof ResumeProfile['person'], value: string) => {
     onProfile({ ...profile, person: { ...profile.person, [key]: value } });
@@ -58,6 +73,35 @@ export function ProfileEditor({
     });
   };
   const openFocus = (config: FocusedEditorConfig) => setFocusedEditor(config);
+  const addExperience = () => {
+    const nextIndex = profile.experience.length;
+    setExpandedExperience(nextIndex);
+    onProfile({ ...profile, experience: [...profile.experience, emptyExperience()] });
+  };
+  const removeExperience = (index: number) => {
+    setExpandedExperience((current) => {
+      if (current === null) return null;
+      if (current > index) return current - 1;
+      if (current === index) return Math.max(0, Math.min(index, profile.experience.length - 2));
+      return current;
+    });
+    onProfile({ ...profile, experience: profile.experience.filter((_, itemIndex) => itemIndex !== index) });
+  };
+  const addProject = () => {
+    const nextIndex = profile.projects.length;
+    setExpandedProject(nextIndex);
+    onProfile({ ...profile, projects: [...profile.projects, emptyProject()] });
+  };
+  const removeProject = (index: number) => {
+    setExpandedProject((current) => {
+      if (profile.projects.length <= 1) return null;
+      if (current === null) return null;
+      if (current > index) return current - 1;
+      if (current === index) return Math.min(index, profile.projects.length - 2);
+      return current;
+    });
+    onProfile({ ...profile, projects: profile.projects.filter((_, itemIndex) => itemIndex !== index) });
+  };
 
   return (
     <div className="profile-editor">
@@ -136,43 +180,21 @@ export function ProfileEditor({
         <SectionHeading
           title="Experiência"
           hint="Verbo + contexto + resultado comprovável"
-          action={<IconButton label="Adicionar experiência" onClick={() => onProfile({ ...profile, experience: [...profile.experience, emptyExperience()] })} />}
+          action={<IconButton label="Adicionar experiência" onClick={addExperience} />}
         />
         {profile.experience.map((item, index) => (
-          <div className="record-block" key={`${item.company}-${index}`}>
-            <div className="record-index">{String(index + 1).padStart(2, '0')}</div>
-            <div className="record-focus-actions">
-              <FocusButton label="Editar contexto em foco" onClick={() => openFocus({
-                title: `${item.role || 'Experiência'} — contexto`,
-                hint: 'Explique escopo, produto, equipe e responsabilidade sem repetir os resultados.',
-                value: item.summary,
-                suggestions: keywordSuggestions,
-                onSave: (summary) => updateExperience(index, { summary }),
-              })} />
-              <FocusButton label="Editar resultados em foco" onClick={() => openFocus({
-                title: `${item.role || 'Experiência'} — resultados`,
-                hint: 'Uma evidência por linha. Quantifique somente métricas que você pode comprovar.',
-                value: item.bullets.join('\n'),
-                suggestions: keywordSuggestions,
-                onSave: (value) => updateExperience(index, { bullets: splitLines(value) }),
-              })} />
-            </div>
-            <div className="form-grid two-columns">
-              <Field label="Empresa" value={item.company} onChange={(company) => updateExperience(index, { company })} />
-              <Field label="Cargo" value={item.role} onChange={(role) => updateExperience(index, { role })} />
-              <Field label="Período" value={item.dates} onChange={(dates) => updateExperience(index, { dates })} />
-              <Field label="Local" value={item.location} onChange={(location) => updateExperience(index, { location })} />
-              <Field label="Regime" value={item.work_mode} onChange={(work_mode) => updateExperience(index, { work_mode })} />
-            </div>
-            <TextArea label="Contexto" value={item.summary} rows={3} onChange={(summary) => updateExperience(index, { summary })} />
-            <TextArea label="Resultados (uma linha por item)" value={item.bullets.join('\n')} rows={5} onChange={(value) => updateExperience(index, { bullets: splitLines(value) })} />
-            <Field label="Tecnologias" value={item.technologies.join(', ')} onChange={(value) => updateExperience(index, { technologies: splitList(value) })} />
-            {profile.experience.length > 1 ? (
-              <button className="remove-button" type="button" onClick={() => onProfile({ ...profile, experience: profile.experience.filter((_, itemIndex) => itemIndex !== index) })}>
-                <Trash2 size={14} /> Remover experiência
-              </button>
-            ) : null}
-          </div>
+          <ExperienceEditorCard
+            key={index}
+            item={item}
+            index={index}
+            total={profile.experience.length}
+            expanded={expandedExperience === index}
+            keywordSuggestions={keywordSuggestions}
+            onToggle={() => setExpandedExperience((current) => current === index ? null : index)}
+            onUpdate={(patch) => updateExperience(index, patch)}
+            onRemove={() => removeExperience(index)}
+            onOpenFocus={openFocus}
+          />
         ))}
       </section>
 
@@ -180,28 +202,20 @@ export function ProfileEditor({
         <SectionHeading
           title="Projetos"
           hint="Nome, descrição, métricas e tecnologias"
-          action={<IconButton label="Adicionar projeto" onClick={() => onProfile({ ...profile, projects: [...profile.projects, emptyProject()] })} />}
+          action={<IconButton label="Adicionar projeto" onClick={addProject} />}
         />
         {profile.projects.map((item, index) => (
-          <div className="record-block" key={`${item.name}-${index}`}>
-            <div className="record-index">P{String(index + 1).padStart(2, '0')}</div>
-            <div className="record-focus-actions">
-              <FocusButton label="Editar métricas em foco" onClick={() => openFocus({
-                title: `${item.name || 'Projeto'} — resultados`,
-                hint: 'Destaque resultados verificáveis. Nunca invente números para completar o formato.',
-                value: item.metrics.join('\n'),
-                suggestions: keywordSuggestions,
-                onSave: (value) => updateProject(index, { metrics: splitLines(value) }),
-              })} />
-            </div>
-            <Field label="Nome do projeto" value={item.name} onChange={(name) => updateProject(index, { name })} />
-            <TextArea label="Descrição" value={item.description} rows={3} onChange={(description) => updateProject(index, { description })} />
-            <TextArea label="Métricas (uma linha por item)" value={item.metrics.join('\n')} rows={4} onChange={(value) => updateProject(index, { metrics: splitLines(value) })} />
-            <Field label="Tecnologias" value={item.technologies.join(', ')} onChange={(value) => updateProject(index, { technologies: splitList(value) })} />
-            <button className="remove-button" type="button" onClick={() => onProfile({ ...profile, projects: profile.projects.filter((_, itemIndex) => itemIndex !== index) })}>
-              <Trash2 size={14} /> Remover projeto
-            </button>
-          </div>
+          <ProjectEditorCard
+            key={index}
+            item={item}
+            index={index}
+            expanded={expandedProject === index}
+            keywordSuggestions={keywordSuggestions}
+            onToggle={() => setExpandedProject((current) => current === index ? null : index)}
+            onUpdate={(patch) => updateProject(index, patch)}
+            onRemove={() => removeProject(index)}
+            onOpenFocus={openFocus}
+          />
         ))}
         {!profile.projects.length ? <p className="empty-hint">Nenhum projeto adicionado. Use o botão + para criar um bloco.</p> : null}
       </section>
@@ -308,36 +322,12 @@ export function ProfileEditor({
   );
 }
 
-function Field({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
-  return <label className="field"><span>{label}</span><input value={value} onChange={(event) => onChange(event.target.value)} /></label>;
-}
-
-function TextArea({ label, value, rows, placeholder, onChange }: { label: string; value: string; rows: number; placeholder?: string; onChange: (value: string) => void }) {
-  return <label className="field"><span>{label}</span><textarea value={value} rows={rows} placeholder={placeholder} onChange={(event) => onChange(event.target.value)} /></label>;
-}
-
-function IconButton({ label, onClick }: { label: string; onClick: () => void }) {
-  return <button className="icon-button" type="button" aria-label={label} title={label} onClick={onClick}><Plus size={17} /></button>;
-}
-
-function FocusButton({ label, onClick }: { label: string; onClick: () => void }) {
-  return <button className="focus-button" type="button" title={label} onClick={onClick}><Focus size={14} /><span>{label}</span></button>;
-}
-
-function splitList(value: string): string[] {
-  return value.split(',').map((item) => item.trim()).filter(Boolean);
-}
-
-function splitLines(value: string): string[] {
-  return value.split('\n').map((item) => item.trim().replace(/^[-•]\s*/, '')).filter(Boolean);
-}
-
 function emptyExperience(): Experience {
-  return { company: 'Empresa', role: 'Cargo', dates: '', location: '', work_mode: '', summary: '', bullets: [], technologies: [] };
+  return { company: '', role: '', dates: '', location: '', work_mode: '', summary: '', bullets: [], technologies: [] };
 }
 
 function emptyProject(): Project {
-  return { name: 'Novo projeto', description: '', metrics: [], technologies: [] };
+  return { name: '', description: '', metrics: [], technologies: [] };
 }
 
 function emptyEducation(): Education {
