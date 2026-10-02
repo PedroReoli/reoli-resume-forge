@@ -65,6 +65,7 @@
   .workspace-controls { top: 111px; grid-template-columns: 1fr 1fr 1fr; padding: 12px 14px; }
   .workspace-controls label:last-child { grid-column: auto; }
   .profile-editor { padding: 0 14px; }
+  .editor-section { scroll-margin-top: 198px; }
   .ats-panel { padding: 20px 14px 28px; }
   .preview-column { height: calc(100vh - 143px); min-height: 620px; border-top: 1px solid var(--line-strong); }
   .paper-stage { padding: 16px 16px 120px; }
@@ -78,6 +79,7 @@
   .brand-lockup strong { font-size: 13px; }
   .brand-lockup > div { align-items: flex-start; }
   .workspace-controls { position: static; grid-template-columns: 1fr; }
+  .editor-section { scroll-margin-top: 112px; }
   .workspace-controls label:last-child { grid-column: auto; }
   .two-columns { grid-template-columns: 1fr; }
   .record-meta-grid { grid-template-columns: 1fr; }
