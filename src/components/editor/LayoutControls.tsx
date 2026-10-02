@@ -1,11 +1,19 @@
 import { Gauge, LayoutGrid, Palette, Rows3, Sparkles } from 'lucide-react';
 import type { CSSProperties } from 'react';
-import { applyResumePalette, profilePalette, RESUME_PALETTES } from '../../domain/resumeLayout';
+import {
+  applyResumePalette,
+  applyResumeStylePreset,
+  profilePalette,
+  profileStylePreset,
+  RESUME_PALETTES,
+  RESUME_STYLE_PRESETS,
+} from '../../domain/resumeLayout';
 import type {
   NarrativeLayout,
   ResumeDensity,
   ResumePalette,
   ResumeProfile,
+  ResumeStylePresetId,
   SkillsLayout,
 } from '../../types/resume';
 
@@ -35,6 +43,7 @@ const DENSITY_OPTIONS: Array<{ id: ResumeDensity; label: string }> = [
 
 export function LayoutControls({ profile, onProfile }: LayoutControlsProps) {
   const palette = profilePalette(profile);
+  const stylePreset = profileStylePreset(profile);
   const patchLayout = (patch: Partial<ResumeProfile['layout']>) => {
     onProfile({ ...profile, layout: { ...profile.layout, ...patch } });
   };
@@ -43,9 +52,15 @@ export function LayoutControls({ profile, onProfile }: LayoutControlsProps) {
     <details className="layout-controls">
       <summary>
         <span><LayoutGrid size={15} /> Formatação do documento</span>
-        <small>{densityLabel(profile.layout.density)} · {paletteLabel(palette)}</small>
+        <small>{stylePreset ? stylePresetLabel(stylePreset) : `${densityLabel(profile.layout.density)} · ${paletteLabel(palette)}`}</small>
       </summary>
       <div className="layout-control-grid">
+        <ControlGroup label="Aparências prontas" icon={Sparkles}>
+          <StylePresetControl
+            value={stylePreset}
+            onChange={(value) => onProfile(applyResumeStylePreset(profile, value))}
+          />
+        </ControlGroup>
         <ControlGroup label="Paleta" icon={Palette}>
           <PaletteControl value={palette} onChange={(value) => onProfile(applyResumePalette(profile, value))} />
         </ControlGroup>
@@ -111,6 +126,47 @@ export function LayoutControls({ profile, onProfile }: LayoutControlsProps) {
         </div>
       ) : null}
     </details>
+  );
+}
+
+function StylePresetControl({
+  value,
+  onChange,
+}: {
+  value: ResumeStylePresetId | null;
+  onChange: (value: ResumeStylePresetId) => void;
+}) {
+  return (
+    <div className="style-preset-control">
+      {RESUME_STYLE_PRESETS.map((option) => {
+        const palette = RESUME_PALETTES.find((item) => item.id === option.palette)!;
+        return (
+          <button
+            key={option.id}
+            type="button"
+            aria-label={`${option.label}: ${option.description} Indicado para ${option.bestFor}.`}
+            aria-pressed={value === option.id}
+            title={`${option.description} ${option.bestFor}.`}
+            onClick={() => onChange(option.id)}
+          >
+            <span
+              className={`style-preset-preview ${option.template === 'modern-split' ? 'is-split' : ''}`}
+              aria-hidden="true"
+              style={{
+                '--preset-primary': palette.colors?.primary ?? palette.swatches[1],
+                '--preset-dark': palette.colors?.dark ?? palette.swatches[0],
+                '--preset-soft': palette.colors?.soft ?? '#eef1ef',
+              } as CSSProperties}
+            ><i /><i /><i /><i /></span>
+            <span className="style-preset-copy">
+              <strong>{option.label}</strong>
+              <small>{option.description}</small>
+              <em>{option.bestFor}</em>
+            </span>
+          </button>
+        );
+      })}
+    </div>
   );
 }
 
@@ -190,4 +246,8 @@ function densityLabel(value: ResumeDensity): string {
 
 function paletteLabel(value: ResumePalette): string {
   return RESUME_PALETTES.find((option) => option.id === value)?.label ?? value;
+}
+
+function stylePresetLabel(value: ResumeStylePresetId): string {
+  return RESUME_STYLE_PRESETS.find((option) => option.id === value)?.label ?? value;
 }

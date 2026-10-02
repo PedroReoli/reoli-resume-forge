@@ -2,12 +2,15 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   applyResumePalette,
+  applyResumeStylePreset,
   applyResumeTemplate,
   normalizeResumeProfile,
   profilePalette,
+  profileStylePreset,
   profileTemplate,
   RESUME_PALETTE_IDS,
   RESUME_PALETTES,
+  RESUME_STYLE_PRESETS,
   RESUME_TEMPLATE_IDS,
   TEMPLATE_OPTIONS,
 } from '../../src/domain/resumeLayout.ts';
@@ -81,4 +84,47 @@ test('mantém o catálogo visual alinhado aos templates suportados', () => {
   assert.ok(TEMPLATE_OPTIONS.every((option) => option.label && option.description && option.bestFor));
   assert.ok(TEMPLATE_OPTIONS.some((option) => option.atsMode === 'visual'));
   assert.ok(TEMPLATE_OPTIONS.some((option) => option.atsMode === 'linear'));
+});
+
+test('aplica uma aparência completa em uma única alteração imutável', () => {
+  const original = normalizeResumeProfile(profileWith('classic'));
+  const updated = applyResumeStylePreset(original, 'tech-focus');
+
+  assert.equal(profileTemplate(updated), 'tech-minimalist');
+  assert.equal(profilePalette(updated), 'cobalt');
+  assert.equal(updated.layout.density, 'compact');
+  assert.equal(updated.layout.skills_style, 'tags');
+  assert.equal(updated.layout.experience_style, 'metrics');
+  assert.equal(updated.layout.projects_style, 'metrics');
+  assert.equal(profileStylePreset(updated), 'tech-focus');
+  assert.equal(profileTemplate(original), 'classic');
+  assert.notEqual(updated, original);
+  assert.notEqual(updated.layout, original.layout);
+});
+
+test('mantém conteúdo, ordem e visibilidade ao aplicar aparência pronta', () => {
+  const original = normalizeResumeProfile(profileWith('classic'));
+  original.summary = 'Resumo preservado';
+  original.layout.hidden_sections = ['languages'];
+  const order = [...original.layout.section_order].reverse();
+  original.layout.section_order = order;
+
+  const updated = applyResumeStylePreset(original, 'editorial');
+
+  assert.equal(updated.summary, 'Resumo preservado');
+  assert.deepEqual(updated.layout.section_order, order);
+  assert.deepEqual(updated.layout.hidden_sections, ['languages']);
+  assert.equal(profileStylePreset(updated), 'editorial');
+});
+
+test('mantém seis aparências curadas, completas e sem IDs duplicados', () => {
+  assert.equal(RESUME_STYLE_PRESETS.length, 6);
+  assert.equal(new Set(RESUME_STYLE_PRESETS.map((option) => option.id)).size, 6);
+  assert.ok(RESUME_STYLE_PRESETS.every((option) => (
+    option.label
+    && option.description
+    && option.bestFor
+    && RESUME_TEMPLATE_IDS.includes(option.template)
+    && RESUME_PALETTE_IDS.includes(option.palette)
+  )));
 });

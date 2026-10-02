@@ -18,6 +18,14 @@ export type ResumePalette =
   | 'burgundy'
   | 'graphite';
 
+export type ResumeStylePresetId =
+  | 'reoli-classic'
+  | 'tech-focus'
+  | 'product-clean'
+  | 'leadership-bold'
+  | 'editorial'
+  | 'visual-split';
+
 export interface ResumeColors {
   primary: string;
   dark: string;

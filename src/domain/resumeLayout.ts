@@ -3,10 +3,14 @@ import type {
   CustomSectionKind,
   ResumeLayoutConfig,
   ResumeLocale,
+  NarrativeLayout,
   ResumePalette,
   ResumeColors,
+  ResumeDensity,
   ResumeProfile,
+  ResumeStylePresetId,
   ResumeTemplate,
+  SkillsLayout,
 } from '../types/resume';
 
 export const DEFAULT_RESUME_TEMPLATE: ResumeTemplate = 'classic';
@@ -73,6 +77,99 @@ export const TEMPLATE_OPTIONS: Array<{
   { id: 'clean', label: 'Clean Slate', description: 'Editorial equilibrado e discreto.', bestFor: 'Uso geral', atsMode: 'linear' },
   { id: 'compact', label: 'Compact Linear', description: 'Máximo conteúdo com leitura linear para ATS.', bestFor: 'Carreiras extensas', atsMode: 'linear' },
   { id: 'executive', label: 'Executive Accent', description: 'Faixa executiva e contraste institucional.', bestFor: 'Consultoria e direção', atsMode: 'linear' },
+];
+
+export const RESUME_STYLE_PRESETS: Array<{
+  id: ResumeStylePresetId;
+  label: string;
+  description: string;
+  bestFor: string;
+  template: ResumeTemplate;
+  palette: Exclude<ResumePalette, 'template'>;
+  skillsStyle: SkillsLayout;
+  experienceStyle: NarrativeLayout;
+  projectsStyle: NarrativeLayout;
+  density: ResumeDensity;
+  emphasizeMetrics: boolean;
+}> = [
+  {
+    id: 'reoli-classic',
+    label: 'Reoli Clássico',
+    description: 'Institucional, direto e equilibrado.',
+    bestFor: 'ATS e uso geral',
+    template: 'classic',
+    palette: 'reoli-navy',
+    skillsStyle: 'categorized',
+    experienceStyle: 'bullets',
+    projectsStyle: 'bullets',
+    density: 'balanced',
+    emphasizeMetrics: true,
+  },
+  {
+    id: 'tech-focus',
+    label: 'Tech Focus',
+    description: 'Stack e resultados com alta densidade.',
+    bestFor: 'Engenharia e DevOps',
+    template: 'tech-minimalist',
+    palette: 'cobalt',
+    skillsStyle: 'tags',
+    experienceStyle: 'metrics',
+    projectsStyle: 'metrics',
+    density: 'compact',
+    emphasizeMetrics: true,
+  },
+  {
+    id: 'product-clean',
+    label: 'Product Clean',
+    description: 'Leve, contemporâneo e orientado a impacto.',
+    bestFor: 'Produto e frontend',
+    template: 'clean',
+    palette: 'forest',
+    skillsStyle: 'tags',
+    experienceStyle: 'bullets',
+    projectsStyle: 'metrics',
+    density: 'balanced',
+    emphasizeMetrics: true,
+  },
+  {
+    id: 'leadership-bold',
+    label: 'Leadership Bold',
+    description: 'Hierarquia firme e presença executiva.',
+    bestFor: 'Liderança e arquitetura',
+    template: 'executive-bold',
+    palette: 'graphite',
+    skillsStyle: 'categorized',
+    experienceStyle: 'metrics',
+    projectsStyle: 'bullets',
+    density: 'balanced',
+    emphasizeMetrics: true,
+  },
+  {
+    id: 'editorial',
+    label: 'Editorial',
+    description: 'Leitura calma com ritmo cronológico.',
+    bestFor: 'Academia e perfis autorais',
+    template: 'academic',
+    palette: 'burgundy',
+    skillsStyle: 'table',
+    experienceStyle: 'paragraphs',
+    projectsStyle: 'paragraphs',
+    density: 'relaxed',
+    emphasizeMetrics: false,
+  },
+  {
+    id: 'visual-split',
+    label: 'Visual Split',
+    description: 'Composição marcante em duas colunas.',
+    bestFor: 'Envio direto e portfólio',
+    template: 'modern-split',
+    palette: 'reoli-navy',
+    skillsStyle: 'tags',
+    experienceStyle: 'bullets',
+    projectsStyle: 'metrics',
+    density: 'balanced',
+    emphasizeMetrics: true,
+  },
 ];
 
 export const SECTION_LABELS: Record<string, string> = {
@@ -174,6 +271,47 @@ export function applyResumeTemplate(
     config: {
       ...profile.config,
       template,
+    },
+  };
+}
+
+export function profileStylePreset(profile: ResumeProfile): ResumeStylePresetId | null {
+  const template = profileTemplate(profile);
+  const palette = profilePalette(profile);
+  const preset = RESUME_STYLE_PRESETS.find((option) => (
+    option.template === template
+    && option.palette === palette
+    && option.skillsStyle === profile.layout.skills_style
+    && option.experienceStyle === profile.layout.experience_style
+    && option.projectsStyle === profile.layout.projects_style
+    && option.density === profile.layout.density
+    && option.emphasizeMetrics === profile.layout.emphasize_metrics
+  ));
+  return preset?.id ?? null;
+}
+
+export function applyResumeStylePreset(
+  profile: ResumeProfile,
+  presetId: ResumeStylePresetId,
+): ResumeProfile {
+  const preset = RESUME_STYLE_PRESETS.find((option) => option.id === presetId);
+  if (!preset || profileStylePreset(profile) === presetId) return profile;
+  const colors = RESUME_PALETTES.find((option) => option.id === preset.palette)?.colors;
+  return {
+    ...profile,
+    config: {
+      ...profile.config,
+      template: preset.template,
+      palette: preset.palette,
+      ...(colors ? { colors: { ...colors } } : {}),
+    },
+    layout: {
+      ...profile.layout,
+      skills_style: preset.skillsStyle,
+      experience_style: preset.experienceStyle,
+      projects_style: preset.projectsStyle,
+      density: preset.density,
+      emphasize_metrics: preset.emphasizeMetrics,
     },
   };
 }
