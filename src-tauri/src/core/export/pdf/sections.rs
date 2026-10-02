@@ -87,6 +87,7 @@ fn render_experience(writer: &mut PdfWriter, profile: &ResumeProfile, theme: Pdf
     }
     writer.section(profile.section_name("experience", "Experiência Profissional"));
     for experience in &profile.experience {
+        let technology_line = experience_technology_line(profile, experience);
         writer.keep_together_if_possible(experience_header_height(writer, experience, theme));
         let x = writer.content_x;
         writer.text(
@@ -118,48 +119,97 @@ fn render_experience(writer: &mut PdfWriter, profile: &ResumeProfile, theme: Pdf
             None,
         );
         writer.paragraph(&experience.summary);
-        let technology_line = if experience.technologies.is_empty() {
-            None
-        } else {
-            let label = if profile.config.tech_label.trim().is_empty() {
-                "Tecnologias"
-            } else {
-                &profile.config.tech_label
-            };
-            Some(format!("{label}: {}", experience.technologies.join(", ")))
-        };
         if profile.layout.experience_style == "paragraphs" {
-            writer.paragraph(&experience.bullets.join(" "));
+            let body = experience.bullets.join(" ");
+            let mut needed = writer.estimated_text_height(
+                &body,
+                theme.body_size,
+                theme.body_line_height,
+                writer.content_x,
+                Some(1.0),
+            );
+            if let Some(technologies) = &technology_line {
+                needed += writer.estimated_text_height(
+                    technologies,
+                    theme.body_size,
+                    theme.body_line_height,
+                    writer.content_x,
+                    Some(1.0),
+                );
+            }
+            ensure_experience_continuation(writer, experience, needed, theme);
+            writer.paragraph(&body);
         } else {
             let bullets = ordered_metrics(&experience.bullets, &profile.layout.experience_style);
             for (index, bullet) in bullets.iter().enumerate() {
+                let bullet_line = format!("• {bullet}");
+                let mut needed = writer.estimated_text_height(
+                    &bullet_line,
+                    theme.body_size - 0.2,
+                    theme.body_line_height - 0.2,
+                    writer.content_x + 3.0,
+                    None,
+                );
                 if index + 1 == bullets.len() {
                     if let Some(technologies) = &technology_line {
-                        let bullet_line = format!("• {bullet}");
-                        let bullet_height = writer.estimated_text_height(
-                            &bullet_line,
-                            theme.body_size - 0.2,
-                            theme.body_line_height - 0.2,
-                            writer.content_x + 3.0,
-                            None,
-                        );
-                        let technologies_height = writer.estimated_text_height(
+                        needed += writer.estimated_text_height(
                             technologies,
                             theme.body_size,
                             theme.body_line_height,
                             writer.content_x,
                             Some(1.0),
                         );
-                        writer.keep_together_if_possible(bullet_height + technologies_height);
                     }
                 }
+                ensure_experience_continuation(writer, experience, needed, theme);
                 writer.bullet(bullet);
             }
         }
         if let Some(technologies) = technology_line {
+            let needed = writer.estimated_text_height(
+                &technologies,
+                theme.body_size,
+                theme.body_line_height,
+                writer.content_x,
+                Some(1.0),
+            );
+            ensure_experience_continuation(writer, experience, needed, theme);
             writer.paragraph(&technologies);
         }
     }
+}
+
+fn experience_technology_line(profile: &ResumeProfile, experience: &Experience) -> Option<String> {
+    if experience.technologies.is_empty() {
+        return None;
+    }
+    let label = if profile.config.tech_label.trim().is_empty() {
+        "Tecnologias"
+    } else {
+        &profile.config.tech_label
+    };
+    Some(format!("{label}: {}", experience.technologies.join(", ")))
+}
+
+fn ensure_experience_continuation(
+    writer: &mut PdfWriter,
+    experience: &Experience,
+    needed: f32,
+    theme: PdfTheme,
+) {
+    if !writer.block_needs_fresh_page(needed) {
+        return;
+    }
+    writer.new_page();
+    let x = writer.content_x;
+    writer.text(
+        &experience.company,
+        theme.company_size,
+        true,
+        theme.company_line_height,
+        x,
+        None,
+    );
 }
 
 fn experience_header_height(writer: &PdfWriter, experience: &Experience, theme: PdfTheme) -> f32 {
@@ -217,14 +267,40 @@ fn render_projects(writer: &mut PdfWriter, profile: &ResumeProfile, theme: PdfTh
         );
         writer.paragraph(&project.description);
         if profile.layout.projects_style == "paragraphs" {
-            writer.paragraph(&project.metrics.join(" "));
+            let metrics = project.metrics.join(" ");
+            let needed = writer.estimated_text_height(
+                &metrics,
+                theme.body_size,
+                theme.body_line_height,
+                writer.content_x,
+                Some(1.0),
+            );
+            ensure_project_continuation(writer, project, needed, theme);
+            writer.paragraph(&metrics);
         } else {
             for metric in ordered_metrics(&project.metrics, &profile.layout.projects_style) {
+                let needed = writer.estimated_text_height(
+                    &format!("• {metric}"),
+                    theme.body_size - 0.2,
+                    theme.body_line_height - 0.2,
+                    writer.content_x + 3.0,
+                    None,
+                );
+                ensure_project_continuation(writer, project, needed, theme);
                 writer.bullet(metric);
             }
         }
         if !project.technologies.is_empty() {
-            writer.paragraph(&project.technologies.join(" | "));
+            let technologies = project.technologies.join(" | ");
+            let needed = writer.estimated_text_height(
+                &technologies,
+                theme.body_size,
+                theme.body_line_height,
+                writer.content_x,
+                Some(1.0),
+            );
+            ensure_project_continuation(writer, project, needed, theme);
+            writer.paragraph(&technologies);
         }
     }
 }
@@ -244,4 +320,24 @@ fn project_header_height(writer: &PdfWriter, project: &Project, theme: PdfTheme)
         x,
         Some(1.0),
     )
+}
+
+pub(super) fn ensure_project_continuation(
+    writer: &mut PdfWriter,
+    project: &Project,
+    needed: f32,
+    theme: PdfTheme,
+) {
+    if !writer.block_needs_fresh_page(needed) {
+        return;
+    }
+    writer.new_page();
+    writer.text(
+        &project.name,
+        theme.company_size,
+        true,
+        theme.company_line_height,
+        writer.content_x,
+        None,
+    );
 }

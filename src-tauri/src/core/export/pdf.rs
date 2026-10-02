@@ -438,10 +438,14 @@ impl PdfWriter {
     }
 
     fn keep_together_if_possible(&mut self, needed: f32) {
-        let page_capacity = self.theme.top_y - self.theme.bottom_y;
-        if needed <= page_capacity && self.y - needed < self.theme.bottom_y {
+        if self.block_needs_fresh_page(needed) {
             self.new_page();
         }
+    }
+
+    fn block_needs_fresh_page(&self, needed: f32) -> bool {
+        let page_capacity = self.theme.top_y - self.theme.bottom_y;
+        needed <= page_capacity && self.y - needed < self.theme.bottom_y
     }
 
     fn bullet(&mut self, value: &str) {
@@ -704,56 +708,4 @@ fn rgb(r: f32, g: f32, b: f32) -> Color {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::core::archetypes::load_archetype;
-
-    #[test]
-    fn pdf_has_valid_header_and_clickable_links() {
-        let bytes = render_with_template(
-            &load_archetype("01_frontend").unwrap(),
-            ResumeTemplate::Clean,
-        )
-        .unwrap();
-        assert!(bytes.starts_with(b"%PDF-"));
-        assert!(bytes.len() > 4_000);
-        assert!(bytes.windows(4).any(|part| part == b"/URI"));
-    }
-
-    #[test]
-    fn wraps_long_content_without_dropping_words() {
-        let lines = wrap("um dois três quatro cinco seis", 10);
-        assert_eq!(lines.join(" "), "um dois três quatro cinco seis");
-        assert!(lines.len() > 1);
-    }
-
-    #[test]
-    fn moves_a_complete_block_to_the_next_page_when_it_fits_there() {
-        let theme = PdfTheme::for_template(ResumeTemplate::Classic);
-        let mut writer = PdfWriter::new(theme);
-        writer.text_line(
-            "conteudo",
-            theme.body_size,
-            false,
-            theme.margin_x,
-            theme.top_y,
-        );
-        writer.y = theme.bottom_y + 20.0;
-
-        writer.keep_together_if_possible(40.0);
-
-        assert_eq!(writer.pages.len(), 1);
-        assert_eq!(writer.y, theme.top_y);
-    }
-
-    #[test]
-    fn courier_reserves_more_width_per_character_than_proportional_fonts() {
-        let courier = PdfWriter::new(PdfTheme::for_template(ResumeTemplate::TechMinimalist));
-        let helvetica = PdfWriter::new(PdfTheme::for_template(ResumeTemplate::Classic));
-
-        assert!(
-            courier.max_chars_for_width(180.0, 9.0, 12)
-                < helvetica.max_chars_for_width(180.0, 9.0, 12)
-        );
-    }
-}
+mod tests;
