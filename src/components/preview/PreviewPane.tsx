@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight, Maximize2, Minus, Palette, Plus } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { A4_PREVIEW_WIDTH, calculateFitZoom } from '../../domain/previewScale';
 import { TEMPLATE_OPTIONS } from '../../domain/resumeLayout';
 import type { ResumeProfile, ResumeTemplate } from '../../types/resume';
 import { PageFitControl } from './PageFitControl';
@@ -17,8 +18,9 @@ interface PreviewPaneProps {
 
 export function PreviewPane({ profile, template, onTemplate, onProfile, onPageCount }: PreviewPaneProps) {
   const [zoom, setZoom] = useState(100);
-  const [fitMode, setFitMode] = useState(() => window.innerWidth <= 1040);
+  const [fitMode, setFitMode] = useState(true);
   const [pageCount, setPageCount] = useState(1);
+  const [documentHeight, setDocumentHeight] = useState(A4_PREVIEW_HEIGHT);
   const documentRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
 
@@ -28,6 +30,7 @@ export function PreviewPane({ profile, template, onTemplate, onProfile, onPageCo
     const update = () => {
       const measuredHeight = element.scrollHeight;
       if (measuredHeight < 100) return;
+      setDocumentHeight(Math.max(A4_PREVIEW_HEIGHT, measuredHeight));
       const count = Math.max(1, Math.ceil(measuredHeight / A4_PREVIEW_HEIGHT));
       setPageCount(count);
       onPageCount?.(count);
@@ -41,7 +44,14 @@ export function PreviewPane({ profile, template, onTemplate, onProfile, onPageCo
   useEffect(() => {
     const stage = stageRef.current;
     if (!stage || !fitMode) return undefined;
-    const fit = () => setZoom(Math.max(35, Math.min(100, Math.floor(((stage.clientWidth - 24) / 794) * 100))));
+    const fit = () => {
+      const styles = window.getComputedStyle(stage);
+      setZoom(calculateFitZoom(
+        stage.clientWidth,
+        Number.parseFloat(styles.paddingLeft),
+        Number.parseFloat(styles.paddingRight),
+      ));
+    };
     const observer = new ResizeObserver(fit);
     observer.observe(stage);
     fit();
@@ -84,15 +94,22 @@ export function PreviewPane({ profile, template, onTemplate, onProfile, onPageCo
           <button type="button" aria-label="Próximo template" onClick={() => cycleTemplate(1)}><ChevronRight size={14} /></button>
         </div>
         <div className="zoom-controls" aria-label="Zoom do documento">
-          <span>{zoom}%</span>
+          <span aria-live="polite">{fitMode ? `Ajustado · ${zoom}%` : `${zoom}%`}</span>
           <button type="button" aria-label="Reduzir zoom" onClick={() => { setFitMode(false); setZoom((value) => Math.max(35, value - 10)); }}><Minus size={15} /></button>
           <button type="button" aria-label="Aumentar zoom" onClick={() => { setFitMode(false); setZoom((value) => Math.min(130, value + 10)); }}><Plus size={15} /></button>
-          <button type="button" aria-label="Ajustar à largura" aria-pressed={fitMode} onClick={() => setFitMode(true)}><Maximize2 size={15} /></button>
+          <button type="button" aria-label="Ajustar página à largura" title="Encaixar A4 na largura disponível" aria-pressed={fitMode} onClick={() => setFitMode(true)}><Maximize2 size={15} /></button>
         </div>
       </div>
       <div className="paper-stage" ref={stageRef}>
         <div className="page-meta left"><span>A4</span><span>210 × 297 mm</span></div>
-        <div className="paper-scale" style={{ '--document-zoom': zoom / 100 } as React.CSSProperties}>
+        <div
+          className="paper-scale"
+          style={{
+            '--document-zoom': zoom / 100,
+            width: `${(A4_PREVIEW_WIDTH * zoom) / 100 + 16}px`,
+            height: `${(documentHeight * zoom) / 100 + 16}px`,
+          } as React.CSSProperties}
+        >
           <div className="document-frame" ref={documentRef}>
             <ResumePreview profile={profile} template={template} onProfile={onProfile} />
             {Array.from({ length: Math.max(0, pageCount - 1) }, (_, index) => (

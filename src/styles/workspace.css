@@ -653,7 +653,7 @@
 }
 
 .zoom-controls > span {
-  min-width: 40px;
+  min-width: 86px;
   text-align: right;
 }
 
@@ -677,13 +677,19 @@
 }
 
 .paper-scale {
-  width: 794px;
+  box-sizing: border-box;
   margin: 0 auto;
+  overflow: hidden;
+  padding: 8px;
+}
+
+.document-frame {
+  position: relative;
+  width: 794px;
+  min-height: 1123px;
   transform: scale(var(--document-zoom));
   transform-origin: top left;
 }
-
-.document-frame { position: relative; min-height: 1123px; }
 .page-break-guide { position: absolute; z-index: 2; right: -9px; left: -9px; height: 0; border-top: 1px dashed rgb(99 121 108 / 65%); pointer-events: none; }
 .page-break-guide::before { position: absolute; top: -5px; right: 0; left: 0; height: 9px; background: linear-gradient(180deg, transparent, rgb(8 12 10 / 18%), transparent); content: ""; }
 .page-break-guide span { position: absolute; top: 5px; right: 8px; padding: 2px 5px; color: #66786e; background: #111814; font-family: var(--mono); font-size: 8px; }

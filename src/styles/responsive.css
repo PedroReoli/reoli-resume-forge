@@ -91,7 +91,6 @@
   .ats-panel { padding: 20px 14px 28px; }
   .preview-column { height: calc(100vh - 143px); min-height: 620px; border-top: 1px solid var(--line-strong); }
   .paper-stage { padding: 16px 16px 120px; }
-  .paper-scale { width: 794px; }
   .action-dock { position: fixed; bottom: 12px; }
   .status-bar { min-height: 32px; }
 }
