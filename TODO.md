@@ -13,14 +13,27 @@
 - [x] Empacotamento portátil em `release/bin/reoli-cv.exe` com SHA-256.
 - [x] Documentação pública e automação de CI/release.
 
+## v2.0.0 — concluído
+
+- [x] Classic Reoli com tipografia, paleta, densidade e hierarquia do gerador do Vault.
+- [x] Oito templates disponíveis na GUI, PDF, DOCX e CLI.
+- [x] Ordem livre, ocultação e seções personalizadas em todos os formatos.
+- [x] Skills em categorias, tabela, tags e níveis informados manualmente.
+- [x] Experiências e projetos em bullets, parágrafos ou métricas priorizadas.
+- [x] Sumário lateral responsivo, edição focada e preview A4 com zoom e quebras.
+- [x] Matcher com senioridade, obrigatórios, desejáveis, forças e lacunas.
+- [x] Auditoria ATS de extensão, resumo, bullets, links, seções essenciais e risco do layout.
+- [x] Localização estrutural PT-BR, EN-US e ES-ES sem adulterar texto profissional.
+- [x] Paridade de ordem e visibilidade em PDF, DOCX e Markdown.
+
 ## Próximos ciclos
 
 - [ ] Assinatura Authenticode para releases públicos.
-- [ ] Novos templates mantidos pela comunidade além dos três nativos.
+- [ ] Catálogo de templates mantidos pela comunidade além dos oito nativos.
 - [ ] Validação visual automatizada de regressões do A4.
 - [ ] Importador assistido de currículos existentes.
 - [ ] Catálogo extensível de aliases ATS por área profissional.
-- [ ] Localização completa da interface para inglês.
+- [ ] Tradução assistida de texto livre com revisão humana e proveniência explícita.
 
 ## Fora de escopo deliberado
 

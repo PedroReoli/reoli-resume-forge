@@ -5,7 +5,7 @@
 - Saída de sucesso: JSON em `stdout`.
 - Erro: mensagem em `stderr` e código de saída `2`.
 - `--format` aceita uma lista separada por vírgulas: `pdf,docx,json,md`.
-- `--template` aceita `clean`, `compact` ou `executive`; o padrão é `clean`.
+- `--template` aceita os oito IDs da tabela abaixo; o padrão é `classic`.
 - `--out` aponta para um diretório. Ele é criado quando necessário.
 - Entradas locais são limitadas a 1 MiB.
 
@@ -26,7 +26,7 @@ Gera o arquétipo sem tailoring.
 reoli-cv.exe generate --model 01_frontend --template clean --format pdf,docx --out .\dist
 ```
 
-Opções obrigatórias: `--model`, `--out`. O formato padrão é `pdf` e o template padrão é `clean`.
+Opções obrigatórias: `--model`, `--out`. O formato padrão é `pdf` e o template padrão é `classic`.
 
 ## `tailor`
 
@@ -63,11 +63,16 @@ Cada item aceita `company`, `job_title`, `job_description`, `base_model`, `profi
 
 | ID | Característica |
 | --- | --- |
+| `classic` | Padrão Reoli do Vault: Arial, azul-marinho, cabeçalho central e divisores finos |
+| `tech-minimalist` | Alta densidade, tipografia técnica e ênfase em stack e métricas |
+| `modern-split` | Sidebar visual em duas colunas; prefira Classic/Compact em ATS legados |
+| `executive-bold` | Faixa institucional e hierarquia forte para liderança |
+| `academic` | Leitura cronológica com ênfase em formação, cursos e publicações |
 | `clean` | Leitura arejada, hierarquia editorial e margens equilibradas |
 | `compact` | Maior densidade, tipografia sem serifa e espaçamento reduzido |
 | `executive` | Destaque executivo em verde profundo e hierarquia ampliada |
 
-Os três preservam a mesma ordem semântica, uma única coluna e links clicáveis em PDF/DOCX.
+Todos preservam texto selecionável e links clicáveis em PDF/DOCX. `modern-split` usa duas colunas visuais; os demais mantêm leitura linear conservadora.
 
 ## Modelos
 

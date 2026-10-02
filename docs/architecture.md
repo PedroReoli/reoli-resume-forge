@@ -21,7 +21,8 @@ flowchart LR
 | Camada | Local | Responsabilidade |
 | --- | --- | --- |
 | Dados | `src/data/` | Arquétipos editáveis e aliases de keywords |
-| UI | `src/components/`, `src/hooks/` | Edição, preview A4, acessibilidade e atalhos |
+| Domínio web | `src/domain/` | Normalização retrocompatível, layouts, localização estrutural e auditoria documental |
+| UI | `src/components/`, `src/hooks/` | Edição modular, preview A4, acessibilidade e atalhos |
 | Bridge | `src/services/tauriBridge.ts` | Contrato IPC e fallback visual no navegador de desenvolvimento |
 | Core | `src-tauri/src/core/` | Modelos, validação, ATS, tailoring e exportação |
 | Adaptadores | `src-tauri/src/commands.rs`, `cli.rs` | Entrada pela GUI ou pelo terminal |
@@ -30,11 +31,11 @@ flowchart LR
 ## Fluxo de dados
 
 1. O perfil nasce de um arquétipo embarcado, de um JSON importado ou de um perfil vazio.
-2. React mantém um único estado estruturado. Formulários e conteúdo editável do A4 atualizam esse mesmo estado.
+2. React normaliza perfis antigos e mantém um único estado estruturado. Formulários, modais e conteúdo editável do A4 atualizam esse mesmo estado.
 3. Após 420 ms sem edição, a GUI envia perfil e Job Description ao core via IPC.
 4. O core valida limites, extrai requisitos, cruza evidências e devolve um relatório serializável.
 5. Ao adaptar, o core ordena bullets e tecnologias pela relevância, com proveniência e sem criar texto novo.
-6. O exportador serializa o mesmo perfil e o layout selecionado para o formato escolhido.
+6. O exportador serializa o mesmo perfil, ordem, visibilidade, seções personalizadas e template para o formato escolhido.
 
 ## Limites de segurança
 
@@ -47,7 +48,13 @@ flowchart LR
 
 ## Formatos ATS
 
-PDF e DOCX usam uma coluna, ordem de leitura linear, texto selecionável, headings convencionais e fontes do sistema/documento. Os três layouts (`clean`, `compact` e `executive`) alteram apenas tipografia, espaçamento, margens e acentos visuais; a semântica permanece idêntica. URLs usam hyperlinks externos reais. Não há conteúdo essencial em cabeçalho, rodapé, imagem ou tabela.
+PDF e DOCX usam texto selecionável, headings convencionais e fontes seguras. `classic`, `tech-minimalist`, `executive-bold`, `academic`, `clean`, `compact` e `executive` preservam leitura linear; `modern-split` oferece uma composição visual em duas colunas e é sinalizado como opção de maior risco para parsers antigos. URLs usam hyperlinks externos reais e nenhum dado essencial fica em header, footer ou imagem.
+
+O preview pode mostrar skills em tabela, mas usa `caption`, `th` e escopo semântico. A auditoria replica limites úteis do gerador do Vault: até duas páginas, resumo de até 110 palavras e bullets de até 35 palavras. Esses itens são recomendações, não promessa de aprovação.
+
+## Contrato modular 2.0
+
+`ResumeProfile.layout` guarda `section_order`, `hidden_sections`, apresentações de skills/experiências/projetos, densidade e níveis informados pelo usuário. Blocos opcionais vivem em `custom_sections`; IDs `custom:<id>` entram na mesma ordem das seções nativas. Perfis 1.x são normalizados no frontend e usam defaults Serde no core Rust.
 
 ## Executável único
 

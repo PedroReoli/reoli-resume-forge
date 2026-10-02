@@ -39,6 +39,19 @@ O resultado é arredondado para uma casa decimal. Quando nenhuma keyword conheci
 - Sinônimos fora do catálogo podem exigir revisão manual.
 - Formatação ATS varia entre fornecedores; os exportadores seguem práticas conservadoras, não uma certificação universal.
 
+## Auditoria documental
+
+Separadamente do score da vaga, a GUI verifica regras inspiradas no gerador validado do Vault:
+
+- documento com no máximo duas páginas no preview A4;
+- resumo profissional com até 110 palavras;
+- bullets com até 35 palavras;
+- presença de resumo, competências e experiência;
+- links profissionais completos e níveis de competência definidos manualmente;
+- aviso explícito ao usar `modern-split`, pois ATS antigos podem interpretar duas colunas de forma incorreta.
+
+Esses alertas não alteram o conteúdo e não entram na fórmula do score.
+
 ## Evolução segura
 
 Ao adicionar aliases, inclua testes que cubram falso positivo, acento/caixa e peso obrigatório. Não adicione termos pessoais ou específicos de uma vaga ao código do algoritmo; use o catálogo de dados.

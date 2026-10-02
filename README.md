@@ -4,12 +4,15 @@ Editor desktop e compilador headless, local-first, para criar currículos legív
 
 ## O que entrega
 
-- GUI Dark Tech em split view, com editor estruturado, página A4 e edição inline bidirecional.
+- GUI Dark Tech em split view, com sumário navegável, editor estruturado, página A4 e edição inline bidirecional.
 - Cinco arquétipos nativos: frontend, full stack Node.js, full stack .NET, tech lead e internacional em inglês.
 - Matcher ATS determinístico, com requisitos obrigatórios ponderados e indicação dos termos atendidos/ausentes.
 - Tailoring conservador: reordena apenas evidências existentes e nunca fabrica experiências, tecnologias ou métricas.
-- Três layouts completos: **Clean Slate**, **Compact Linear** e **Executive Accent**.
-- Exportação em PDF, DOCX, Markdown e JSON, em uma coluna, com hierarquia tipográfica e hyperlinks reais.
+- Oito layouts: **Classic Reoli**, Tech Minimalist, Modern Split, Executive Bold, Academic, Clean Slate, Compact Linear e Executive Accent.
+- Ordem livre, ocultação e blocos opcionais para projetos, voluntariado, cursos, publicações, prêmios e conteúdo personalizado.
+- Skills em lista categorizada, tabela semântica, tags ou níveis manuais; experiências em bullets, parágrafos ou métricas priorizadas.
+- Exportação consistente em PDF, DOCX, Markdown e JSON, com texto selecionável e hyperlinks reais.
+- Auditoria documental herdada do Vault: até duas páginas, resumo enxuto, bullets legíveis, links válidos e alerta para layouts de maior risco ATS.
 - CLI `generate`, `tailor`, `batch` e `ui` para automações locais.
 - Nenhuma conta, telemetria ou transmissão de dados pessoais.
 
@@ -18,7 +21,7 @@ Editor desktop e compilador headless, local-first, para criar currículos legív
 Baixe `reoli-cv.exe` para qualquer pasta. Um duplo clique abre a interface. No terminal:
 
 ```powershell
-.\reoli-cv.exe generate --model 01_frontend --template clean --format pdf,docx --out .\dist
+.\reoli-cv.exe generate --model 01_frontend --template classic --format pdf,docx --out .\dist
 .\reoli-cv.exe tailor --job .\examples\job.json --profile .\examples\profile.example.json --template executive --format pdf,docx --out .\dist
 .\reoli-cv.exe batch --jobs .\examples\jobs.json --model 01_frontend --format pdf --out .\lote
 .\reoli-cv.exe ui
@@ -28,13 +31,16 @@ O arquivo é distribuído sem sidecars. A GUI usa o Microsoft Edge WebView2 inst
 
 ## Interface
 
-1. Escolha um arquétipo, um dos três layouts, importe um perfil JSON ou crie um perfil vazio.
-2. Edite os campos à esquerda ou diretamente sobre a página A4.
-3. Cole a descrição completa da vaga para calcular a cobertura ATS.
-4. Use **Adaptar evidências** para priorizar fatos já presentes no perfil.
-5. Exporte com `Ctrl+P` (PDF), `Ctrl+D` (DOCX) ou `Ctrl+M` (Markdown).
+1. Escolha um arquétipo, um dos oito layouts, importe um perfil JSON ou crie um perfil vazio.
+2. Reordene, oculte ou adicione seções pelo sumário lateral; ajuste a densidade e a apresentação de cada bloco.
+3. Edite os campos à esquerda, no modal de foco ou diretamente sobre a página A4.
+4. Cole a descrição completa da vaga para calcular obrigatórios, desejáveis, senioridade, forças e lacunas.
+5. Use **Criar versão adaptada** para priorizar fatos já presentes no perfil.
+6. Revise a auditoria ATS e exporte com `Ctrl+P` (PDF), `Ctrl+D` (DOCX) ou `Ctrl+M` (Markdown).
 
 Em telas abaixo de 1040 px, use a alternância **Editor / Preview** para preservar a legibilidade do documento.
+
+Trocar o idioma localiza títulos e níveis conhecidos sem reescrever textos livres. Essa escolha é deliberada: experiências, métricas e proficiências não são traduzidas ou inventadas silenciosamente.
 
 ## Desenvolvimento
 
