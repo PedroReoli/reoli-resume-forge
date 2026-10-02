@@ -1,0 +1,32 @@
+name: Release portátil
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Instalar dependências
+        run: npm ci
+      - name: Testar e empacotar
+        run: |
+          npm run verify
+          npm run build:portable
+      - uses: actions/upload-artifact@v4
+        with:
+          name: reoli-resume-forge-windows
+          path: release/bin/
+          if-no-files-found: error
