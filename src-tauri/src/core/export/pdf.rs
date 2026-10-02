@@ -6,8 +6,9 @@ use super::pdf_content::{
 };
 use super::pdf_theme::PdfTheme;
 use printpdf::{
-    Actions, BorderArray, Color, ColorArray, HighlightingMode, Line, LinePoint, LinkAnnotation, Mm,
-    Op, PdfDocument, PdfFontHandle, PdfPage, PdfSaveOptions, Point, Pt, Rect, Rgb, TextItem,
+    Actions, BorderArray, BuiltinFont, Color, ColorArray, HighlightingMode, Line, LinePoint,
+    LinkAnnotation, Mm, Op, PdfDocument, PdfFontHandle, PdfPage, PdfSaveOptions, Point, Pt, Rect,
+    Rgb, TextItem,
 };
 
 const PAGE_WIDTH: f32 = 210.0;
@@ -46,6 +47,7 @@ struct PdfWriter {
     y: f32,
     content_x: f32,
     content_right: f32,
+    split_layout: bool,
     split_first_page: bool,
     theme: PdfTheme,
     text_color: (f32, f32, f32),
@@ -59,6 +61,7 @@ impl PdfWriter {
             y: theme.top_y,
             content_x: theme.margin_x,
             content_right: PAGE_WIDTH - theme.margin_x,
+            split_layout: false,
             split_first_page: false,
             theme,
             text_color: (0.12, 0.15, 0.14),
@@ -317,6 +320,7 @@ impl PdfWriter {
         self.content_x = 76.0;
         self.content_right = 194.0;
         self.y = self.y.min(229.0);
+        self.split_layout = true;
         self.split_first_page = true;
     }
 
@@ -340,7 +344,7 @@ impl PdfWriter {
             return;
         }
         let width = PAGE_WIDTH - (self.theme.margin_x * 2.0);
-        let max_chars = ((width / (size * 0.19)).floor() as usize).max(24);
+        let max_chars = self.max_chars_for_width(width, size, 24);
         for line in wrap(value, max_chars) {
             self.ensure_space(line_height_mm + 1.0);
             let estimated_width = estimate_text_width(&line, size).min(width);
@@ -420,8 +424,17 @@ impl PdfWriter {
             return 0.0;
         }
         let available_width = self.content_right - x;
-        let max_chars = ((available_width / (size * 0.19)).floor() as usize).max(24);
+        let max_chars = self.max_chars_for_width(available_width, size, 24);
         before_mm.unwrap_or_default() + wrap(value, max_chars).len() as f32 * line_height_mm
+    }
+
+    fn max_chars_for_width(&self, width: f32, size: f32, minimum: usize) -> usize {
+        let width_factor = if matches!(self.theme.normal_font, BuiltinFont::Courier) {
+            0.22
+        } else {
+            0.19
+        };
+        ((width / (size * width_factor)).floor() as usize).max(minimum)
     }
 
     fn keep_together_if_possible(&mut self, needed: f32) {
@@ -517,7 +530,7 @@ impl PdfWriter {
             self.y -= spacing;
         }
         let available_width = self.content_right - x;
-        let max_chars = ((available_width / (size * 0.19)).floor() as usize).max(24);
+        let max_chars = self.max_chars_for_width(available_width, size, 24);
         for line in wrap(value, max_chars) {
             self.ensure_space(line_height_mm + 1.0);
             self.text_line(&line, size, bold, x, self.y);
@@ -539,7 +552,7 @@ impl PdfWriter {
         if value.trim().is_empty() {
             return y;
         }
-        let max_chars = ((width / (size * 0.19)).floor() as usize).max(12);
+        let max_chars = self.max_chars_for_width(width, size, 12);
         for line in wrap(value, max_chars) {
             self.text_line(&line, size, bold, x, y);
             y -= line_height_mm;
@@ -640,6 +653,30 @@ impl PdfWriter {
             self.content_right = PAGE_WIDTH - self.theme.margin_x;
             self.split_first_page = false;
         }
+        if self.split_layout {
+            self.draw_split_continuation_mark();
+        }
+    }
+
+    fn draw_split_continuation_mark(&mut self) {
+        self.current.extend([
+            Op::SetFillColor {
+                col: rgb(
+                    self.theme.band_color.0,
+                    self.theme.band_color.1,
+                    self.theme.band_color.2,
+                ),
+            },
+            Op::DrawPolygon {
+                polygon: Rect::from_xywh(
+                    Pt::from(Mm(0.0)),
+                    Pt::from(Mm(0.0)),
+                    Pt::from(Mm(6.0)),
+                    Pt::from(Mm(PAGE_HEIGHT)),
+                )
+                .to_polygon(),
+            },
+        ]);
     }
 
     fn finish(mut self, title: &str) -> Vec<u8> {
@@ -707,5 +744,16 @@ mod tests {
 
         assert_eq!(writer.pages.len(), 1);
         assert_eq!(writer.y, theme.top_y);
+    }
+
+    #[test]
+    fn courier_reserves_more_width_per_character_than_proportional_fonts() {
+        let courier = PdfWriter::new(PdfTheme::for_template(ResumeTemplate::TechMinimalist));
+        let helvetica = PdfWriter::new(PdfTheme::for_template(ResumeTemplate::Classic));
+
+        assert!(
+            courier.max_chars_for_width(180.0, 9.0, 12)
+                < helvetica.max_chars_for_width(180.0, 9.0, 12)
+        );
     }
 }

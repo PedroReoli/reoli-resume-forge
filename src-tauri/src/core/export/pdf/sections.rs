@@ -1,7 +1,7 @@
 use super::super::pdf_content::{formatted_skills, join_non_empty, ordered_metrics, string_list};
 use super::super::pdf_theme::PdfTheme;
 use super::PdfWriter;
-use crate::core::model::ResumeProfile;
+use crate::core::model::{Experience, Project, ResumeProfile};
 
 pub(super) fn render_section(
     writer: &mut PdfWriter,
@@ -78,8 +78,16 @@ pub(super) fn render_section(
 }
 
 fn render_experience(writer: &mut PdfWriter, profile: &ResumeProfile, theme: PdfTheme) {
+    if let Some(first) = profile.experience.first() {
+        writer.keep_together_if_possible(
+            theme.section_spacing
+                + theme.section_line_height
+                + experience_header_height(writer, first, theme),
+        );
+    }
     writer.section(profile.section_name("experience", "Experiência Profissional"));
     for experience in &profile.experience {
+        writer.keep_together_if_possible(experience_header_height(writer, experience, theme));
         let x = writer.content_x;
         writer.text(
             &experience.company,
@@ -154,9 +162,50 @@ fn render_experience(writer: &mut PdfWriter, profile: &ResumeProfile, theme: Pdf
     }
 }
 
+fn experience_header_height(writer: &PdfWriter, experience: &Experience, theme: PdfTheme) -> f32 {
+    let x = writer.content_x;
+    writer.estimated_text_height(
+        &experience.company,
+        theme.company_size,
+        theme.company_line_height,
+        x,
+        Some(theme.record_spacing),
+    ) + writer.estimated_text_height(
+        &experience.role,
+        theme.role_size,
+        theme.role_line_height,
+        x,
+        None,
+    ) + writer.estimated_text_height(
+        &join_non_empty([
+            &experience.dates,
+            &experience.location,
+            &experience.work_mode,
+        ]),
+        theme.meta_size,
+        theme.meta_line_height,
+        x,
+        None,
+    ) + writer.estimated_text_height(
+        &experience.summary,
+        theme.body_size,
+        theme.body_line_height,
+        x,
+        Some(1.0),
+    )
+}
+
 fn render_projects(writer: &mut PdfWriter, profile: &ResumeProfile, theme: PdfTheme) {
+    if let Some(first) = profile.projects.first() {
+        writer.keep_together_if_possible(
+            theme.section_spacing
+                + theme.section_line_height
+                + project_header_height(writer, first, theme),
+        );
+    }
     writer.section(profile.section_name("projects", "Projetos"));
     for project in &profile.projects {
+        writer.keep_together_if_possible(project_header_height(writer, project, theme));
         let x = writer.content_x;
         writer.text(
             &project.name,
@@ -178,4 +227,21 @@ fn render_projects(writer: &mut PdfWriter, profile: &ResumeProfile, theme: PdfTh
             writer.paragraph(&project.technologies.join(" | "));
         }
     }
+}
+
+fn project_header_height(writer: &PdfWriter, project: &Project, theme: PdfTheme) -> f32 {
+    let x = writer.content_x;
+    writer.estimated_text_height(
+        &project.name,
+        theme.company_size,
+        theme.company_line_height,
+        x,
+        Some(theme.record_spacing),
+    ) + writer.estimated_text_height(
+        &project.description,
+        theme.body_size,
+        theme.body_line_height,
+        x,
+        Some(1.0),
+    )
 }
