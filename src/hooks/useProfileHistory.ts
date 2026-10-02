@@ -10,6 +10,7 @@ interface HistoryState {
   past: ResumeProfile[];
   present: ResumeProfile;
   future: ResumeProfile[];
+  generation: number;
   lastChangeKey: string | null;
   lastChangeAt: number;
 }
@@ -40,21 +41,23 @@ export function useProfileHistory(initialProfile: ResumeProfile) {
     redo,
     canUndo: history.past.length > 0,
     canRedo: history.future.length > 0,
+    profileGeneration: history.generation,
   };
 }
 
-function createHistory(profile: ResumeProfile): HistoryState {
+function createHistory(profile: ResumeProfile, generation = 0): HistoryState {
   return {
     past: [],
     present: profile,
     future: [],
+    generation,
     lastChangeKey: null,
     lastChangeAt: 0,
   };
 }
 
 function historyReducer(state: HistoryState, action: HistoryAction): HistoryState {
-  if (action.type === 'replace') return createHistory(action.profile);
+  if (action.type === 'replace') return createHistory(action.profile, state.generation + 1);
 
   if (action.type === 'undo') {
     const previous = state.past.at(-1);
@@ -63,6 +66,7 @@ function historyReducer(state: HistoryState, action: HistoryAction): HistoryStat
       past: state.past.slice(0, -1),
       present: previous,
       future: [state.present, ...state.future].slice(0, HISTORY_LIMIT),
+      generation: state.generation,
       lastChangeKey: null,
       lastChangeAt: 0,
     };
@@ -75,6 +79,7 @@ function historyReducer(state: HistoryState, action: HistoryAction): HistoryStat
       past: [...state.past, state.present].slice(-HISTORY_LIMIT),
       present: next,
       future,
+      generation: state.generation,
       lastChangeKey: null,
       lastChangeAt: 0,
     };
@@ -91,6 +96,7 @@ function historyReducer(state: HistoryState, action: HistoryAction): HistoryStat
     past: coalesces ? state.past : [...state.past, state.present].slice(-HISTORY_LIMIT),
     present: next,
     future: [],
+    generation: state.generation,
     lastChangeKey: changeKey,
     lastChangeAt: action.at,
   };

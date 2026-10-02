@@ -6,6 +6,7 @@ import dotnet from '../data/archetypes/03_fullstack_dotnet.json';
 import lead from '../data/archetypes/04_tech_lead.json';
 import international from '../data/archetypes/05_internacional_en.json';
 import { normalizeResumeProfile } from '../domain/resumeLayout';
+import { resumeFilename } from '../domain/resumeFilename';
 import type {
   ArchetypeMetadata,
   ExportFormat,
@@ -78,7 +79,7 @@ export async function exportResume(
   if (!isDesktop()) {
     if (format === 'json' || format === 'markdown') {
       const text = format === 'json' ? JSON.stringify(profile, null, 2) : browserMarkdown(profile);
-      downloadText(text, format === 'json' ? 'curriculo.json' : 'curriculo.md');
+      downloadText(text, resumeFilename(profile.person.name, format));
       return 'download';
     }
     throw new Error('A exportação PDF/DOCX está disponível no aplicativo desktop.');
@@ -86,7 +87,7 @@ export async function exportResume(
   const extension = format === 'markdown' ? 'md' : format;
   const path = await save({
     title: `Exportar ${extension.toUpperCase()}`,
-    defaultPath: `curriculo.${extension}`,
+    defaultPath: resumeFilename(profile.person.name, format),
     filters: [{ name: extension.toUpperCase(), extensions: [extension] }],
   });
   if (!path) return null;

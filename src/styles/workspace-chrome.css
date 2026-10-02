@@ -151,8 +151,34 @@ kbd { color: var(--muted); font-family: var(--mono); font-size: 9px; font-weight
 }
 
 .status-bar small { margin-left: 8px; color: var(--faint); }
+.document-save-state {
+  display: flex;
+  align-items: center;
+  justify-self: center;
+  gap: 7px;
+}
+.document-save-state small { font-family: var(--mono); font-size: 8.5px; }
+.document-save-state.is-saved { color: var(--accent-bright); }
+.document-save-state.is-dirty { color: #d9c48f; }
 .ready-state { gap: 7px; }
 .ready-state i { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px #7daf88; }
+
+.save-profile-button { position: relative; }
+.save-profile-button.has-unsaved-changes {
+  border-color: #756b4f;
+  color: #e4d4a8;
+}
+.save-profile-button.has-unsaved-changes::after {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #d9c48f;
+  box-shadow: 0 0 8px rgb(217 196 143 / 65%);
+  content: "";
+}
 
 .toast {
   position: fixed;

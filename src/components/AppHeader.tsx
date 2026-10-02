@@ -4,13 +4,14 @@ interface AppHeaderProps {
   onImport: () => void;
   onSave: () => void;
   onNew: () => void;
+  hasUnsavedChanges: boolean;
   canUndo: boolean;
   canRedo: boolean;
   onUndo: () => void;
   onRedo: () => void;
 }
 
-export function AppHeader({ onImport, onSave, onNew, canUndo, canRedo, onUndo, onRedo }: AppHeaderProps) {
+export function AppHeader({ onImport, onSave, onNew, hasUnsavedChanges, canUndo, canRedo, onUndo, onRedo }: AppHeaderProps) {
   return (
     <header className="app-header">
       <div className="brand-lockup">
@@ -26,7 +27,13 @@ export function AppHeader({ onImport, onSave, onNew, canUndo, canRedo, onUndo, o
           <button type="button" aria-label="Desfazer alteração" title="Desfazer (Ctrl+Z)" disabled={!canUndo} onClick={onUndo}><Undo2 size={15} /></button>
           <button type="button" aria-label="Refazer alteração" title="Refazer (Ctrl+Y)" disabled={!canRedo} onClick={onRedo}><Redo2 size={15} /></button>
         </div>
-        <button className="quiet-button save-profile-button" type="button" title="Salvar perfil JSON (Ctrl+S)" onClick={onSave}>
+        <button
+          className={`quiet-button save-profile-button ${hasUnsavedChanges ? 'has-unsaved-changes' : ''}`}
+          type="button"
+          aria-label={hasUnsavedChanges ? 'Salvar perfil, há alterações não salvas' : 'Salvar perfil'}
+          title="Salvar perfil JSON (Ctrl+S)"
+          onClick={onSave}
+        >
           <Save size={16} /> Salvar perfil
         </button>
         <button className="quiet-button" type="button" onClick={onImport}>

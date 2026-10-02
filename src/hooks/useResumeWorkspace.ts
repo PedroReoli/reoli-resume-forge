@@ -31,6 +31,7 @@ export function useResumeWorkspace() {
     redo,
     canUndo,
     canRedo,
+    profileGeneration,
   } = useProfileHistory(initialProfile);
   const [jobDescription, setJobDescription] = useState('');
   const [report, setReport] = useState<MatchReport | null>(null);
@@ -137,6 +138,7 @@ export function useResumeWorkspace() {
     redoProfile: redo,
     canUndo,
     canRedo,
+    profileGeneration,
     jobDescription,
     setJobDescription,
     report,

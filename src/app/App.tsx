@@ -1,8 +1,9 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { CheckCircle2, Eye, LoaderCircle, PencilLine, X } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { CheckCircle2, Eye, PencilLine, X } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActionDock } from '../components/ActionDock';
 import { AppHeader } from '../components/AppHeader';
+import { DocumentStatusBar, type DocumentSaveState } from '../components/DocumentStatusBar';
 import { AtsPanel } from '../components/editor/AtsPanel';
 import { ProfileEditor } from '../components/editor/ProfileEditor';
 import { SectionNavigator } from '../components/editor/SectionNavigator';
@@ -18,6 +19,24 @@ export function App() {
   const [notice, setNotice] = useState<string | null>(null);
   const [mobileView, setMobileView] = useState<'editor' | 'preview'>('editor');
   const [pageCount, setPageCount] = useState<number | null>(null);
+  const profileFingerprint = useMemo(() => JSON.stringify(workspace.profile), [workspace.profile]);
+  const [saveCheckpoint, setSaveCheckpoint] = useState(() => ({
+    generation: workspace.profileGeneration,
+    fingerprint: profileFingerprint,
+    saved: false,
+  }));
+
+  useEffect(() => {
+    setSaveCheckpoint((current) => current.generation === workspace.profileGeneration
+      ? current
+      : { generation: workspace.profileGeneration, fingerprint: profileFingerprint, saved: false });
+  }, [profileFingerprint, workspace.profileGeneration]);
+
+  const currentCheckpoint = saveCheckpoint.generation === workspace.profileGeneration;
+  const hasUnsavedChanges = currentCheckpoint && saveCheckpoint.fingerprint !== profileFingerprint;
+  const saveState: DocumentSaveState = hasUnsavedChanges
+    ? 'dirty'
+    : currentCheckpoint && saveCheckpoint.saved ? 'saved' : 'loaded';
 
   const notify = useCallback((message: string) => {
     setNotice(message);
@@ -27,7 +46,16 @@ export function App() {
   const exportFile = useCallback(async (format: ExportFormat) => {
     try {
       const path = await exportResume(workspace.profile, format, workspace.template);
-      if (path) notify(exportSuccessMessage(format));
+      if (path) {
+        if (format === 'json') {
+          setSaveCheckpoint({
+            generation: workspace.profileGeneration,
+            fingerprint: JSON.stringify(workspace.profile),
+            saved: true,
+          });
+        }
+        notify(exportSuccessMessage(format));
+      }
     } catch (reason) {
       workspace.setError(messageOf(reason));
     }
@@ -83,6 +111,7 @@ export function App() {
       <AppHeader
         canUndo={workspace.canUndo}
         canRedo={workspace.canRedo}
+        hasUnsavedChanges={hasUnsavedChanges}
         onUndo={workspace.undoProfile}
         onRedo={workspace.redoProfile}
         onSave={() => void exportFile('json')}
@@ -148,11 +177,7 @@ export function App() {
           />
         </div>
       </div>
-      <footer className="status-bar">
-        <span>Reoli Resume Forge <small>v2.0.0</small></span>
-        <span>Trabalho melhor. Futuro maior.</span>
-        <span className="ready-state">{workspace.busy ? <><LoaderCircle className="spin" size={14} /> Processando</> : <><i /> Pronto</>}</span>
-      </footer>
+      <DocumentStatusBar busy={workspace.busy} saveState={saveState} />
       <AnimatePresence>
         {(workspace.error || notice) ? (
           <motion.div

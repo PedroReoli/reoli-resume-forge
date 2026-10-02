@@ -120,7 +120,9 @@
   .action-dock button span { font-size: 9px; }
   .action-dock kbd { display: none; }
   .status-bar { display: flex; justify-content: space-between; padding: 0 12px; }
-  .status-bar > span:nth-child(2) { display: none; }
+  .status-bar > span:first-child { display: none; }
+  .document-save-state { justify-self: start; }
+  .document-save-state small { display: none; }
   .ats-overview, .requirement-grid { grid-template-columns: 1fr; }
   .document-audit > div { grid-template-columns: 1fr; }
   .focused-editor-grid { grid-template-columns: 1fr; }
