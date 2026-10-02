@@ -17,8 +17,11 @@ export function AppHeader({ onImport, onSave, onNew, hasUnsavedChanges, canUndo,
       <div className="brand-lockup">
         <span className="brand-mark" aria-hidden="true">R</span>
         <div>
-          <strong>Reoli Resume Forge</strong>
-          <span>Resumes verdadeiros para oportunidades reais.</span>
+          <strong>
+            <span className="brand-name-full">Reoli Resume Forge</span>
+            <span className="brand-name-compact">Reoli Forge</span>
+          </strong>
+          <span className="brand-tagline">Resumes verdadeiros para oportunidades reais.</span>
         </div>
       </div>
       <div className="header-actions">

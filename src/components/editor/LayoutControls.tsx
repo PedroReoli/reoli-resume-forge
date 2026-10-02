@@ -1,4 +1,4 @@
-import { Gauge, LayoutGrid, Palette, Rows3, Sparkles, Type } from 'lucide-react';
+import { ChevronDown, Gauge, LayoutGrid, Palette, Rows3, SlidersHorizontal, Sparkles, Type } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import {
   applyResumePalette,
@@ -66,79 +66,92 @@ export function LayoutControls({ profile, onProfile }: LayoutControlsProps) {
         </small>
       </summary>
       <div className="layout-control-grid">
+        <div className="layout-preset-intro">
+          <strong>Escolha um ponto de partida</strong>
+          <span>Oito composições prontas; conteúdo e ordem permanecem intactos.</span>
+        </div>
         <ControlGroup label="Aparências prontas" icon={Sparkles}>
           <StylePresetControl
             value={stylePreset}
             onChange={(value) => onProfile(applyResumeStylePreset(profile, value))}
           />
         </ControlGroup>
-        <ControlGroup label="Paleta" icon={Palette}>
-          <PaletteControl value={palette} onChange={(value) => onProfile(applyResumePalette(profile, value))} />
-        </ControlGroup>
-        <ControlGroup label="Tipografia" icon={Type}>
-          <TypefaceControl value={typeface} onChange={(value) => onProfile(applyResumeTypeface(profile, value))} />
-        </ControlGroup>
-        <ControlGroup label="Competências" icon={LayoutGrid}>
-          <Segmented
-            value={profile.layout.skills_style}
-            options={SKILL_OPTIONS}
-            onChange={(value) => patchLayout({ skills_style: value as SkillsLayout })}
-          />
-        </ControlGroup>
-        <ControlGroup label="Experiências" icon={Rows3}>
-          <Segmented
-            value={profile.layout.experience_style}
-            options={NARRATIVE_OPTIONS}
-            onChange={(value) => patchLayout({ experience_style: value as NarrativeLayout })}
-          />
-        </ControlGroup>
-        <ControlGroup label="Projetos" icon={Rows3}>
-          <Segmented
-            value={profile.layout.projects_style}
-            options={NARRATIVE_OPTIONS}
-            onChange={(value) => patchLayout({ projects_style: value as NarrativeLayout })}
-          />
-        </ControlGroup>
-        <ControlGroup label="Densidade" icon={Gauge}>
-          <Segmented
-            value={profile.layout.density}
-            options={DENSITY_OPTIONS}
-            onChange={(value) => patchLayout({ density: value as ResumeDensity })}
-          />
-        </ControlGroup>
-      </div>
-      <label className="metric-toggle">
-        <input
-          type="checkbox"
-          checked={profile.layout.emphasize_metrics}
-          onChange={(event) => patchLayout({ emphasize_metrics: event.target.checked })}
-        />
-        <Sparkles size={14} />
-        <span>Destacar métricas e tecnologias no preview</span>
-      </label>
-      {profile.layout.skills_style === 'levels' ? (
-        <div className="skill-level-editor">
-          <p>Níveis definidos manualmente; o sistema não presume proficiência.</p>
-          {skillNames(profile).map((skill) => (
-            <label key={skill}>
-              <span>{skill}</span>
-              <input
-                type="range"
-                min="0"
-                max="5"
-                value={profile.layout.skill_levels[skill] ?? 0}
-                onChange={(event) => patchLayout({
-                  skill_levels: {
-                    ...profile.layout.skill_levels,
-                    [skill]: Number(event.target.value),
-                  },
-                })}
+        <details className="layout-advanced-controls">
+          <summary>
+            <span><SlidersHorizontal size={13} /> Ajustes finos</span>
+            <small>Cores, tipo e estrutura</small>
+            <ChevronDown size={14} aria-hidden="true" />
+          </summary>
+          <div className="layout-advanced-grid">
+            <ControlGroup label="Paleta" icon={Palette}>
+              <PaletteControl value={palette} onChange={(value) => onProfile(applyResumePalette(profile, value))} />
+            </ControlGroup>
+            <ControlGroup label="Tipografia" icon={Type}>
+              <TypefaceControl value={typeface} onChange={(value) => onProfile(applyResumeTypeface(profile, value))} />
+            </ControlGroup>
+            <ControlGroup label="Competências" icon={LayoutGrid}>
+              <Segmented
+                value={profile.layout.skills_style}
+                options={SKILL_OPTIONS}
+                onChange={(value) => patchLayout({ skills_style: value as SkillsLayout })}
               />
-              <output>{profile.layout.skill_levels[skill] ?? 0}/5</output>
+            </ControlGroup>
+            <ControlGroup label="Experiências" icon={Rows3}>
+              <Segmented
+                value={profile.layout.experience_style}
+                options={NARRATIVE_OPTIONS}
+                onChange={(value) => patchLayout({ experience_style: value as NarrativeLayout })}
+              />
+            </ControlGroup>
+            <ControlGroup label="Projetos" icon={Rows3}>
+              <Segmented
+                value={profile.layout.projects_style}
+                options={NARRATIVE_OPTIONS}
+                onChange={(value) => patchLayout({ projects_style: value as NarrativeLayout })}
+              />
+            </ControlGroup>
+            <ControlGroup label="Densidade" icon={Gauge}>
+              <Segmented
+                value={profile.layout.density}
+                options={DENSITY_OPTIONS}
+                onChange={(value) => patchLayout({ density: value as ResumeDensity })}
+              />
+            </ControlGroup>
+            <label className="metric-toggle">
+              <input
+                type="checkbox"
+                checked={profile.layout.emphasize_metrics}
+                onChange={(event) => patchLayout({ emphasize_metrics: event.target.checked })}
+              />
+              <Sparkles size={14} />
+              <span>Destacar métricas e tecnologias no preview</span>
             </label>
-          ))}
-        </div>
-      ) : null}
+            {profile.layout.skills_style === 'levels' ? (
+              <div className="skill-level-editor">
+                <p>Níveis definidos manualmente; o sistema não presume proficiência.</p>
+                {skillNames(profile).map((skill) => (
+                  <label key={skill}>
+                    <span>{skill}</span>
+                    <input
+                      type="range"
+                      min="0"
+                      max="5"
+                      value={profile.layout.skill_levels[skill] ?? 0}
+                      onChange={(event) => patchLayout({
+                        skill_levels: {
+                          ...profile.layout.skill_levels,
+                          [skill]: Number(event.target.value),
+                        },
+                      })}
+                    />
+                    <output>{profile.layout.skill_levels[skill] ?? 0}/5</output>
+                  </label>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        </details>
+      </div>
     </details>
   );
 }

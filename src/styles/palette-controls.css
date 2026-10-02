@@ -1,3 +1,103 @@
+.layout-controls {
+  margin: 14px 0 0;
+  border: 1px solid var(--line);
+  background: #0c120f;
+}
+
+.layout-controls > summary {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 11px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.layout-controls > summary::-webkit-details-marker { display: none; }
+.layout-controls > summary span { display: flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 700; }
+.layout-controls > summary small { max-width: 54%; overflow: hidden; color: var(--accent); font-family: var(--mono); font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+
+.layout-control-grid {
+  display: grid;
+  gap: 13px;
+  padding: 13px 11px;
+  border-top: 1px solid var(--line);
+}
+
+.layout-control-group { display: grid; gap: 7px; }
+.layout-control-group > span { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 10px; }
+
+.segmented-control { display: flex; flex-wrap: wrap; gap: 4px; }
+.segmented-control button {
+  min-height: 29px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  background: #101713;
+  color: var(--muted);
+  font-size: 9.5px;
+}
+.segmented-control button[aria-pressed="true"] { border-color: #5b7765; background: #1c2b22; color: var(--accent-bright); }
+
+.metric-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 11px 13px;
+  color: #b6c0ba;
+  font-size: 10px;
+}
+.metric-toggle input { accent-color: var(--accent); }
+
+.skill-level-editor { display: grid; gap: 7px; padding: 0 11px 13px; }
+.skill-level-editor > p { margin: 0 0 4px; color: var(--muted); font-size: 9px; line-height: 1.4; }
+.skill-level-editor label { display: grid; grid-template-columns: minmax(90px, 1fr) minmax(80px, 1fr) 32px; align-items: center; gap: 7px; font-size: 9px; }
+.skill-level-editor input { width: 100%; accent-color: var(--accent); }
+.skill-level-editor output { color: var(--accent); font-family: var(--mono); }
+
+.layout-preset-intro {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.layout-preset-intro strong { color: #dce5df; font-size: 11px; }
+.layout-preset-intro span { color: #7f8d84; font-size: 8.5px; text-align: right; }
+
+.layout-advanced-controls {
+  border: 1px solid #2d3b33;
+  background: #0a100d;
+}
+
+.layout-advanced-controls > summary {
+  display: grid;
+  min-height: 44px;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 9px;
+  padding: 0 10px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.layout-advanced-controls > summary::-webkit-details-marker { display: none; }
+.layout-advanced-controls > summary > span { display: flex; align-items: center; gap: 7px; color: #c8d2cc; font-size: 10px; font-weight: 650; }
+.layout-advanced-controls > summary small { overflow: hidden; color: #718078; font-size: 8.5px; text-align: right; text-overflow: ellipsis; white-space: nowrap; }
+.layout-advanced-controls > summary > svg { color: #6e7f75; transition: transform 140ms ease; }
+.layout-advanced-controls[open] > summary { border-bottom: 1px solid #2d3b33; background: #101813; }
+.layout-advanced-controls[open] > summary > svg { transform: rotate(180deg); }
+
+.layout-advanced-grid {
+  display: grid;
+  gap: 13px;
+  padding: 13px 10px;
+}
+
+.layout-advanced-grid .metric-toggle { padding: 2px 0; }
+.layout-advanced-grid .skill-level-editor { padding: 0; }
+
 .style-preset-control {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -309,6 +409,21 @@
 }
 
 @media (max-width: 560px) {
-  .style-preset-control { grid-template-columns: 1fr; }
+  .style-preset-control {
+    display: flex;
+    margin-right: -11px;
+    padding: 0 11px 8px 0;
+    overflow-x: auto;
+    scroll-padding-left: 1px;
+    scroll-snap-type: x mandatory;
+    scrollbar-color: #405047 #111814;
+    scrollbar-width: thin;
+  }
+  .style-preset-control > button {
+    flex: 0 0 min(270px, calc(100vw - 78px));
+    scroll-snap-align: start;
+  }
+  .palette-control button,
+  .segmented-control button { min-height: 44px; }
   .palette-control { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

@@ -30,7 +30,9 @@ export type ResumeStylePresetId =
   | 'product-clean'
   | 'leadership-bold'
   | 'editorial'
-  | 'visual-split';
+  | 'visual-split'
+  | 'global-ats'
+  | 'consulting-accent';
 
 export interface ResumeColors {
   primary: string;

@@ -141,9 +141,13 @@ test('mantém conteúdo, ordem e visibilidade ao aplicar aparência pronta', () 
   assert.equal(profileStylePreset(updated), 'editorial');
 });
 
-test('mantém seis aparências curadas, completas e sem IDs duplicados', () => {
-  assert.equal(RESUME_STYLE_PRESETS.length, 6);
-  assert.equal(new Set(RESUME_STYLE_PRESETS.map((option) => option.id)).size, 6);
+test('mantém oito aparências curadas cobrindo todos os templates sem IDs duplicados', () => {
+  assert.equal(RESUME_STYLE_PRESETS.length, 8);
+  assert.equal(new Set(RESUME_STYLE_PRESETS.map((option) => option.id)).size, 8);
+  assert.deepEqual(
+    [...new Set(RESUME_STYLE_PRESETS.map((option) => option.template))].sort(),
+    [...RESUME_TEMPLATE_IDS].sort(),
+  );
   assert.ok(RESUME_STYLE_PRESETS.every((option) => (
     option.label
     && option.description
@@ -152,4 +156,13 @@ test('mantém seis aparências curadas, completas e sem IDs duplicados', () => {
     && RESUME_PALETTE_IDS.includes(option.palette)
     && RESUME_TYPEFACE_IDS.includes(option.typeface)
   )));
+});
+
+test('cada aparência curada pode ser aplicada e reconhecida novamente', () => {
+  const original = normalizeResumeProfile(profileWith('classic'));
+
+  for (const preset of RESUME_STYLE_PRESETS) {
+    const updated = applyResumeStylePreset(original, preset.id);
+    assert.equal(profileStylePreset(updated), preset.id);
+  }
 });

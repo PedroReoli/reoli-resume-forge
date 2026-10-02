@@ -33,7 +33,7 @@
   body { overflow: auto; }
   .app-shell { display: block; width: 100%; height: auto; min-height: 100vh; }
   .app-header { position: sticky; top: 0; height: auto; min-height: 58px; padding: 9px 14px; }
-  .brand-lockup > div span, .privacy-note { display: none; }
+  .brand-tagline, .privacy-note { display: none; }
   .header-actions { margin-left: auto; }
   .app-header .quiet-button { min-width: 38px; padding: 0 9px; font-size: 0; }
   .app-header .quiet-button svg { width: 17px; height: 17px; }
@@ -99,7 +99,11 @@
 @media (max-width: 560px) {
   .app-header { align-items: flex-start; }
   .brand-lockup strong { font-size: 13px; }
+  .brand-name-full { display: none; }
+  .brand-name-compact { display: inline; }
   .brand-lockup > div { align-items: flex-start; }
+  .layout-preset-intro { display: grid; gap: 3px; }
+  .layout-preset-intro span { text-align: left; }
   .workspace-controls { grid-template-columns: 1fr; }
   .workspace-controls label:last-child { grid-column: auto; }
   .two-columns { grid-template-columns: 1fr; }
