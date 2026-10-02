@@ -4,7 +4,7 @@ Editor desktop e compilador headless, local-first, para criar currículos legív
 
 ## O que entrega
 
-- GUI Dark Tech em split view, com sumário que acompanha a seção ativa e permanece acessível no mobile, editor estruturado, página A4 e edição inline bidirecional.
+- GUI Dark Tech em split view, com sumário que acompanha a seção ativa e permanece acessível no mobile, editor estruturado, página A4 com encaixe responsivo automático e edição inline bidirecional.
 - Cinco arquétipos nativos: frontend, full stack Node.js, full stack .NET, tech lead e internacional em inglês.
 - Matcher ATS determinístico, com requisitos obrigatórios ponderados e indicação dos termos atendidos/ausentes.
 - Tailoring conservador: reordena apenas evidências existentes e nunca fabrica experiências, tecnologias ou métricas.
@@ -44,6 +44,8 @@ O arquivo é distribuído sem sidecars. A GUI usa o Microsoft Edge WebView2 inst
 5. Use **Criar versão adaptada** para priorizar fatos já presentes no perfil.
 6. Confira o indicador `N / 2 A4` no preview. Quando houver excesso ou espaço ocioso, abra o assistente para aplicar a densidade recomendada sem apagar conteúdo; a mudança entra no histórico e pode ser desfeita.
 7. Salve a versão editável com `Ctrl+S` (JSON); conteúdo, estrutura e template serão restaurados na importação. O cabeçalho e a barra de status indicam alterações pendentes, e o nome sugerido usa a pessoa do perfil. Depois, revise a auditoria ATS e exporte com `Ctrl+P` (PDF), `Ctrl+D` (DOCX) ou `Ctrl+M` (Markdown).
+
+O preview inicia em **Ajustado**, exibindo a folha inteira sem rolagem horizontal acidental. Use `–` ou `+` para assumir controle manual do zoom; o botão de encaixe restaura a escala responsiva.
 
 Em telas abaixo de 1040 px, use a alternância **Editor / Preview** para preservar a legibilidade do documento.
 

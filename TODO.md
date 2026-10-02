@@ -41,6 +41,7 @@
 - [x] Continuação de experiências e projetos sem bullets ou tecnologias órfãs no início da página.
 - [x] Assistente de orçamento A4 com contagem real, recomendação acionável e alteração reversível de densidade.
 - [x] Paridade de densidade entre preview, PDF e DOCX, incluindo margens, entrelinhas e espaçamento de blocos.
+- [x] Encaixe responsivo automático da folha A4, sem corte ou rolagem horizontal acidental, preservando zoom manual.
 
 ## Próximos ciclos
 
