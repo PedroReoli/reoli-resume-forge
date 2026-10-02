@@ -110,20 +110,46 @@ fn render_experience(writer: &mut PdfWriter, profile: &ResumeProfile, theme: Pdf
             None,
         );
         writer.paragraph(&experience.summary);
-        if profile.layout.experience_style == "paragraphs" {
-            writer.paragraph(&experience.bullets.join(" "));
+        let technology_line = if experience.technologies.is_empty() {
+            None
         } else {
-            for bullet in ordered_metrics(&experience.bullets, &profile.layout.experience_style) {
-                writer.bullet(bullet);
-            }
-        }
-        if !experience.technologies.is_empty() {
             let label = if profile.config.tech_label.trim().is_empty() {
                 "Tecnologias"
             } else {
                 &profile.config.tech_label
             };
-            writer.paragraph(&format!("{label}: {}", experience.technologies.join(", ")));
+            Some(format!("{label}: {}", experience.technologies.join(", ")))
+        };
+        if profile.layout.experience_style == "paragraphs" {
+            writer.paragraph(&experience.bullets.join(" "));
+        } else {
+            let bullets = ordered_metrics(&experience.bullets, &profile.layout.experience_style);
+            for (index, bullet) in bullets.iter().enumerate() {
+                if index + 1 == bullets.len() {
+                    if let Some(technologies) = &technology_line {
+                        let bullet_line = format!("• {bullet}");
+                        let bullet_height = writer.estimated_text_height(
+                            &bullet_line,
+                            theme.body_size - 0.2,
+                            theme.body_line_height - 0.2,
+                            writer.content_x + 3.0,
+                            None,
+                        );
+                        let technologies_height = writer.estimated_text_height(
+                            technologies,
+                            theme.body_size,
+                            theme.body_line_height,
+                            writer.content_x,
+                            Some(1.0),
+                        );
+                        writer.keep_together_if_possible(bullet_height + technologies_height);
+                    }
+                }
+                writer.bullet(bullet);
+            }
+        }
+        if let Some(technologies) = technology_line {
+            writer.paragraph(&technologies);
         }
     }
 }

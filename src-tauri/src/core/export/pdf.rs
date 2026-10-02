@@ -390,6 +390,14 @@ impl PdfWriter {
     }
 
     fn paragraph(&mut self, value: &str) {
+        let needed = self.estimated_text_height(
+            value,
+            self.theme.body_size,
+            self.theme.body_line_height,
+            self.content_x,
+            Some(1.0),
+        );
+        self.keep_together_if_possible(needed);
         self.text(
             value,
             self.theme.body_size,
@@ -400,9 +408,41 @@ impl PdfWriter {
         );
     }
 
+    fn estimated_text_height(
+        &self,
+        value: &str,
+        size: f32,
+        line_height_mm: f32,
+        x: f32,
+        before_mm: Option<f32>,
+    ) -> f32 {
+        if value.trim().is_empty() {
+            return 0.0;
+        }
+        let available_width = self.content_right - x;
+        let max_chars = ((available_width / (size * 0.19)).floor() as usize).max(24);
+        before_mm.unwrap_or_default() + wrap(value, max_chars).len() as f32 * line_height_mm
+    }
+
+    fn keep_together_if_possible(&mut self, needed: f32) {
+        let page_capacity = self.theme.top_y - self.theme.bottom_y;
+        if needed <= page_capacity && self.y - needed < self.theme.bottom_y {
+            self.new_page();
+        }
+    }
+
     fn bullet(&mut self, value: &str) {
+        let bullet = format!("• {value}");
+        let needed = self.estimated_text_height(
+            &bullet,
+            self.theme.body_size - 0.2,
+            self.theme.body_line_height - 0.2,
+            self.content_x + 3.0,
+            None,
+        );
+        self.keep_together_if_possible(needed);
         self.text(
-            &format!("• {value}"),
+            &bullet,
             self.theme.body_size - 0.2,
             false,
             self.theme.body_line_height - 0.2,
@@ -412,7 +452,16 @@ impl PdfWriter {
     }
 
     fn section(&mut self, title: &str) {
-        self.ensure_space(10.0);
+        let title_height = self.estimated_text_height(
+            &title.to_uppercase(),
+            self.theme.section_size,
+            self.theme.section_line_height,
+            self.content_x,
+            None,
+        );
+        self.ensure_space(
+            self.theme.section_spacing + title_height + (self.theme.body_line_height * 2.0),
+        );
         self.y -= self.theme.section_spacing;
         let previous_color = self.text_color;
         if self.theme.header_band {
@@ -579,13 +628,17 @@ impl PdfWriter {
 
     fn ensure_space(&mut self, needed: f32) {
         if self.y - needed < self.theme.bottom_y {
-            self.pages.push(std::mem::take(&mut self.current));
-            self.y = self.theme.top_y;
-            if self.split_first_page {
-                self.content_x = self.theme.margin_x;
-                self.content_right = PAGE_WIDTH - self.theme.margin_x;
-                self.split_first_page = false;
-            }
+            self.new_page();
+        }
+    }
+
+    fn new_page(&mut self) {
+        self.pages.push(std::mem::take(&mut self.current));
+        self.y = self.theme.top_y;
+        if self.split_first_page {
+            self.content_x = self.theme.margin_x;
+            self.content_right = PAGE_WIDTH - self.theme.margin_x;
+            self.split_first_page = false;
         }
     }
 
@@ -635,5 +688,24 @@ mod tests {
         let lines = wrap("um dois três quatro cinco seis", 10);
         assert_eq!(lines.join(" "), "um dois três quatro cinco seis");
         assert!(lines.len() > 1);
+    }
+
+    #[test]
+    fn moves_a_complete_block_to_the_next_page_when_it_fits_there() {
+        let theme = PdfTheme::for_template(ResumeTemplate::Classic);
+        let mut writer = PdfWriter::new(theme);
+        writer.text_line(
+            "conteudo",
+            theme.body_size,
+            false,
+            theme.margin_x,
+            theme.top_y,
+        );
+        writer.y = theme.bottom_y + 20.0;
+
+        writer.keep_together_if_possible(40.0);
+
+        assert_eq!(writer.pages.len(), 1);
+        assert_eq!(writer.y, theme.top_y);
     }
 }
