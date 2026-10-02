@@ -1,5 +1,6 @@
 use super::super::model::ResumeProfile;
 use super::ResumeTemplate;
+use super::density::DensityPreset;
 use super::palette::profile_palette;
 use super::pdf_content::{
     estimate_text_width, is_safe_link, is_split_sidebar_section, join_non_empty, string_values,
@@ -25,7 +26,8 @@ pub fn render_with_template(
 ) -> Result<Vec<u8>, String> {
     let theme = PdfTheme::for_template(template)
         .with_palette(profile_palette(profile))
-        .with_typeface(profile_typeface(profile));
+        .with_typeface(profile_typeface(profile))
+        .with_density(DensityPreset::from_profile(profile));
     let mut writer = PdfWriter::new(theme);
     writer.begin_header();
     writer.header(profile, template);

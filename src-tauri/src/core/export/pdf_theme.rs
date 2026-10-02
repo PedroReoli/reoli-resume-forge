@@ -1,4 +1,5 @@
 use super::ResumeTemplate;
+use super::density::DensityPreset;
 use super::palette::PaletteColors;
 use super::typeface::TypefacePreset;
 use printpdf::BuiltinFont;
@@ -288,6 +289,43 @@ impl PdfTheme {
         }
         self
     }
+
+    pub fn with_density(mut self, density: DensityPreset) -> Self {
+        match density {
+            DensityPreset::Compact => {
+                self.margin_x = (self.margin_x - 1.0).max(12.0);
+                self.top_y = (self.top_y + 2.0).min(286.0);
+                self.bottom_y = (self.bottom_y - 2.0).max(11.0);
+                self.name_line_height *= 0.94;
+                self.headline_line_height *= 0.92;
+                self.meta_line_height *= 0.90;
+                self.body_size = (self.body_size * 0.97).max(8.4);
+                self.body_line_height *= 0.90;
+                self.section_line_height *= 0.92;
+                self.section_spacing *= 0.62;
+                self.company_line_height *= 0.92;
+                self.role_line_height *= 0.92;
+                self.record_spacing *= 0.62;
+            }
+            DensityPreset::Relaxed => {
+                self.margin_x += 1.0;
+                self.top_y -= 2.0;
+                self.bottom_y += 2.0;
+                self.name_line_height *= 1.04;
+                self.headline_line_height *= 1.06;
+                self.meta_line_height *= 1.08;
+                self.body_size *= 1.02;
+                self.body_line_height *= 1.12;
+                self.section_line_height *= 1.08;
+                self.section_spacing *= 1.38;
+                self.company_line_height *= 1.08;
+                self.role_line_height *= 1.08;
+                self.record_spacing *= 1.38;
+            }
+            DensityPreset::Balanced => {}
+        }
+        self
+    }
 }
 
 #[cfg(test)]
@@ -327,5 +365,19 @@ mod tests {
             .with_typeface(profile_typeface(&profile));
         assert_eq!(theme.normal_font, BuiltinFont::Courier);
         assert_eq!(theme.bold_font, BuiltinFont::CourierBold);
+    }
+
+    #[test]
+    fn applies_profile_density_to_pdf_spacing() {
+        let balanced = PdfTheme::for_template(ResumeTemplate::Classic);
+        let compact = balanced.with_density(DensityPreset::Compact);
+        let relaxed = balanced.with_density(DensityPreset::Relaxed);
+
+        assert!(compact.body_line_height < balanced.body_line_height);
+        assert!(compact.section_spacing < balanced.section_spacing);
+        assert!(compact.top_y > balanced.top_y);
+        assert!(relaxed.body_line_height > balanced.body_line_height);
+        assert!(relaxed.record_spacing > balanced.record_spacing);
+        assert!(relaxed.top_y < balanced.top_y);
     }
 }

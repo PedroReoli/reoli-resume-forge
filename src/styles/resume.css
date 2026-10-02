@@ -91,12 +91,19 @@
 .custom-resume-list { white-space: pre-line; }
 
 .density-compact { padding-top: 42px; padding-bottom: 46px; }
+.density-compact .resume-header { gap: 22px; margin-bottom: 18px; }
 .density-compact .resume-section { margin-top: 15px; }
+.density-compact .resume-section > h2 { margin-bottom: 6px; }
 .density-compact .resume-records, .density-compact .resume-project-grid { gap: 10px; }
 .density-compact .resume-paragraph, .density-compact .resume-record, .density-compact .resume-skills { font-size: 10px; line-height: 1.34; }
+.density-compact .resume-bullet-list { gap: 2px; margin-top: 3px; font-size: 10.2px; line-height: 1.3; }
+.density-compact .resume-tech { margin-top: 2px; }
+.density-relaxed { padding-top: 56px; padding-bottom: 64px; }
+.density-relaxed .resume-header { margin-bottom: 30px; }
 .density-relaxed .resume-section { margin-top: 28px; }
 .density-relaxed .resume-records, .density-relaxed .resume-project-grid { gap: 21px; }
 .density-relaxed .resume-paragraph, .density-relaxed .resume-record, .density-relaxed .resume-skills { line-height: 1.58; }
+.density-relaxed .resume-bullet-list { gap: 5px; line-height: 1.55; }
 
 /* Classic Reoli — reproduz a gramática visual segura do Vault em A4 nativo. */
 .template-classic {

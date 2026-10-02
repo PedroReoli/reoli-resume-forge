@@ -1,0 +1,216 @@
+.page-fit-control {
+  position: relative;
+  z-index: 5;
+  flex: 0 0 auto;
+}
+
+.page-fit-trigger {
+  display: grid;
+  grid-template-columns: 24px auto 14px;
+  min-width: 126px;
+  height: 34px;
+  align-items: center;
+  gap: 7px;
+  padding: 0 7px 0 5px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: #111814;
+  color: #d8e1db;
+  text-align: left;
+}
+
+.page-fit-trigger:hover,
+.page-fit-trigger[aria-expanded="true"] {
+  border-color: #5b7063;
+  background: #17211b;
+}
+
+.page-fit-trigger:focus-visible,
+.page-fit-action:focus-visible {
+  outline: 2px solid var(--accent-bright);
+  outline-offset: 2px;
+}
+
+.page-fit-signal {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-content: center;
+  border: 1px solid #3f614a;
+  border-radius: 50%;
+  background: #18291e;
+  color: #9fcdaa !important;
+}
+
+.tone-warning .page-fit-signal,
+.tone-review .page-fit-signal {
+  border-color: #79613d;
+  background: #2a2114;
+  color: #e0bd77 !important;
+}
+
+.page-fit-trigger-copy {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+  text-transform: none !important;
+}
+
+.page-fit-trigger-copy small {
+  color: #819087;
+  font-family: var(--sans);
+  font-size: 8px;
+  line-height: 1;
+}
+
+.page-fit-trigger-copy strong {
+  color: #dce5df;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  font-weight: 500;
+  line-height: 1.1;
+}
+
+.page-fit-chevron {
+  color: #76847b;
+  transition: transform 140ms ease;
+}
+
+.page-fit-trigger[aria-expanded="true"] .page-fit-chevron { transform: rotate(180deg); }
+
+.page-fit-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: min(328px, calc(100vw - 28px));
+  padding: 15px;
+  border: 1px solid #4d6055;
+  border-radius: 5px;
+  background: #0d1410;
+  box-shadow: 0 20px 55px rgb(0 0 0 / 55%);
+}
+
+.page-fit-panel::before {
+  position: absolute;
+  top: -5px;
+  left: 18px;
+  width: 9px;
+  height: 9px;
+  border-top: 1px solid #4d6055;
+  border-left: 1px solid #4d6055;
+  background: #0d1410;
+  content: "";
+  transform: rotate(45deg);
+}
+
+.page-fit-panel header {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+
+.page-fit-panel header > span {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-content: center;
+  border: 1px solid #3b4d43;
+  color: #a6c7ae;
+  text-transform: none;
+}
+
+.page-fit-panel header div { display: grid; gap: 3px; }
+.page-fit-panel header strong { color: #e1e8e3; font-size: 11px; }
+.page-fit-panel header small { color: #7f8e85; font-size: 8.5px; }
+
+.page-fit-meter {
+  position: relative;
+  height: 7px;
+  margin: 14px 0 13px;
+  overflow: hidden;
+  border: 1px solid #33423a;
+  background: #090e0b;
+}
+
+.page-fit-meter i {
+  display: block;
+  width: var(--page-fit-progress);
+  height: 100%;
+  background: #7fae89;
+}
+
+.tone-warning .page-fit-meter i,
+.tone-review .page-fit-meter i { background: #c19650; }
+
+.page-fit-meter span {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  left: 50%;
+  width: 1px;
+  background: #0b100d;
+  text-transform: none;
+}
+
+.page-fit-message { display: grid; gap: 5px; }
+.page-fit-message strong { color: #d9e3dc; font-size: 11px; }
+.page-fit-message p { margin: 0; color: #96a39b; font-size: 9.5px; line-height: 1.5; }
+
+.page-fit-action {
+  display: flex;
+  width: 100%;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 13px;
+  border: 1px solid #799b81;
+  border-radius: 3px;
+  background: #c4dfc9;
+  color: #102016;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.page-fit-action:hover { background: #d5ead9; }
+
+.page-fit-panel footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 13px;
+  padding-top: 10px;
+  border-top: 1px solid #29372f;
+}
+
+.page-fit-panel footer span {
+  color: #718078;
+  font-family: var(--sans);
+  font-size: 8px;
+  text-transform: none;
+}
+
+@media (max-width: 760px) {
+  .preview-toolbar { gap: 6px; }
+  .zoom-controls > span,
+  .zoom-controls button:not(:last-child) { display: none; }
+  .page-fit-trigger { min-width: 104px; height: 44px; }
+}
+
+@media (max-width: 560px) {
+  .page-fit-trigger {
+    grid-template-columns: 23px auto 10px;
+    min-width: 82px;
+    gap: 5px;
+    padding-right: 5px;
+  }
+  .page-fit-trigger-copy small { display: none; }
+  .page-fit-trigger-copy strong { font-size: 8.5px; }
+  .page-fit-panel { position: fixed; top: 114px; left: 10px; width: calc(100vw - 20px); }
+  .page-fit-panel::before { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-fit-chevron { transition: none; }
+}

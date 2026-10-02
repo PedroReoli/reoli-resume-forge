@@ -2,6 +2,7 @@ import { ChevronLeft, ChevronRight, Maximize2, Minus, Palette, Plus } from 'luci
 import { useEffect, useRef, useState } from 'react';
 import { TEMPLATE_OPTIONS } from '../../domain/resumeLayout';
 import type { ResumeProfile, ResumeTemplate } from '../../types/resume';
+import { PageFitControl } from './PageFitControl';
 import { ResumePreview } from './ResumePreview';
 
 const A4_PREVIEW_HEIGHT = 1123;
@@ -64,10 +65,14 @@ export function PreviewPane({ profile, template, onTemplate, onProfile, onPageCo
   return (
     <section className="preview-pane">
       <div className="preview-toolbar">
-        <div className="document-meta">
-          <span>Documento</span>
-          <strong>A4 · {pageCount} {pageCount === 1 ? 'página' : 'páginas'}</strong>
-        </div>
+        <PageFitControl
+          pageCount={pageCount}
+          density={profile.layout.density}
+          onDensity={(density) => onProfile({
+            ...profile,
+            layout: { ...profile.layout, density },
+          })}
+        />
         <div className="template-quick-switcher">
           <button type="button" aria-label="Template anterior" onClick={() => cycleTemplate(-1)}><ChevronLeft size={14} /></button>
           <label>

@@ -1,5 +1,6 @@
 use super::super::model::ResumeProfile;
 use super::ResumeTemplate;
+use super::density::DensityPreset;
 use super::palette::{PaletteColors, profile_palette};
 use super::typeface::{TypefacePreset, profile_typeface};
 use super::zip_store::{self, ZipEntry};
@@ -73,7 +74,9 @@ pub(super) fn document_xml(profile: &ResumeProfile, template: ResumeTemplate) ->
         }
     }
 
-    let margin = DocxTheme::for_template(template).margin;
+    let margin = DocxTheme::for_template(template)
+        .with_density(DensityPreset::from_profile(profile))
+        .margin;
     format!(
         r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:body>{body}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="{margin}" w:right="{margin}" w:bottom="{margin}" w:left="{margin}" w:header="0" w:footer="0" w:gutter="0"/></w:sectPr></w:body></w:document>"#
@@ -340,6 +343,34 @@ struct DocxTheme {
     company_before: u16,
     accent: &'static str,
     border: &'static str,
+    spacing: DocxSpacing,
+}
+
+#[derive(Clone, Copy)]
+struct DocxSpacing {
+    paragraph_after: u16,
+    section_after: u16,
+    bullet_after: u16,
+}
+
+impl DocxSpacing {
+    const BALANCED: Self = Self {
+        paragraph_after: 44,
+        section_after: 45,
+        bullet_after: 32,
+    };
+
+    const COMPACT: Self = Self {
+        paragraph_after: 28,
+        section_after: 30,
+        bullet_after: 20,
+    };
+
+    const RELAXED: Self = Self {
+        paragraph_after: 58,
+        section_after: 60,
+        bullet_after: 44,
+    };
 }
 
 impl DocxTheme {
@@ -358,6 +389,7 @@ impl DocxTheme {
                 company_before: 75,
                 accent: "1F374D",
                 border: "D9E0E6",
+                spacing: DocxSpacing::BALANCED,
             },
             ResumeTemplate::Clean => Self {
                 font: "Georgia",
@@ -372,6 +404,7 @@ impl DocxTheme {
                 company_before: 80,
                 accent: "1F374D",
                 border: "D9E0E6",
+                spacing: DocxSpacing::BALANCED,
             },
             ResumeTemplate::Compact => Self {
                 font: "Arial",
@@ -386,6 +419,7 @@ impl DocxTheme {
                 company_before: 45,
                 accent: "252A2D",
                 border: "A9AFB2",
+                spacing: DocxSpacing::BALANCED,
             },
             ResumeTemplate::Executive => Self {
                 font: "Aptos",
@@ -400,6 +434,7 @@ impl DocxTheme {
                 company_before: 90,
                 accent: "174A3B",
                 border: "8FB49F",
+                spacing: DocxSpacing::BALANCED,
             },
             ResumeTemplate::TechMinimalist => Self {
                 font: "Consolas",
@@ -414,6 +449,7 @@ impl DocxTheme {
                 company_before: 45,
                 accent: "3178C6",
                 border: "8CB7DB",
+                spacing: DocxSpacing::BALANCED,
             },
             ResumeTemplate::ModernSplit => Self {
                 font: "Arial",
@@ -428,6 +464,7 @@ impl DocxTheme {
                 company_before: 70,
                 accent: "1C567F",
                 border: "73ADBF",
+                spacing: DocxSpacing::BALANCED,
             },
             ResumeTemplate::ExecutiveBold => Self {
                 font: "Aptos",
@@ -442,6 +479,7 @@ impl DocxTheme {
                 company_before: 95,
                 accent: "111E2E",
                 border: "B3852E",
+                spacing: DocxSpacing::BALANCED,
             },
             ResumeTemplate::Academic => Self {
                 font: "Times New Roman",
@@ -456,6 +494,7 @@ impl DocxTheme {
                 company_before: 90,
                 accent: "592933",
                 border: "B28B93",
+                spacing: DocxSpacing::BALANCED,
             },
         }
     }
@@ -474,14 +513,38 @@ impl DocxTheme {
         }
         self
     }
+
+    fn with_density(mut self, density: DensityPreset) -> Self {
+        match density {
+            DensityPreset::Compact => {
+                self.body_size = self.body_size.saturating_sub(1).max(17);
+                self.line = ((self.line as f32) * 0.90).round() as u16;
+                self.margin = ((self.margin as f32) * 0.90).round() as u16;
+                self.section_before = ((self.section_before as f32) * 0.62).round() as u16;
+                self.company_before = ((self.company_before as f32) * 0.62).round() as u16;
+                self.spacing = DocxSpacing::COMPACT;
+            }
+            DensityPreset::Relaxed => {
+                self.body_size += 1;
+                self.line = ((self.line as f32) * 1.12).round() as u16;
+                self.margin = ((self.margin as f32) * 1.08).round() as u16;
+                self.section_before = ((self.section_before as f32) * 1.35).round() as u16;
+                self.company_before = ((self.company_before as f32) * 1.35).round() as u16;
+                self.spacing = DocxSpacing::RELAXED;
+            }
+            DensityPreset::Balanced => {}
+        }
+        self
+    }
 }
 
 fn styles_xml(profile: &ResumeProfile, template: ResumeTemplate) -> String {
     let theme = DocxTheme::for_template(template)
         .with_palette(profile_palette(profile))
-        .with_typeface(profile_typeface(profile));
+        .with_typeface(profile_typeface(profile))
+        .with_density(DensityPreset::from_profile(profile));
     format!(
-        r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="{font}" w:hAnsi="{font}"/><w:sz w:val="{body_size}"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="44" w:line="{line}" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style><w:style w:type="paragraph" w:styleId="ResumeName"><w:name w:val="Resume Name"/><w:basedOn w:val="Normal"/><w:pPr><w:jc w:val="{alignment}"/><w:spacing w:after="40"/></w:pPr><w:rPr><w:b/><w:color w:val="{accent}"/><w:sz w:val="{name_size}"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="ResumeHeadline"><w:name w:val="Resume Headline"/><w:basedOn w:val="Normal"/><w:pPr><w:jc w:val="{alignment}"/><w:spacing w:after="50"/></w:pPr><w:rPr><w:b/><w:sz w:val="{headline_size}"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="ResumeContact"><w:name w:val="Resume Contact"/><w:basedOn w:val="Normal"/><w:pPr><w:jc w:val="{alignment}"/><w:spacing w:after="20"/></w:pPr><w:rPr><w:color w:val="5A5A5A"/><w:sz w:val="17"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="ResumeSection"><w:name w:val="Resume Section"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="{section_before}" w:after="45"/><w:pBdr><w:bottom w:val="single" w:sz="6" w:space="1" w:color="{border}"/></w:pBdr></w:pPr><w:rPr><w:b/><w:color w:val="{accent}"/><w:sz w:val="{section_size}"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="ResumeCompany"><w:name w:val="Resume Company"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="{company_before}" w:after="0"/></w:pPr><w:rPr><w:b/><w:color w:val="{accent}"/><w:sz w:val="20"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="ResumeRole"><w:name w:val="Resume Role"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:after="10"/></w:pPr><w:rPr><w:b/><w:sz w:val="19"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="ResumeMeta"><w:name w:val="Resume Meta"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:after="30"/></w:pPr><w:rPr><w:color w:val="5A5A5A"/><w:sz w:val="17"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="ResumeBullet"><w:name w:val="Resume Bullet"/><w:basedOn w:val="Normal"/><w:pPr><w:ind w:left="220" w:hanging="160"/><w:spacing w:after="32"/></w:pPr><w:rPr><w:sz w:val="18"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="ResumeSkill"><w:name w:val="Resume Skill"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:after="30"/></w:pPr></w:style></w:styles>"#,
+        r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="{font}" w:hAnsi="{font}"/><w:sz w:val="{body_size}"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="{paragraph_after}" w:line="{line}" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style><w:style w:type="paragraph" w:styleId="ResumeName"><w:name w:val="Resume Name"/><w:basedOn w:val="Normal"/><w:pPr><w:jc w:val="{alignment}"/><w:spacing w:after="40"/></w:pPr><w:rPr><w:b/><w:color w:val="{accent}"/><w:sz w:val="{name_size}"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="ResumeHeadline"><w:name w:val="Resume Headline"/><w:basedOn w:val="Normal"/><w:pPr><w:jc w:val="{alignment}"/><w:spacing w:after="50"/></w:pPr><w:rPr><w:b/><w:sz w:val="{headline_size}"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="ResumeContact"><w:name w:val="Resume Contact"/><w:basedOn w:val="Normal"/><w:pPr><w:jc w:val="{alignment}"/><w:spacing w:after="20"/></w:pPr><w:rPr><w:color w:val="5A5A5A"/><w:sz w:val="17"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="ResumeSection"><w:name w:val="Resume Section"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="{section_before}" w:after="{section_after}"/><w:pBdr><w:bottom w:val="single" w:sz="6" w:space="1" w:color="{border}"/></w:pBdr></w:pPr><w:rPr><w:b/><w:color w:val="{accent}"/><w:sz w:val="{section_size}"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="ResumeCompany"><w:name w:val="Resume Company"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="{company_before}" w:after="0"/></w:pPr><w:rPr><w:b/><w:color w:val="{accent}"/><w:sz w:val="20"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="ResumeRole"><w:name w:val="Resume Role"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:after="10"/></w:pPr><w:rPr><w:b/><w:sz w:val="19"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="ResumeMeta"><w:name w:val="Resume Meta"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:after="30"/></w:pPr><w:rPr><w:color w:val="5A5A5A"/><w:sz w:val="17"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="ResumeBullet"><w:name w:val="Resume Bullet"/><w:basedOn w:val="Normal"/><w:pPr><w:ind w:left="220" w:hanging="160"/><w:spacing w:after="{bullet_after}"/></w:pPr><w:rPr><w:sz w:val="18"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="ResumeSkill"><w:name w:val="Resume Skill"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:after="30"/></w:pPr></w:style></w:styles>"#,
         font = theme.font,
         body_size = theme.body_size,
         line = theme.line,
@@ -493,6 +556,9 @@ fn styles_xml(profile: &ResumeProfile, template: ResumeTemplate) -> String {
         border = theme.border,
         section_size = theme.section_size,
         company_before = theme.company_before,
+        paragraph_after = theme.spacing.paragraph_after,
+        section_after = theme.spacing.section_after,
+        bullet_after = theme.spacing.bullet_after,
     )
 }
 
@@ -586,5 +652,22 @@ mod tests {
 
         let styles = styles_xml(&profile, ResumeTemplate::TechMinimalist);
         assert!(styles.contains(r#"w:rFonts w:ascii="Georgia" w:hAnsi="Georgia""#));
+    }
+
+    #[test]
+    fn applies_profile_density_to_docx_spacing_and_page_margin() {
+        let mut profile = load_archetype("01_frontend").unwrap();
+        profile.layout.density = "compact".into();
+
+        let compact_styles = styles_xml(&profile, ResumeTemplate::Classic);
+        let compact_document = document_xml(&profile, ResumeTemplate::Classic);
+        assert!(compact_styles.contains(r#"w:after="28" w:line="212""#));
+        assert!(compact_styles.contains(r#"w:before="68" w:after="30""#));
+        assert!(compact_document.contains(r#"w:top="804" w:right="804""#));
+
+        profile.layout.density = "relaxed".into();
+        let relaxed_styles = styles_xml(&profile, ResumeTemplate::Classic);
+        assert!(relaxed_styles.contains(r#"w:after="58" w:line="263""#));
+        assert!(relaxed_styles.contains(r#"w:before="149" w:after="60""#));
     }
 }

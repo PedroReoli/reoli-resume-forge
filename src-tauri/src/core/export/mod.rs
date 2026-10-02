@@ -1,3 +1,4 @@
+mod density;
 mod docx;
 mod markdown;
 mod palette;
