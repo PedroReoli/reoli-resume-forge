@@ -35,7 +35,7 @@ flowchart LR
 3. Após 420 ms sem edição, a GUI envia perfil e Job Description ao core via IPC.
 4. O core valida limites, extrai requisitos, cruza evidências e devolve um relatório serializável.
 5. Ao adaptar, o core ordena bullets e tecnologias pela relevância, com proveniência e sem criar texto novo.
-6. O exportador serializa o mesmo perfil, ordem, visibilidade, seções personalizadas, template, paleta e família tipográfica para o formato escolhido. PDF e DOCX resolvem presets cromáticos e equivalentes tipográficos seguros para a composição usada no preview; assim, uma variante JSON reabre e exporta com a mesma linguagem visual.
+6. O exportador serializa o mesmo perfil, ordem, visibilidade, seções personalizadas, template, paleta, família tipográfica e densidade para o formato escolhido. PDF e DOCX resolvem presets cromáticos, equivalentes tipográficos e métricas seguras de margem/entrelinha para a composição usada no preview; assim, uma variante JSON reabre e exporta com a mesma linguagem visual.
 
 ## Limites de segurança
 
@@ -50,7 +50,7 @@ flowchart LR
 
 PDF e DOCX usam texto selecionável, headings convencionais e fontes seguras. `classic`, `tech-minimalist`, `executive-bold`, `academic`, `clean`, `compact` e `executive` preservam leitura linear; `modern-split` oferece uma composição visual em duas colunas e é sinalizado como opção de maior risco para parsers antigos. Quando uma experiência ou projeto atravessa uma quebra de página, o PDF repete uma âncora curta com o nome do registro antes da continuação, evitando bullets e tecnologias sem contexto. URLs usam hyperlinks externos reais e nenhum dado essencial fica em header, footer ou imagem.
 
-O preview pode mostrar skills em tabela, mas usa `caption`, `th` e escopo semântico. A auditoria replica limites úteis do gerador do Vault: até duas páginas, resumo de até 110 palavras e bullets de até 35 palavras. Esses itens são recomendações, não promessa de aprovação.
+O preview pode mostrar skills em tabela, mas usa `caption`, `th` e escopo semântico. A auditoria replica limites úteis do gerador do Vault: até duas páginas, resumo de até 110 palavras e bullets de até 35 palavras. O `ResizeObserver` do preview mede a paginação composta e alimenta um assistente local: em uma página compacta ele pode sugerir `balanced`; acima de duas páginas sugere `compact`; se o documento já estiver compacto, pede revisão humana de conteúdo. A ação altera somente `layout.density`, preserva o texto e integra o histórico de desfazer/refazer. Esses itens são recomendações, não promessa de aprovação.
 
 ## Contrato modular 2.0
 

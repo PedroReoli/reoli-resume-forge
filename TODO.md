@@ -38,6 +38,8 @@
 - [x] Fichas recolhíveis para experiências e projetos com indicadores de conteúdo.
 - [x] Paginação PDF protegendo parágrafos, cabeçalhos de registros e margens em fontes monoespaçadas.
 - [x] Continuação de experiências e projetos sem bullets ou tecnologias órfãs no início da página.
+- [x] Assistente de orçamento A4 com contagem real, recomendação acionável e alteração reversível de densidade.
+- [x] Paridade de densidade entre preview, PDF e DOCX, incluindo margens, entrelinhas e espaçamento de blocos.
 
 ## Próximos ciclos
 

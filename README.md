@@ -18,6 +18,7 @@ Editor desktop e compilador headless, local-first, para criar currículos legív
 - Skills em lista categorizada, tabela semântica, tags ou níveis manuais; experiências em bullets, parágrafos ou métricas priorizadas.
 - Exportação consistente em PDF, DOCX, Markdown e JSON, com texto selecionável, hyperlinks reais e paginação que protege títulos e repete a identidade de experiências ou projetos quando um bloco continua na página seguinte.
 - Auditoria documental herdada do Vault: até duas páginas, resumo enxuto, bullets legíveis, links válidos e alerta para layouts de maior risco ATS.
+- Assistente de orçamento A4 no preview: mostra a contagem real, recomenda uma densidade adequada em um clique e preserva todo o conteúdo com desfazer disponível. A densidade escolhida também controla margens e ritmo tipográfico nos arquivos PDF e DOCX.
 - CLI `generate`, `tailor`, `batch` e `ui` para automações locais.
 - Nenhuma conta, telemetria ou transmissão de dados pessoais.
 
@@ -41,7 +42,8 @@ O arquivo é distribuído sem sidecars. A GUI usa o Microsoft Edge WebView2 inst
 3. Expanda somente a experiência ou projeto em edição; mova, duplique ou remova fichas para priorizar evidências e altere os campos à esquerda, no modal de foco ou diretamente sobre a página A4. Use `Ctrl+Z` e `Ctrl+Y` fora dos campos para navegar pelo histórico.
 4. Cole a descrição completa da vaga para calcular obrigatórios, desejáveis, senioridade, forças e lacunas.
 5. Use **Criar versão adaptada** para priorizar fatos já presentes no perfil.
-6. Salve a versão editável com `Ctrl+S` (JSON); conteúdo, estrutura e template serão restaurados na importação. O cabeçalho e a barra de status indicam alterações pendentes, e o nome sugerido usa a pessoa do perfil. Depois, revise a auditoria ATS e exporte com `Ctrl+P` (PDF), `Ctrl+D` (DOCX) ou `Ctrl+M` (Markdown).
+6. Confira o indicador `N / 2 A4` no preview. Quando houver excesso ou espaço ocioso, abra o assistente para aplicar a densidade recomendada sem apagar conteúdo; a mudança entra no histórico e pode ser desfeita.
+7. Salve a versão editável com `Ctrl+S` (JSON); conteúdo, estrutura e template serão restaurados na importação. O cabeçalho e a barra de status indicam alterações pendentes, e o nome sugerido usa a pessoa do perfil. Depois, revise a auditoria ATS e exporte com `Ctrl+P` (PDF), `Ctrl+D` (DOCX) ou `Ctrl+M` (Markdown).
 
 Em telas abaixo de 1040 px, use a alternância **Editor / Preview** para preservar a legibilidade do documento.
 
