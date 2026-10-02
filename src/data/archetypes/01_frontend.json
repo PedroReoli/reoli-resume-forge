@@ -1,11 +1,5 @@
 {
   "config": {
-    "output": {
-      "basename": "Pedro_Lucas_Reis_Frontend_Senior",
-      "directory": "E:\\Hermes\\vault\\scripts\\gerador-curriculo\\output\\01_frontend",
-      "generate_docx": true,
-      "generate_pdf": true
-    },
     "colors": {
       "primary": "#1F374D",
       "text": "#222222",

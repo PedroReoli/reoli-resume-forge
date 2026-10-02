@@ -1,11 +1,5 @@
 {
   "config": {
-    "output": {
-      "basename": "Pedro_Lucas_Reis_Senior_Frontend_FullStack_EN",
-      "directory": "E:\\Hermes\\vault\\scripts\\gerador-curriculo\\output\\05_internacional_en",
-      "generate_docx": true,
-      "generate_pdf": true
-    },
     "colors": {
       "primary": "#1F374D",
       "text": "#222222",

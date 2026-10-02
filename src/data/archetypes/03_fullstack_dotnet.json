@@ -1,11 +1,5 @@
 {
   "config": {
-    "output": {
-      "basename": "Pedro_Lucas_Reis_Fullstack_DotNet",
-      "directory": "E:\\Hermes\\vault\\scripts\\gerador-curriculo\\output\\03_fullstack_dotnet",
-      "generate_docx": true,
-      "generate_pdf": true
-    },
     "colors": {
       "primary": "#1F374D",
       "text": "#222222",

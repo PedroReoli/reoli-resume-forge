@@ -79,8 +79,8 @@ mod tests {
     fn loads_every_embedded_archetype() {
         for item in list_archetypes() {
             let profile = load_archetype(item.id).expect("arquétipo deveria ser válido");
-            assert_eq!(profile.person.name, "Pedro Lucas Reis");
-            assert_eq!(profile.person.portfolio, "https://pedroreoli.vercel.app");
+            assert!(!profile.person.name.trim().is_empty());
+            assert!(profile.person.portfolio.starts_with("https://"));
         }
     }
 
