@@ -22,15 +22,17 @@ export const TEMPLATE_OPTIONS: Array<{
   id: ResumeTemplate;
   label: string;
   description: string;
+  bestFor: string;
+  atsMode: 'linear' | 'visual';
 }> = [
-  { id: 'classic', label: 'Classic Reoli', description: 'A estética corporativa do gerador original do Vault.' },
-  { id: 'tech-minimalist', label: 'Tech Minimalist', description: 'Stack, métricas e links com alta densidade.' },
-  { id: 'modern-split', label: 'Modern Split', description: 'Sidebar visual e narrativa profissional em duas colunas.' },
-  { id: 'executive-bold', label: 'Executive Bold', description: 'Hierarquia forte para liderança e arquitetura.' },
-  { id: 'academic', label: 'Academic', description: 'Cronologia, formação, cursos e publicações.' },
-  { id: 'clean', label: 'Clean Slate', description: 'Editorial equilibrado e discreto.' },
-  { id: 'compact', label: 'Compact Linear', description: 'Máximo conteúdo com leitura linear para ATS.' },
-  { id: 'executive', label: 'Executive Accent', description: 'Faixa executiva e contraste institucional.' },
+  { id: 'classic', label: 'Classic Reoli', description: 'A estética corporativa do gerador original do Vault.', bestFor: 'Tecnologia e produto', atsMode: 'linear' },
+  { id: 'tech-minimalist', label: 'Tech Minimalist', description: 'Stack, métricas e links com alta densidade.', bestFor: 'Engenharia e DevOps', atsMode: 'linear' },
+  { id: 'modern-split', label: 'Modern Split', description: 'Sidebar visual e narrativa profissional em duas colunas.', bestFor: 'Envio direto e portfólio', atsMode: 'visual' },
+  { id: 'executive-bold', label: 'Executive Bold', description: 'Hierarquia forte para liderança e arquitetura.', bestFor: 'Liderança e gestão', atsMode: 'linear' },
+  { id: 'academic', label: 'Academic', description: 'Cronologia, formação, cursos e publicações.', bestFor: 'Pesquisa e educação', atsMode: 'linear' },
+  { id: 'clean', label: 'Clean Slate', description: 'Editorial equilibrado e discreto.', bestFor: 'Uso geral', atsMode: 'linear' },
+  { id: 'compact', label: 'Compact Linear', description: 'Máximo conteúdo com leitura linear para ATS.', bestFor: 'Carreiras extensas', atsMode: 'linear' },
+  { id: 'executive', label: 'Executive Accent', description: 'Faixa executiva e contraste institucional.', bestFor: 'Consultoria e direção', atsMode: 'linear' },
 ];
 
 export const SECTION_LABELS: Record<string, string> = {

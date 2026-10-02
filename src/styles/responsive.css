@@ -26,8 +26,8 @@
   .app-header { position: sticky; top: 0; height: auto; min-height: 58px; padding: 9px 14px; }
   .brand-lockup > div span, .privacy-note { display: none; }
   .header-actions { margin-left: auto; }
-  .quiet-button { min-width: 38px; padding: 0 9px; font-size: 0; }
-  .quiet-button svg { width: 17px; height: 17px; }
+  .app-header .quiet-button { min-width: 38px; padding: 0 9px; font-size: 0; }
+  .app-header .quiet-button svg { width: 17px; height: 17px; }
   .workspace { display: flex; flex-direction: column; }
   .mobile-view-toggle {
     position: sticky;
