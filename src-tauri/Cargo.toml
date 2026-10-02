@@ -19,6 +19,7 @@ path = "src/main.rs"
 tauri-build = { version = "2.7.1", features = [] }
 
 [dependencies]
+base64 = "0.22.1"
 printpdf = { version = "0.12.8", default-features = false }
 serde = { version = "1.0.229", features = ["derive"] }
 serde_json = { version = "1.0.151", features = ["preserve_order"] }
