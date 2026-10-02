@@ -53,6 +53,8 @@ A flag `--confirmed-us-overlap` deve ser usada somente quando a pessoa confirmou
 reoli-cv.exe tailor --job vaga.json --model 05_internacional_en --confirmed-us-overlap --out .\dist
 ```
 
+O JSON de sucesso inclui `score`, `matched`, `missing` e `detectedDomains`. Cada domínio informa `id`, `label` e `matchedKeywords`, permitindo que automações distingam, por exemplo, uma vaga de Supply Chain de uma vaga Jurídica sem inferir competências ausentes do perfil.
+
 ## `batch`
 
 Processa de 1 a 500 vagas descritas por um array JSON.
@@ -61,7 +63,7 @@ Processa de 1 a 500 vagas descritas por um array JSON.
 reoli-cv.exe batch --jobs .\examples\jobs.json --model 02_fullstack_node --template compact --format pdf --out .\lote
 ```
 
-Cada item aceita `company`, `job_title`, `job_description`, `base_model`, `profile`, `template` e `confirmed_us_overlap`. Um perfil embutido no item tem precedência sobre o modelo; um template no item tem precedência sobre `--template`.
+Cada item aceita `company`, `job_title`, `job_description`, `base_model`, `profile`, `template` e `confirmed_us_overlap`. Um perfil embutido no item tem precedência sobre o modelo; um template no item tem precedência sobre `--template`. Cada resultado do lote também informa `detectedDomains`.
 
 A resolução do modelo visual segue esta ordem: `template` da vaga no lote, `--template`, `config.template` do perfil e, por último, `classic`.
 

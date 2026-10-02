@@ -13,6 +13,7 @@ flowchart LR
   CORE --> ATS[Parser e score ATS]
   CORE --> TAILOR[Tailoring conservador]
   CORE --> EXPORT[PDF / DOCX / MD / JSON]
+  EXPORT --> PROOF[Prova PDF.js em canvas]
   EXPORT --> FS[Sistema de arquivos local]
 ```
 
@@ -22,7 +23,7 @@ flowchart LR
 | --- | --- | --- |
 | Dados | `src/data/` | Arquétipos editáveis e aliases de keywords |
 | Domínio web | `src/domain/` | Normalização retrocompatível, layouts, localização estrutural e auditoria documental |
-| UI | `src/components/`, `src/hooks/` | Edição modular, preview A4, acessibilidade e atalhos |
+| UI | `src/components/`, `src/hooks/` | Edição modular, prova PDF A4, fallback editável, acessibilidade e atalhos |
 | Bridge | `src/services/tauriBridge.ts` | Contrato IPC e fallback visual no navegador de desenvolvimento |
 | Core | `src-tauri/src/core/` | Modelos, validação, ATS, tailoring e exportação |
 | Adaptadores | `src-tauri/src/commands.rs`, `cli.rs` | Entrada pela GUI ou pelo terminal |
@@ -31,11 +32,12 @@ flowchart LR
 ## Fluxo de dados
 
 1. O perfil nasce de um arquétipo embarcado, de um JSON importado ou de um perfil vazio.
-2. React normaliza perfis antigos e mantém um único estado estruturado. Formulários, modais e conteúdo editável do A4 atualizam esse mesmo estado; a biblioteca mantém a escolha de template em rascunho e só altera o perfil após confirmação explícita. A paleta é aplicada separadamente, como um preset seguro que pode ser combinado com qualquer layout. Aparências prontas materializam uma combinação curada de template, paleta, densidade e formatos de seção nessa mesma atualização, por isso todo o conjunto pode ser desfeito em uma única etapa.
+2. React normaliza perfis antigos e mantém um único estado estruturado. Formulários, modais e o modo editável do A4 atualizam esse mesmo estado; esse modo é um apoio rápido e não a prova geométrica final. A biblioteca mantém a escolha de template em rascunho e só altera o perfil após confirmação explícita. A paleta é aplicada separadamente, como um preset seguro que pode ser combinado com qualquer layout. Aparências prontas materializam uma combinação curada de template, paleta, densidade e formatos de seção nessa mesma atualização, por isso todo o conjunto pode ser desfeito em uma única etapa.
 3. Após 420 ms sem edição, a GUI envia perfil e Job Description ao core via IPC.
 4. O core valida limites, extrai requisitos, cruza evidências e devolve um relatório serializável.
 5. Ao adaptar, o core ordena bullets e tecnologias pela relevância, com proveniência e sem criar texto novo.
-6. O exportador serializa o mesmo perfil, ordem, visibilidade, seções personalizadas, template, paleta, família tipográfica e densidade para o formato escolhido. PDF e DOCX resolvem presets cromáticos, equivalentes tipográficos e métricas seguras de margem/entrelinha para a composição usada no preview; assim, uma variante JSON reabre e exporta com a mesma linguagem visual.
+6. A prova do desktop chama `render_pdf_preview`, que usa `render_with_template` e devolve o PDF em memória. O frontend preserva a última prova válida enquanto aguarda 180 ms de debounce, carrega o documento com PDF.js e renderiza cada página em canvas com escala adequada ao DPR.
+7. A exportação chama o mesmo `render_with_template` para gravar o arquivo. Portanto, ordem, visibilidade, seções, template, paleta, tipografia, margens e quebras observados na prova são os do PDF exportado; somente o identificador interno do documento é regenerado.
 
 ## Limites de segurança
 
@@ -50,9 +52,9 @@ flowchart LR
 
 PDF e DOCX usam texto selecionável, headings convencionais e fontes seguras. `classic`, `tech-minimalist`, `executive-bold`, `academic`, `clean`, `compact` e `executive` preservam leitura linear; `modern-split` oferece uma composição visual em duas colunas e é sinalizado como opção de maior risco para parsers antigos. Quando uma experiência ou projeto atravessa uma quebra de página, o PDF repete uma âncora curta com o nome do registro antes da continuação, evitando bullets e tecnologias sem contexto. URLs usam hyperlinks externos reais e nenhum dado essencial fica em header, footer ou imagem.
 
-O preview pode mostrar skills em tabela, mas usa `caption`, `th` e escopo semântico. A auditoria replica limites úteis do gerador do Vault: até duas páginas, resumo de até 110 palavras e bullets de até 35 palavras. O `ResizeObserver` do preview mede a paginação composta e alimenta um assistente local: em uma página compacta ele pode sugerir `balanced`; acima de duas páginas sugere `compact`; se o documento já estiver compacto, pede revisão humana de conteúdo. A ação altera somente `layout.density`, preserva o texto e integra o histórico de desfazer/refazer. Esses itens são recomendações, não promessa de aprovação.
+O modo editável pode mostrar skills em tabela, mas usa `caption`, `th` e escopo semântico. A prova PDF usa a contagem real de páginas do arquivo compilado para alimentar o assistente local: em uma página compacta ele pode sugerir `balanced`; acima de duas páginas sugere `compact`; se o documento já estiver compacto, pede revisão humana de conteúdo. A auditoria replica limites úteis do gerador do Vault: até duas páginas, resumo de até 110 palavras e bullets de até 35 palavras. A ação altera somente `layout.density`, preserva o texto e integra o histórico de desfazer/refazer. Esses itens são recomendações, não promessa de aprovação.
 
-O mesmo palco usa outro `ResizeObserver` para calcular o zoom de encaixe a partir da largura útil real, descontando os paddings responsivos. A caixa externa recebe as dimensões já escaladas enquanto o documento A4 interno usa `transform`, evitando barras de rolagem criadas pela geometria não escalada. `–` e `+` desativam temporariamente o encaixe; o controle dedicado volta ao modo responsivo sem alterar conteúdo ou paginação.
+O palco usa `ResizeObserver` para calcular o zoom de encaixe a partir da largura útil real, descontando os paddings responsivos. A caixa externa recebe as dimensões já escaladas enquanto o documento A4 interno usa `transform`, evitando barras de rolagem criadas pela geometria não escalada. `–` e `+` desativam temporariamente o encaixe; o controle dedicado volta ao modo responsivo sem alterar conteúdo ou paginação.
 
 ## Contrato modular 2.0
 

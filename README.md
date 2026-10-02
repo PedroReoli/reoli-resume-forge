@@ -4,13 +4,13 @@ Editor desktop e compilador headless, local-first, para criar currículos legív
 
 ## O que entrega
 
-- GUI Dark Tech em split view, com sumário que acompanha a seção ativa e permanece acessível no mobile, editor estruturado, página A4 com encaixe responsivo automático e edição inline bidirecional.
+- GUI Dark Tech em split view, com sumário responsivo, editor estruturado e prova A4 que renderiza no Tauri o mesmo PDF produzido pelo core Rust. A edição inline continua disponível como modo rápido e explicitamente aproximado.
 - Cinco arquétipos nativos: frontend, full stack Node.js, full stack .NET, tech lead e internacional em inglês.
-- Matcher ATS determinístico, com requisitos obrigatórios ponderados e indicação dos termos atendidos/ausentes.
+- Matcher ATS determinístico, com requisitos obrigatórios ponderados, 306 competências em 13 áreas profissionais e indicação dos termos atendidos/ausentes.
 - Tailoring conservador: reordena apenas evidências existentes e nunca fabrica experiências, tecnologias ou métricas.
 - Oito layouts em uma galeria visual comparativa: **Classic Reoli**, Tech Minimalist, Modern Split, Executive Bold, Academic, Clean Slate, Compact Linear e Executive Accent; a escolha acompanha a variante JSON salva.
-- Seis paletas profissionais independentes do layout — identidade nativa do modelo, Reoli Navy, Forest, Cobalt, Burgundy e Graphite — preservadas no JSON e aplicadas com o mesmo contraste no preview, PDF e DOCX.
-- Quatro famílias tipográficas seguras — assinatura do modelo, sans moderna, serif editorial e mono técnica — com equivalentes consistentes no preview, PDF e DOCX.
+- Seis paletas profissionais independentes do layout — identidade nativa do modelo, Reoli Navy, Forest, Cobalt, Burgundy e Graphite — preservadas no JSON e aplicadas no PDF/DOCX; a prova fiel mostra diretamente o PDF final.
+- Quatro famílias tipográficas seguras — assinatura do modelo, sans moderna, serif editorial e mono técnica — com equivalentes consistentes no PDF e DOCX.
 - Oito aparências prontas — Reoli Clássico, Tech Focus, Product Clean, Leadership Bold, Editorial, Visual Split, Global ATS e Consulting Accent — cobrindo todos os layouts nativos com uma combinação curada de paleta, tipografia, densidade e apresentação das seções.
 - Histórico local com desfazer/refazer, atalhos seguros e confirmação antes de substituir um trabalho em edição.
 - Experiências e projetos em fichas recolhíveis, com progresso de preenchimento e contagem de evidências sem alongar toda a área de trabalho.
@@ -39,13 +39,13 @@ O arquivo é distribuído sem sidecars. A GUI usa o Microsoft Edge WebView2 inst
 
 1. Escolha um arquétipo e compare os oito layouts pela galeria visual. A escolha fica em rascunho até **Usar modelo**; cancelar ou pressionar `Esc` preserva o currículo atual. Também é possível importar um perfil JSON.
 2. Em **Formatação do documento**, comece pela mesa de oito aparências prontas — no mobile, deslize a faixa de miniaturas — ou abra **Ajustes finos** para combinar qualquer layout com uma das seis paletas e quatro famílias tipográficas. Depois, reordene, oculte ou adicione seções pelo sumário; em telas estreitas, a faixa compacta permanece visível e acompanha automaticamente o bloco em edição.
-3. Expanda somente a experiência ou projeto em edição; mova, duplique ou remova fichas para priorizar evidências e altere os campos à esquerda, no modal de foco ou diretamente sobre a página A4. Use `Ctrl+Z` e `Ctrl+Y` fora dos campos para navegar pelo histórico.
+3. Expanda somente a experiência ou projeto em edição; mova, duplique ou remova fichas para priorizar evidências e altere os campos à esquerda ou no modal de foco. O modo **Editar** permite ajustes inline rápidos; volte a **PDF fiel** para revisar geometria, fontes e quebras reais. Use `Ctrl+Z` e `Ctrl+Y` fora dos campos para navegar pelo histórico.
 4. Cole a descrição completa da vaga para calcular obrigatórios, desejáveis, senioridade, forças e lacunas.
 5. Use **Criar versão adaptada** para priorizar fatos já presentes no perfil.
-6. Confira o indicador `N / 2 A4` no preview. Quando houver excesso ou espaço ocioso, abra o assistente para aplicar a densidade recomendada sem apagar conteúdo; a mudança entra no histórico e pode ser desfeita.
+6. Confira o indicador `N / 2 A4` no modo **PDF fiel**. A contagem vem do arquivo efetivamente compilado. Quando houver excesso ou espaço ocioso, abra o assistente para aplicar a densidade recomendada sem apagar conteúdo; a mudança entra no histórico e pode ser desfeita.
 7. Salve a versão editável com `Ctrl+S` (JSON); conteúdo, estrutura e template serão restaurados na importação. O cabeçalho e a barra de status indicam alterações pendentes, e o nome sugerido usa a pessoa do perfil. Depois, revise a auditoria ATS e exporte com `Ctrl+P` (PDF), `Ctrl+D` (DOCX) ou `Ctrl+M` (Markdown).
 
-O preview inicia em **Ajustado**, exibindo a folha inteira sem rolagem horizontal acidental. Use `–` ou `+` para assumir controle manual do zoom; o botão de encaixe restaura a escala responsiva.
+No aplicativo desktop, o preview inicia em **PDF fiel** e **Ajustado**. O PDF é gerado localmente pelo mesmo compilador Rust da exportação e desenhado em canvas pelo PDF.js, sem upload ou servidor. Use `–` ou `+` para assumir controle manual do zoom; o botão de encaixe restaura a escala responsiva. No navegador de desenvolvimento, o modo editável funciona como fallback aproximado porque o core Tauri não está disponível.
 
 Em telas abaixo de 1040 px, use a alternância **Editor / Preview** para preservar a legibilidade do documento.
 

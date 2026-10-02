@@ -42,6 +42,9 @@
 - [x] Assistente de orçamento A4 com contagem real, recomendação acionável e alteração reversível de densidade.
 - [x] Paridade de densidade entre preview, PDF e DOCX, incluindo margens, entrelinhas e espaçamento de blocos.
 - [x] Encaixe responsivo automático da folha A4, sem corte ou rolagem horizontal acidental, preservando zoom manual.
+- [x] Prova canônica no Tauri renderizando o PDF real do core Rust, com contagem de páginas e alternância para edição rápida.
+- [x] Alinhamento do cabeçalho PDF por métricas de glifos e réguas de seção mais leves.
+- [x] Catálogo ATS v2 extensível com 306 competências em 13 áreas profissionais e detecção automática de domínio.
 
 ## Próximos ciclos
 
@@ -49,7 +52,6 @@
 - [ ] Catálogo de templates mantidos pela comunidade além dos oito nativos.
 - [ ] Validação visual automatizada de regressões do A4.
 - [ ] Importador assistido de currículos existentes.
-- [ ] Catálogo extensível de aliases ATS por área profissional.
 - [ ] Tradução assistida de texto livre com revisão humana e proveniência explícita.
 
 ## Fora de escopo deliberado
