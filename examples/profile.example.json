@@ -1,0 +1,50 @@
+{
+  "config": {
+    "tech_label": "Tecnologias",
+    "section_names": {
+      "summary": "Resumo Profissional",
+      "skills": "Competências Técnicas",
+      "experience": "Experiência Profissional",
+      "education": "Formação Acadêmica",
+      "languages": "Idiomas",
+      "certifications": "Certificações"
+    }
+  },
+  "person": {
+    "name": "Pessoa Exemplo",
+    "location": "Brasil",
+    "work_preference": "Remoto",
+    "phone": "+55 (00) 00000-0000",
+    "email": "pessoa@example.com",
+    "linkedin": "https://www.linkedin.com/in/pessoa-exemplo",
+    "portfolio": "https://example.com",
+    "github": "https://github.com/example"
+  },
+  "headline": "Software Engineer | TypeScript | React | Node.js",
+  "summary": "Pessoa engenheira de software com experiência real em produtos web e integração de APIs.",
+  "target_keywords": ["React", "TypeScript", "Node.js"],
+  "skills": {
+    "Frontend": ["React", "TypeScript", "HTML", "CSS"],
+    "Backend": ["Node.js", "APIs REST"]
+  },
+  "soft_skills": ["Comunicação", "Colaboração"],
+  "experience": [
+    {
+      "company": "Empresa Exemplo",
+      "role": "Software Engineer",
+      "dates": "2024 — presente",
+      "location": "Brasil",
+      "work_mode": "Remoto",
+      "summary": "Desenvolvimento de um produto web com requisitos verificáveis.",
+      "bullets": [
+        "Implementei componentes React reutilizáveis com TypeScript.",
+        "Integrei a interface a APIs REST já existentes."
+      ],
+      "technologies": ["React", "TypeScript", "Node.js"]
+    }
+  ],
+  "projects": [],
+  "education": [],
+  "languages": [{ "language": "Português", "level": "Nativo" }],
+  "certifications": []
+}

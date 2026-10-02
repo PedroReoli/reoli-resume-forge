@@ -1,0 +1,14 @@
+[
+  {
+    "company": "Empresa Exemplo",
+    "job_title": "Frontend Engineer",
+    "base_model": "01_frontend",
+    "job_description": "React e TypeScript são obrigatórios. Design Systems, testes e acessibilidade são diferenciais."
+  },
+  {
+    "company": "Produto Exemplo",
+    "job_title": "Full Stack Engineer",
+    "base_model": "02_fullstack_node",
+    "job_description": "Node.js, APIs REST e PostgreSQL são requisitos obrigatórios. Docker e AWS são desejáveis."
+  }
+]

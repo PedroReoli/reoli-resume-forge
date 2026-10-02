@@ -12,7 +12,7 @@ Tauri v2 com core e CLI em Rust, interface React 19 com TypeScript strict e Tail
 
 ## Users
 
-- Pedro Lucas Reis, ao editar, adaptar, revisar e exportar currículos para vagas específicas.
+- Profissionais de diferentes áreas, ao criar, adaptar, revisar e exportar currículos para vagas específicas.
 - Agentes de IA e automações locais, ao gerar currículos individualmente ou em lote pela CLI `reoli-cv`.
 - Contribuidores open source, ao evoluir arquétipos, exportadores e regras de matching sem acessar dados privados externos ao repositório.
 
@@ -31,6 +31,7 @@ O fluxo principal é selecionar um arquétipo, editar seções, colar uma Job De
 ## Capabilities and Constraints
 
 - Cinco arquétipos nativos: frontend, full stack Node.js, full stack .NET, tech lead e internacional em inglês.
+- Três layouts ATS-friendly: Clean Slate, Compact Linear e Executive Accent.
 - Score ATS de 0 a 100 baseado em requisitos reconhecidos, com maior peso para termos obrigatórios.
 - Tailoring só pode reordenar ou destacar evidências existentes; não pode fabricar fatos.
 - Entradas JSON, textos de vaga e caminhos de saída devem ter schema, limites e proteção contra path traversal.
@@ -43,15 +44,11 @@ O fluxo principal é selecionar um arquétipo, editar seções, colar uma Job De
 - Nome: Reoli Resume Forge.
 - Direção solicitada: Monochromatic Dark Tech / Clean Slate, premium, objetiva e sem aparência de template genérico.
 - Tipografia moderna, alto contraste, microinterações funcionais e rolagem independente no split-view.
-- Dados oficiais visíveis no currículo seguem o briefing do projeto, incluindo o portfólio `https://pedroreoli.vercel.app`.
+- O produto não presume identidade fixa: perfis pessoais são importáveis, editáveis e substituíveis sem alteração de código.
 
 ## Evidence on Hand
 
-- Motor validado: `E:\Hermes\vault\scripts\automation\cv_tailor.py` e `scripts\sdk\cv_tailoring.py`.
-- Gerador e cinco perfis estruturados: `E:\Hermes\vault\scripts\gerador-curriculo\`.
-- Catálogo mestre: `E:\Hermes\vault\carreira\curriculos\Meus Curriculos.md`.
-- Dados mestres: `E:\Hermes\vault\Sobre Mim.md`.
-- Especificação interna: `E:\Hermes\vault\.privado\sistemas\reoli-resume-forge.md`.
+- O motor e os arquétipos foram migrados de fontes privadas validadas, que não são dependências do runtime nem fazem parte da distribuição Open Source.
 - Não existem depoimentos, clientes do produto, preço ou benchmarks próprios do aplicativo; a interface não deve inventá-los.
 
 ## Product Principles
