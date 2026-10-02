@@ -1,0 +1,212 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-02T02:48:58.4082587-03:00",
+  "title": "Design System: Reoli Resume Forge",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Mineral Mint",
+        "canonical": "#a8cfb1",
+        "tonalRamp": ["#17251a", "#29432f", "#41684a", "#608d69", "#82af8b", "#a8cfb1", "#cce8d2", "#edf8ef"]
+      },
+      "primary-bright": {
+        "role": "primary",
+        "displayName": "Pale Signal",
+        "canonical": "#d3efd8",
+        "tonalRamp": ["#16261a", "#2c4933", "#497052", "#6d9876", "#96bf9e", "#bde0c3", "#d3efd8", "#f0faf2"]
+      },
+      "primary-deep": {
+        "role": "primary",
+        "displayName": "Forest Well",
+        "canonical": "#24392d",
+        "tonalRamp": ["#101712", "#18251d", "#24392d", "#35513f", "#4f715a", "#78977f", "#adc4b1", "#e7eee8"]
+      },
+      "shell": {
+        "role": "neutral",
+        "displayName": "Forge Shell",
+        "canonical": "#0b0f0d",
+        "tonalRamp": ["#070a08", "#0b0f0d", "#171d1a", "#2c3530", "#4d5952", "#78847d", "#b1b9b4", "#eef1ef"]
+      },
+      "panel": {
+        "role": "neutral",
+        "displayName": "Raised Charcoal",
+        "canonical": "#101613",
+        "tonalRamp": ["#080b09", "#101613", "#1c2721", "#304037", "#506258", "#7c8c83", "#b5bdb8", "#eff2f0"]
+      },
+      "panel-deep": {
+        "role": "neutral",
+        "displayName": "Deep Bench",
+        "canonical": "#0d1210",
+        "tonalRamp": ["#070908", "#0d1210", "#19221e", "#2c3a33", "#4b5c53", "#76877e", "#b0b9b4", "#eef1ef"]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Cold Ink",
+        "canonical": "#e7ebe8",
+        "tonalRamp": ["#171b18", "#303632", "#515953", "#778079", "#9ea6a1", "#c2c8c4", "#e7ebe8", "#f7f9f8"]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Instrument Gray",
+        "canonical": "#929e97",
+        "tonalRamp": ["#171c19", "#2d3530", "#48534d", "#68756e", "#929e97", "#b1bab4", "#d3d8d5", "#f1f3f2"]
+      },
+      "faint": {
+        "role": "neutral",
+        "displayName": "Faint Etching",
+        "canonical": "#66716a",
+        "tonalRamp": ["#131714", "#262d29", "#3b4540", "#515d57", "#66716a", "#909a94", "#bec5c1", "#edf0ee"]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Rule",
+        "canonical": "#2a342f",
+        "tonalRamp": ["#101412", "#1b221e", "#2a342f", "#414e47", "#617068", "#8c9992", "#bdc5c0", "#eef1ef"]
+      },
+      "line-strong": {
+        "role": "neutral",
+        "displayName": "Strong Rule",
+        "canonical": "#3b4841",
+        "tonalRamp": ["#111512", "#252d29", "#3b4841", "#536158", "#718078", "#98a49d", "#c2c9c5", "#eff1f0"]
+      },
+      "danger": {
+        "role": "tertiary",
+        "displayName": "Muted Clay",
+        "canonical": "#e3a9a0",
+        "tonalRamp": ["#301916", "#57302a", "#824c44", "#aa6c62", "#cb8b82", "#e3a9a0", "#f1cdc7", "#fbefed"]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Warm Paper",
+        "canonical": "#f5f3ec",
+        "tonalRamp": ["#211f1a", "#403d34", "#625e52", "#898477", "#b0ab9e", "#d5d1c7", "#f5f3ec", "#fdfcf9"]
+      },
+      "paper-ink": {
+        "role": "neutral",
+        "displayName": "Print Ink",
+        "canonical": "#171b18",
+        "tonalRamp": ["#0d0f0e", "#171b18", "#2b312d", "#454d48", "#68716b", "#939b96", "#c2c7c4", "#f0f2f1"]
+      },
+      "paper-muted": {
+        "role": "neutral",
+        "displayName": "Print Muted",
+        "canonical": "#565e59",
+        "tonalRamp": ["#141714", "#292e2b", "#404743", "#565e59", "#737c76", "#99a19c", "#c4c9c6", "#f0f2f1"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Document Display", "purpose": "Nome do candidato no template editorial Clean Slate." },
+      "headline": { "displayName": "Interface Headline", "purpose": "Marca, títulos fortes e headline do currículo." },
+      "title": { "displayName": "Tool Title", "purpose": "Títulos compactos de seções e agrupamentos." },
+      "body": { "displayName": "Operational Body", "purpose": "Campos, descrições e feedback de sistema." },
+      "label": { "displayName": "Measured Label", "purpose": "Metadados, atalhos, score e medidas técnicas." }
+    },
+    "shadows": [
+      { "name": "document-lift", "value": "0 22px 55px rgb(0 0 0 / 47%), 0 0 0 1px rgb(255 255 255 / 8%)", "purpose": "Separar a prova A4 do palco escuro." },
+      { "name": "dock-float", "value": "0 18px 50px rgb(0 0 0 / 48%)", "purpose": "Manter as ações de exportação acima do documento." },
+      { "name": "toast-float", "value": "0 14px 36px rgb(0 0 0 / 45%)", "purpose": "Elevar feedback temporário." },
+      { "name": "ready-glow", "value": "0 0 12px #7daf88", "purpose": "Sinalizar prontidão sem animação contínua." }
+    ],
+    "motion": [
+      { "name": "state-fast", "value": "120ms ease", "purpose": "Hover de texto editável e microfeedback." },
+      { "name": "control-standard", "value": "150ms ease", "purpose": "Borda e fundo de campos e controles." },
+      { "name": "spinner", "value": "800ms linear", "purpose": "Indicação de tarefa ativa; respeita prefers-reduced-motion." }
+    ],
+    "breakpoints": [
+      { "name": "wide-adjustment", "value": "1180px" },
+      { "name": "mode-switch", "value": "1040px" },
+      { "name": "compact-mobile", "value": "560px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Export Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Ação de maior prioridade, reservada à exportação PDF.",
+      "html": "<button class=\"ds-export-primary\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M12 18v-6m-3 3 3 3 3-3\"/></svg><span>Exportar PDF</span><kbd>Ctrl+P</kbd></button>",
+      "css": ".ds-export-primary{display:grid;grid-template-columns:auto 1fr auto;min-height:54px;align-items:center;gap:9px;padding:0 13px;border:1px solid #9abca2;border-radius:4px;background:linear-gradient(135deg,#c9e4ce,#99bea2);color:#0c120e;font:600 12px 'Inter Variable',Inter,sans-serif;text-align:left;transition:background 150ms ease,border-color 150ms ease}.ds-export-primary svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.ds-export-primary kbd{color:#3e5945;font:400 9px 'JetBrains Mono Variable',monospace}.ds-export-primary:hover{background:#d6ecd9}.ds-export-primary:focus-visible{outline:2px solid #a8cfb1;outline-offset:2px}.ds-export-primary:active{background:#b7d5bd}"
+    },
+    {
+      "name": "Quiet Button",
+      "kind": "button",
+      "refersTo": "button-quiet",
+      "description": "Ação secundária compacta para importação e criação.",
+      "html": "<button class=\"ds-quiet-button\">Importar JSON</button>",
+      "css": ".ds-quiet-button{min-height:34px;padding:0 11px;border:1px solid #2a342f;border-radius:3px;background:transparent;color:#c1c9c4;font:400 12px 'Inter Variable',Inter,sans-serif;transition:border-color 150ms ease,background 150ms ease}.ds-quiet-button:hover{border-color:#3b4841;background:#17201b;color:#e7ebe8}.ds-quiet-button:focus-visible{outline:2px solid #a8cfb1;outline-offset:2px}.ds-quiet-button:active{background:#101613}"
+    },
+    {
+      "name": "Profile Field",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "Campo de edição estruturada com densidade de ferramenta.",
+      "html": "<label class=\"ds-field\"><span>Headline</span><input value=\"Senior Frontend Engineer\" aria-label=\"Headline\"></label>",
+      "css": ".ds-field{display:grid;gap:7px;color:#929e97;font:600 11px 'Inter Variable',Inter,sans-serif;letter-spacing:.02em}.ds-field input{box-sizing:border-box;width:100%;min-height:38px;padding:8px 10px;border:1px solid #2a342f;border-radius:3px;background:#0b110e;color:#e7ebe8;font:400 12px 'Inter Variable',Inter,sans-serif;transition:border-color 150ms ease,background 150ms ease}.ds-field input:hover{border-color:#3b4841}.ds-field input:focus-visible{outline:2px solid #a8cfb1;outline-offset:2px;background:#0d1210}.ds-field input:disabled{opacity:.52;cursor:not-allowed}"
+    },
+    {
+      "name": "ATS Matched Term",
+      "kind": "chip",
+      "refersTo": null,
+      "description": "Evidência reconhecida pelo matcher, sem depender apenas de cor.",
+      "html": "<span class=\"ds-term-matched\"><span aria-hidden=\"true\">✓</span>TypeScript</span>",
+      "css": ".ds-term-matched{display:flex;min-height:30px;align-items:center;gap:8px;padding:4px 8px;border:1px solid transparent;background:#1d3125;color:#c2dfc8;font:400 10.5px 'Inter Variable',Inter,sans-serif}.ds-term-matched:hover{border-color:#45604e;background:#24392d}.ds-term-matched:focus-visible{outline:2px solid #a8cfb1;outline-offset:2px}"
+    },
+    {
+      "name": "ATS Score",
+      "kind": "card",
+      "refersTo": null,
+      "description": "Leitura persistente da cobertura ponderada da vaga.",
+      "html": "<section class=\"ds-score\"><strong>84<span>/ 100</span></strong><p>Boa cobertura; revise os termos ausentes antes de exportar.</p></section>",
+      "css": ".ds-score{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:22px;padding:14px 20px;border-top:1px solid #3b4841;background:linear-gradient(180deg,rgb(15 22 18 / 45%),rgb(20 33 25 / 55%));color:#e7ebe8}.ds-score strong{color:#a8cfb1;font:600 43px 'JetBrains Mono Variable',monospace;letter-spacing:-.08em}.ds-score strong span{color:#929e97;font-size:15px;letter-spacing:0}.ds-score p{max-width:300px;margin:0;color:#b2bbb5;font:400 11.5px/1.55 'Inter Variable',Inter,sans-serif}.ds-score:focus-within{outline:2px solid #a8cfb1;outline-offset:-2px}"
+    },
+    {
+      "name": "Application Header",
+      "kind": "nav",
+      "refersTo": null,
+      "description": "Marca local-first e ações globais em uma barra silenciosa.",
+      "html": "<nav class=\"ds-header\" aria-label=\"Aplicação\"><span class=\"ds-brand-mark\">R</span><strong>Reoli Resume Forge</strong><span class=\"ds-tagline\">Resumes verdadeiros para oportunidades reais.</span><button>Novo perfil</button></nav>",
+      "css": ".ds-header{display:flex;min-height:58px;align-items:center;gap:12px;padding:0 22px;border-bottom:1px solid #2a342f;background:rgb(10 14 12 / 92%);color:#e7ebe8;font:400 12px 'Inter Variable',Inter,sans-serif;backdrop-filter:blur(14px)}.ds-brand-mark{display:grid;width:30px;height:30px;place-content:center;border:1px solid #496153;color:#d3efd8;font:17px Georgia,serif}.ds-header strong{font-size:15px;letter-spacing:-.01em}.ds-tagline{flex:1;margin-left:6px;color:#929e97}.ds-header button{min-height:34px;padding:0 11px;border:1px solid #2a342f;border-radius:3px;background:transparent;color:#c1c9c4}.ds-header button:hover{border-color:#3b4841;background:#17201b}.ds-header button:focus-visible{outline:2px solid #a8cfb1;outline-offset:2px}.ds-header button:active{background:#101613}"
+    },
+    {
+      "name": "Document Proof",
+      "kind": "custom",
+      "refersTo": "document",
+      "description": "Galley A4 editorial que permanece visualmente dominante.",
+      "html": "<article class=\"ds-document\"><header><div><h1>Pedro Lucas Reis</h1><p>Senior Frontend Engineer · React · TypeScript</p></div><address>pedro@example.com<br>Volta Redonda, RJ</address></header><section><h2>Resumo Profissional</h2><p>Engenheiro de software focado em produtos web escaláveis e evidências verificáveis.</p></section></article>",
+      "css": ".ds-document{box-sizing:border-box;width:min(100%,794px);min-height:520px;padding:50px 54px;background:#f5f3ec;color:#171b18;box-shadow:0 22px 55px rgb(0 0 0 / 47%),0 0 0 1px rgb(255 255 255 / 8%);font:400 11px/1.45 Georgia,'Times New Roman',serif}.ds-document header{display:grid;grid-template-columns:minmax(0,1fr) 215px;gap:34px;margin-bottom:25px}.ds-document h1{margin:0;font-size:32px;line-height:1.02;letter-spacing:-.035em}.ds-document header p{margin:6px 0 0;font-size:15px;line-height:1.25}.ds-document address{font:400 10.5px/1.25 Georgia,serif}.ds-document section{margin-top:22px}.ds-document h2{margin:0 0 9px;padding-bottom:5px;border-bottom:1px solid #808681;font-size:16px}.ds-document p{margin:0}.ds-document:focus-within{outline:2px solid #a8cfb1;outline-offset:4px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Split Galley",
+    "overview": "O Reoli Resume Forge combina uma bancada técnica escura com uma prova editorial clara. O painel de trabalho é denso, preciso e silencioso; o documento é tratado como a peça principal, com papel quente, tipografia legível e hierarquia de currículo tradicional. A separação visual entre ferramenta e resultado deixa explícito onde se edita e o que será entregue.\n\nA estética é Monochromatic Dark Tech / Clean Slate: verdes minerais aparecem com parcimônia para foco, estado e ação; linhas finas organizam a interface; microinterações confirmam intenção sem competir com o conteúdo. A interface rejeita gradientes chamativos, cartões genéricos em excesso e decoração sem função.",
+    "keyCharacteristics": [
+      "Split-view assimétrico com editor escuro e galley A4 claro.",
+      "Densidade de ferramenta profissional, com score ATS sempre acessível no desktop.",
+      "Verde mineral reservado a foco, sucesso e ação primária.",
+      "Tipografia de interface sans, metadados mono e documento editorial.",
+      "Movimento breve, funcional e removido quando o sistema solicita redução."
+    ],
+    "rules": [
+      { "name": "The One Signal Rule", "body": "O verde mineral comunica foco, ação ou estado; nunca é espalhado como decoração.", "section": "colors" },
+      { "name": "The Paper Is the Product Rule", "body": "A interface permanece escura para que o documento claro seja o foco visual dominante.", "section": "colors" },
+      { "name": "The Three Voices Rule", "body": "Sans explica, mono mede e serif apresenta o documento; não misture seus papéis.", "section": "typography" },
+      { "name": "The Independent Scroll Rule", "body": "No desktop, editor, score ATS e prova do documento preservam seus próprios contextos de rolagem.", "section": "layout" },
+      { "name": "The Flat-by-Default Rule", "body": "Uma superfície só recebe sombra quando flutua fisicamente sobre outra camada.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do preserve o documento como a superfície visual dominante e mais clara.",
+      "Do use bordas, contraste tonal e espaçamento antes de adicionar sombras ou novos cartões.",
+      "Do mantenha score ATS e ações de exportação acessíveis sem interromper a edição.",
+      "Do preserve foco visível, semântica, redução de movimento e alvos de toque adequados.",
+      "Do use os templates como variações editoriais, sem mudar a gramática da aplicação."
+    ],
+    "donts": [
+      "Don't use cores saturadas, glows decorativos ou gradientes de marketing.",
+      "Don't transforme cada grupo de campos em um cartão arredondado.",
+      "Don't use fonte mono para parágrafos ou serif para controles da interface.",
+      "Don't esconda informação essencial apenas em hover, cor, imagem, header ou footer do currículo.",
+      "Don't deixe o preview competir com controles persistentes sobre a área legível do documento."
+    ]
+  }
+}
