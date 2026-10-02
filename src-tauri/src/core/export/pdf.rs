@@ -357,7 +357,12 @@ impl PdfWriter {
         let max_chars = self.max_chars_for_width(width, size, 24);
         for line in wrap(value, max_chars) {
             self.ensure_space(line_height_mm + 1.0);
-            let estimated_width = estimate_text_width(&line, size).min(width);
+            let font = if bold {
+                self.theme.bold_font
+            } else {
+                self.theme.normal_font
+            };
+            let estimated_width = estimate_text_width(&line, size, font).min(width);
             let x = ((PAGE_WIDTH - estimated_width) / 2.0).max(self.theme.margin_x);
             self.text_line(&line, size, bold, x, self.y);
             self.y -= line_height_mm;
@@ -377,14 +382,15 @@ impl PdfWriter {
         let size = self.theme.meta_size;
         let line_height = self.theme.meta_line_height;
         self.ensure_space(line_height + 1.0);
-        let width = estimate_text_width(&label, size).min(PAGE_WIDTH - (self.theme.margin_x * 2.0));
+        let width = estimate_text_width(&label, size, self.theme.normal_font)
+            .min(PAGE_WIDTH - (self.theme.margin_x * 2.0));
         let x = ((PAGE_WIDTH - width) / 2.0).max(self.theme.margin_x);
         let y = self.y;
         self.text_line(&label, size, false, x, y);
         self.y -= line_height;
         let mut link_x = x;
         for target in links {
-            let link_width = estimate_text_width(target, size);
+            let link_width = estimate_text_width(target, size, self.theme.normal_font);
             self.current.push(Op::LinkAnnotation {
                 link: LinkAnnotation::new(
                     Rect::from_xywh(
@@ -399,7 +405,7 @@ impl PdfWriter {
                     Some(HighlightingMode::Outline),
                 ),
             });
-            link_x += link_width + estimate_text_width(" | ", size);
+            link_x += link_width + estimate_text_width(" | ", size, self.theme.normal_font);
         }
     }
 
@@ -505,21 +511,21 @@ impl PdfWriter {
         self.text_color = previous_color;
         self.current.push(Op::SetOutlineColor {
             col: rgb(
-                self.theme.accent.0,
-                self.theme.accent.1,
-                self.theme.accent.2,
+                self.theme.band_rule.0,
+                self.theme.band_rule.1,
+                self.theme.band_rule.2,
             ),
         });
-        self.current.push(Op::SetOutlineThickness { pt: Pt(0.55) });
+        self.current.push(Op::SetOutlineThickness { pt: Pt(0.35) });
         self.current.push(Op::DrawLine {
             line: Line {
                 points: vec![
                     LinePoint {
-                        p: Point::new(Mm(self.content_x), Mm(self.y + 1.6)),
+                        p: Point::new(Mm(self.content_x), Mm(self.y + 1.4)),
                         bezier: false,
                     },
                     LinePoint {
-                        p: Point::new(Mm(self.content_right), Mm(self.y + 1.6)),
+                        p: Point::new(Mm(self.content_right), Mm(self.y + 1.4)),
                         bezier: false,
                     },
                 ],

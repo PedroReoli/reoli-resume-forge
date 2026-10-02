@@ -94,6 +94,22 @@ export async function exportResume(
   return invoke('export_resume', { profile, format, template, path });
 }
 
+export async function renderPdfPreview(
+  profile: ResumeProfile,
+  template: ResumeTemplate,
+): Promise<Uint8Array> {
+  if (!isDesktop()) {
+    throw new Error('A prova fiel do PDF está disponível no aplicativo desktop.');
+  }
+  const base64 = await invoke<string>('render_pdf_preview', { profile, template });
+  const binary = window.atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+  return bytes;
+}
+
 export async function resumeToMarkdown(profile: ResumeProfile): Promise<string> {
   return isDesktop() ? invoke('resume_to_markdown', { profile }) : browserMarkdown(profile);
 }

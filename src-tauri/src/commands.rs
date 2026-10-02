@@ -74,3 +74,42 @@ pub fn resume_to_markdown(profile: ResumeProfile) -> Result<String, String> {
     profile.validate()?;
     Ok(export::to_markdown(&profile))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn pdf_preview_uses_the_exact_export_bytes() {
+        let profile = crate::core::load_archetype("01_frontend").unwrap();
+        let expected =
+            export::render_with_template(&profile, ExportFormat::Pdf, ResumeTemplate::Classic)
+                .unwrap();
+        let encoded = render_pdf_preview(profile, Some("classic".into())).unwrap();
+        let preview = base64::engine::general_purpose::STANDARD
+            .decode(encoded)
+            .unwrap();
+
+        assert!(preview.starts_with(b"%PDF-"));
+        assert_eq!(
+            without_document_id(&preview),
+            without_document_id(&expected)
+        );
+    }
+
+    fn without_document_id(bytes: &[u8]) -> Vec<u8> {
+        let start = bytes
+            .windows(4)
+            .position(|window| window == b"/ID[")
+            .expect("PDF deve conter identificador no trailer");
+        let end = bytes[start..]
+            .windows(6)
+            .position(|window| window == b"]/Size")
+            .map(|offset| start + offset + 1)
+            .expect("PDF deve encerrar identificador antes de /Size");
+        let mut normalized = Vec::with_capacity(bytes.len());
+        normalized.extend_from_slice(&bytes[..start]);
+        normalized.extend_from_slice(&bytes[end..]);
+        normalized
+    }
+}

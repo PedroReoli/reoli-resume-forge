@@ -1,12 +1,17 @@
-import { ChevronLeft, ChevronRight, Maximize2, Minus, Palette, Plus } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { ChevronLeft, ChevronRight, FileCheck2, Maximize2, Minus, Palette, PencilLine, Plus } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { A4_PREVIEW_WIDTH, calculateFitZoom } from '../../domain/previewScale';
 import { TEMPLATE_OPTIONS } from '../../domain/resumeLayout';
+import { usePdfPreview } from '../../hooks/usePdfPreview';
+import { isDesktop } from '../../services/tauriBridge';
 import type { ResumeProfile, ResumeTemplate } from '../../types/resume';
 import { PageFitControl } from './PageFitControl';
+import { PdfDocumentPreview } from './PdfDocumentPreview';
 import { ResumePreview } from './ResumePreview';
 
 const A4_PREVIEW_HEIGHT = 1123;
+const PDF_PAGE_GAP = 20;
+type PreviewMode = 'proof' | 'edit';
 
 interface PreviewPaneProps {
   profile: ResumeProfile;
@@ -20,26 +25,35 @@ export function PreviewPane({ profile, template, onTemplate, onProfile, onPageCo
   const [zoom, setZoom] = useState(100);
   const [fitMode, setFitMode] = useState(true);
   const [pageCount, setPageCount] = useState(1);
-  const [documentHeight, setDocumentHeight] = useState(A4_PREVIEW_HEIGHT);
+  const [htmlDocumentHeight, setHtmlDocumentHeight] = useState(A4_PREVIEW_HEIGHT);
+  const [mode, setMode] = useState<PreviewMode>(() => (isDesktop() ? 'proof' : 'edit'));
+  const [proofRenderError, setProofRenderError] = useState<string | null>(null);
   const documentRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
+  const pdfPreview = usePdfPreview(profile, template, mode === 'proof');
+  const isProofMode = mode === 'proof' && pdfPreview.isDesktop;
+
+  const updatePageCount = useCallback((count: number) => {
+    setPageCount(count);
+    onPageCount?.(count);
+  }, [onPageCount]);
 
   useEffect(() => {
+    if (isProofMode) return undefined;
     const element = documentRef.current;
     if (!element) return undefined;
     const update = () => {
       const measuredHeight = element.scrollHeight;
       if (measuredHeight < 100) return;
-      setDocumentHeight(Math.max(A4_PREVIEW_HEIGHT, measuredHeight));
+      setHtmlDocumentHeight(Math.max(A4_PREVIEW_HEIGHT, measuredHeight));
       const count = Math.max(1, Math.ceil(measuredHeight / A4_PREVIEW_HEIGHT));
-      setPageCount(count);
-      onPageCount?.(count);
+      updatePageCount(count);
     };
     const observer = new ResizeObserver(update);
     observer.observe(element);
     update();
     return () => observer.disconnect();
-  }, [onPageCount, profile, template]);
+  }, [isProofMode, profile, template, updatePageCount]);
 
   useEffect(() => {
     const stage = stageRef.current;
@@ -72,17 +86,45 @@ export function PreviewPane({ profile, template, onTemplate, onProfile, onPageCo
     onTemplate(TEMPLATE_OPTIONS[next].id);
   };
 
+  const documentHeight = isProofMode
+    ? (pageCount * A4_PREVIEW_HEIGHT) + (Math.max(0, pageCount - 1) * PDF_PAGE_GAP)
+    : htmlDocumentHeight;
+  const proofError = pdfPreview.error || proofRenderError;
+
   return (
     <section className="preview-pane">
       <div className="preview-toolbar">
-        <PageFitControl
-          pageCount={pageCount}
-          density={profile.layout.density}
-          onDensity={(density) => onProfile({
-            ...profile,
-            layout: { ...profile.layout, density },
-          })}
-        />
+        <div className="preview-left-tools">
+          <PageFitControl
+            pageCount={pageCount}
+            density={profile.layout.density}
+            onDensity={(density) => onProfile({
+              ...profile,
+              layout: { ...profile.layout, density },
+            })}
+          />
+          <div className="preview-mode-switcher" aria-label="Modo da prévia">
+            <button
+              type="button"
+              aria-label="Mostrar PDF final fiel"
+              aria-pressed={isProofMode}
+              disabled={!pdfPreview.isDesktop}
+              title={pdfPreview.isDesktop ? 'Mesmo motor usado na exportação' : 'Disponível no aplicativo desktop'}
+              onClick={() => setMode('proof')}
+            >
+              <FileCheck2 size={13} /><span>PDF fiel</span>
+            </button>
+            <button
+              type="button"
+              aria-label="Ativar edição rápida no documento"
+              aria-pressed={!isProofMode}
+              title="Prévia HTML editável; o PDF fiel é a prova final"
+              onClick={() => setMode('edit')}
+            >
+              <PencilLine size={13} /><span>Editar</span>
+            </button>
+          </div>
+        </div>
         <div className="template-quick-switcher">
           <button type="button" aria-label="Template anterior" onClick={() => cycleTemplate(-1)}><ChevronLeft size={14} /></button>
           <label>
@@ -102,6 +144,11 @@ export function PreviewPane({ profile, template, onTemplate, onProfile, onPageCo
       </div>
       <div className="paper-stage" ref={stageRef}>
         <div className="page-meta left"><span>A4</span><span>210 × 297 mm</span></div>
+        {isProofMode && (pdfPreview.isLoading || proofError) ? (
+          <div className={`pdf-proof-status${proofError ? ' is-error' : ''}`} role="status">
+            {proofError ? 'Falha na prova do PDF' : 'Atualizando PDF final…'}
+          </div>
+        ) : null}
         <div
           className="paper-scale"
           style={{
@@ -110,16 +157,35 @@ export function PreviewPane({ profile, template, onTemplate, onProfile, onPageCo
             height: `${(documentHeight * zoom) / 100 + 16}px`,
           } as React.CSSProperties}
         >
-          <div className="document-frame" ref={documentRef}>
-            <ResumePreview profile={profile} template={template} onProfile={onProfile} />
-            {Array.from({ length: Math.max(0, pageCount - 1) }, (_, index) => (
-              <div className="page-break-guide" style={{ top: `${A4_PREVIEW_HEIGHT * (index + 1)}px` }} key={index}>
-                <span>Quebra A4 · página {index + 2}</span>
-              </div>
-            ))}
+          <div className={`document-frame${isProofMode ? ' is-pdf-proof' : ''}`} ref={documentRef}>
+            {isProofMode ? (
+              pdfPreview.bytes ? (
+                <PdfDocumentPreview
+                  bytes={pdfPreview.bytes}
+                  onError={setProofRenderError}
+                  onPageCount={updatePageCount}
+                />
+              ) : (
+                <div className="pdf-proof-skeleton" role="status">
+                  <span /><span /><span />
+                  <small>{proofError || 'Preparando PDF final…'}</small>
+                </div>
+              )
+            ) : (
+              <>
+                <ResumePreview profile={profile} template={template} onProfile={onProfile} />
+                {Array.from({ length: Math.max(0, pageCount - 1) }, (_, index) => (
+                  <div className="page-break-guide" style={{ top: `${A4_PREVIEW_HEIGHT * (index + 1)}px` }} key={index}>
+                    <span>Quebra A4 · página {index + 2}</span>
+                  </div>
+                ))}
+              </>
+            )}
           </div>
         </div>
-        <div className="page-meta right"><span>Versão ATS</span><span>Texto selecionável</span><span>Edição inline</span></div>
+        <div className="page-meta right">
+          {isProofMode ? <><span>Prova final</span><span>Mesmo motor da exportação</span><span>{pageCount} página{pageCount === 1 ? '' : 's'}</span></> : <><span>Edição rápida</span><span>Prévia aproximada</span><span>Use PDF fiel para revisar</span></>}
+        </div>
       </div>
     </section>
   );

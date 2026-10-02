@@ -1,4 +1,5 @@
 use super::super::model::ResumeProfile;
+use printpdf::BuiltinFont;
 
 pub(super) fn string_values(value: &serde_json::Value) -> String {
     value
@@ -64,8 +65,36 @@ pub(super) fn is_safe_link(value: &str) -> bool {
     value.starts_with("https://") || value.starts_with("http://")
 }
 
-pub(super) fn estimate_text_width(value: &str, size: f32) -> f32 {
-    (value.chars().count() as f32 * size * 0.18).max(1.0)
+pub(super) fn estimate_text_width(value: &str, size: f32, font: BuiltinFont) -> f32 {
+    let em_width = value
+        .chars()
+        .map(|character| glyph_width_em(character, font))
+        .sum::<f32>();
+    (em_width * size * 0.352_778).max(1.0)
+}
+
+fn glyph_width_em(character: char, font: BuiltinFont) -> f32 {
+    if matches!(
+        font,
+        BuiltinFont::Courier
+            | BuiltinFont::CourierBold
+            | BuiltinFont::CourierOblique
+            | BuiltinFont::CourierBoldOblique
+    ) {
+        return 0.6;
+    }
+
+    match character {
+        ' ' => 0.278,
+        'i' | 'l' | 'I' | '.' | ',' | ':' | ';' | '!' | '|' | '\'' => 0.278,
+        'f' | 'j' | 'r' | 't' | '(' | ')' | '[' | ']' => 0.35,
+        '-' | '/' | '\\' => 0.333,
+        'm' | 'w' | 'M' | 'W' | '@' | '%' => 0.85,
+        character if character.is_ascii_digit() => 0.556,
+        character if character.is_uppercase() => 0.667,
+        character if character.is_lowercase() => 0.5,
+        _ => 0.556,
+    }
 }
 
 pub(super) fn wrap(value: &str, max_chars: usize) -> Vec<String> {
