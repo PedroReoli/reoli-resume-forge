@@ -1,0 +1,244 @@
+{
+  "config": {
+    "output": {
+      "basename": "Pedro_Lucas_Reis_Frontend_Senior",
+      "directory": "E:\\Hermes\\vault\\scripts\\gerador-curriculo\\output\\01_frontend",
+      "generate_docx": true,
+      "generate_pdf": true
+    },
+    "colors": {
+      "primary": "#1F374D",
+      "text": "#222222",
+      "muted": "#5A5A5A",
+      "divider": "#D9E0E6"
+    },
+    "tech_label": "Tecnologias",
+    "section_names": {
+      "summary": "Resumo Profissional",
+      "skills": "Competências Técnicas",
+      "soft_skills": "Competências Comportamentais",
+      "experience": "Experiência Profissional",
+      "education": "Formação Acadêmica",
+      "languages": "Idiomas",
+      "certifications": "Certificações"
+    }
+  },
+  "person": {
+    "name": "Pedro Lucas Reis",
+    "location": "Volta Redonda, RJ - Brasil",
+    "work_preference": "100% Remoto (Brasil e Internacional)",
+    "phone": "+55 (24) 99326-4040",
+    "email": "pedrosousa2160@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/pedro-lucas-reis-a93945171/",
+    "portfolio": "https://pedroreoli.vercel.app",
+    "github": "https://github.com/PedroReoli"
+  },
+  "headline": "Senior Frontend Engineer | React • Next.js • TypeScript • Design Systems • Web Performance",
+  "summary": "Engenheiro de Software Frontend com cerca de 4 anos de experiência, especializado no desenvolvimento de produtos web escaláveis, sistemas ERP e plataformas SaaS com React, Next.js e TypeScript. Arquiteto e líder do Design System corporativo da Autocom3 com 500+ componentes reutilizáveis (ganho de 70% em velocidade de entrega de telas), especialista em otimização de Core Web Vitals (redução de 40% no carregamento e scores Lighthouse ~100) e interfaces corporativas unificadas com mais de 100 páginas em produção.",
+  "target_keywords": [
+    "React",
+    "Next.js",
+    "TypeScript",
+    "Design Systems",
+    "Web Performance",
+    "Tailwind CSS",
+    "Lighthouse",
+    "Core Web Vitals",
+    "Acessibilidade WCAG",
+    "APIs RESTful",
+    "Componentização"
+  ],
+  "skills": {
+    "Frontend Core": [
+      "React (18/19)",
+      "Next.js (App Router)",
+      "TypeScript",
+      "JavaScript (ES6+)",
+      "Tailwind CSS",
+      "HTML5 Semântico",
+      "CSS3 / Sass"
+    ],
+    "Design Systems & UI": [
+      "Design Systems Corporativos (500+ componentes)",
+      "Shadcn/UI",
+      "Radix UI",
+      "Figma Tokens",
+      "Componentização Avançada"
+    ],
+    "Estado & Performance": [
+      "Zustand",
+      "TanStack Query (React Query)",
+      "Core Web Vitals",
+      "Lighthouse Otimização (~100)",
+      "Acessibilidade (WCAG AA)"
+    ],
+    "Integrações & Back": [
+      "Consumo de APIs RESTful",
+      "Node.js",
+      "PostgreSQL",
+      "GraphQL",
+      "Webhooks Assíncronos"
+    ],
+    "Ferramentas & DevOps": [
+      "Git / GitHub Flow",
+      "CI/CD",
+      "Docker",
+      "Vercel",
+      "Monorepo (Turborepo)",
+      "Jest / React Testing Library",
+      "Claude Code / AI Workflows"
+    ]
+  },
+  "soft_skills": [
+    "Liderança Técnica em Frontend",
+    "Governança de Código e Design Systems",
+    "Comunicação Clara e Assíncrona",
+    "Orientação a Produto e Experiência do Usuário",
+    "Resolução Pragmática de Problemas"
+  ],
+  "experience": [
+    {
+      "company": "Domus - Sua Solução Digital",
+      "role": "Frontend & Full Stack Software Engineer",
+      "dates": "out de 2025 – Presente",
+      "location": "Remoto",
+      "work_mode": "Autônomo",
+      "summary": "Desenvolvimento de produtos digitais, aplicações SaaS e plataformas web responsivas focadas em experiência do usuário e alta performance.",
+      "bullets": [
+        "Construo interfaces modernas e escaláveis utilizando React (18/19), Next.js (App Router), TypeScript e Tailwind CSS para plataformas SaaS e dashboards administrativos.",
+        "Otimizo métricas de Core Web Vitals (LCP, CLS, INP), alcançando pontuações de ~100 no Google Lighthouse em Performance, SEO, Acessibilidade e Boas Práticas.",
+        "Estruturo componentes altamente reutilizáveis e integrados a APIs RESTful com gerenciamento de estado previsível via TanStack Query e Zustand.",
+        "Acelero o ciclo de desenvolvimento exploratório em aproximadamente 35% por meio de workflows assistidos por Inteligência Artificial aplicada ao desenvolvimento frontend."
+      ],
+      "technologies": [
+        "React",
+        "Next.js",
+        "TypeScript",
+        "Tailwind CSS",
+        "Core Web Vitals",
+        "Lighthouse",
+        "Zustand",
+        "TanStack Query",
+        "APIs REST"
+      ]
+    },
+    {
+      "company": "SIVIS Tecnologia",
+      "role": "Frontend Engineer | Interfaces & Integrations",
+      "dates": "nov de 2025 – Presente",
+      "location": "Remoto",
+      "work_mode": "Freelance",
+      "summary": "Modernização de interfaces corporativas legadas, componentização avançada e conexão com APIs de alta confiabilidade.",
+      "bullets": [
+        "Modernizo e refatoro interfaces web corporativas críticas em produção utilizando React, Next.js, Angular, TypeScript, HTML5 semântico e CSS3 modular.",
+        "Implemento padrões modernos de componentização e reuso de código com TypeScript, reduzindo retrabalho visual de interface em cerca de 25%.",
+        "Conecto aplicações frontend a APIs REST corporativas e serviços de retaguarda, assegurando validação estrita de esquemas e tipagem ponta a ponta.",
+        "Contribuo para a consistência técnica e estabilidade operacional de sistemas corporativos utilizados ativamente no mercado."
+      ],
+      "technologies": [
+        "React",
+        "Next.js",
+        "Angular",
+        "TypeScript",
+        "JavaScript",
+        "HTML5",
+        "CSS3",
+        "Design Patterns",
+        "APIs REST",
+        "Git"
+      ]
+    },
+    {
+      "company": "Autocom3",
+      "role": "Frontend Lead & Full Stack Engineer",
+      "dates": "nov de 2024 – Presente",
+      "location": "Volta Redonda, RJ",
+      "work_mode": "Híbrido",
+      "summary": "Liderança da arquitetura frontend corporativa, governança de Design Systems e desenvolvimento de portais unificados de alta escala.",
+      "bullets": [
+        "Liderei a arquitetura e evolução do Design System corporativo com mais de 500 componentes reutilizáveis, acelerando em até 70% o tempo de desenvolvimento de novas telas e fluxos.",
+        "Arquitetei e mantive portais corporativos unificados e módulos ERP com mais de 100 páginas em produção, atendendo ativamente a mais de 20 organizações operacionais.",
+        "Conduzi otimizações de arquitetura frontend que reduziram em até 40% o tempo de carregamento de aplicações corporativas complexas.",
+        "Estabeleci governança visual, padrões de acessibilidade (WCAG AA) e conduzi code reviews frontend garantindo conformidade com padrões modernos da squad."
+      ],
+      "technologies": [
+        "React",
+        "Next.js",
+        "TypeScript",
+        "Design Systems (500+ comp)",
+        "Tailwind CSS",
+        "Figma Tokens",
+        "Web Vitals",
+        "Jest / RTL",
+        "Microfrontends"
+      ]
+    },
+    {
+      "company": "Centro Universitário de Volta Redonda (UniFOA) & SEBRAE",
+      "role": "Mentor de Tecnologia",
+      "dates": "jun de 2024 – dez de 2024",
+      "location": "Volta Redonda, RJ",
+      "work_mode": "Presencial / Temporário",
+      "summary": "Atuação como mentor e instrutor no programa EvaTech voltado à inclusão digital e tecnologias modernas.",
+      "bullets": [
+        "Conduzi workshops práticos e trilhas de formação sobre interfaces modernas, fundamentos de programação e Inteligência Artificial generativa para mais de 30 participantes.",
+        "Orientei projetos práticos de alunos focando em usabilidade, estruturação semântica e raciocínio lógico.",
+        "Fortaleci habilidades de facilitação técnica, mentoria e comunicação clara voltada à transferência de conhecimento."
+      ],
+      "technologies": [
+        "Desenvolvimento Web",
+        "React",
+        "Inteligência Artificial",
+        "Metodologias Ágeis",
+        "Mentoria Técnica"
+      ]
+    },
+    {
+      "company": "SIVIS Tecnologia",
+      "role": "Junior Full Stack Engineer (Foco Frontend)",
+      "dates": "ago de 2022 – jun de 2024",
+      "location": "Volta Redonda, RJ",
+      "work_mode": "Híbrido",
+      "summary": "Desenvolvimento de dashboards operacionais, telas administrativas e módulos ERP para clientes corporativos.",
+      "bullets": [
+        "Desenvolvi módulos administrativos, dashboards e interfaces responsivas com React, TypeScript, JavaScript, HTML5 e CSS3.",
+        "Entreguei mais de 30 interfaces administrativas completas em produção conectadas a mais de 20 APIs REST.",
+        "Participei ativamente de rituais ágeis (Scrum/Kanban) e revisões de código, reduzindo em cerca de 20% retrabalhos em produção."
+      ],
+      "technologies": [
+        "React",
+        "TypeScript",
+        "JavaScript",
+        "HTML5",
+        "CSS3",
+        "APIs REST",
+        "Git",
+        "Scrum"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "degree": "Bacharelado em Sistemas de Informação",
+      "institution": "Centro Universitário de Volta Redonda (UniFOA)",
+      "dates": "Concluído em 2025"
+    }
+  ],
+  "languages": [
+    {
+      "language": "Português",
+      "level": "Nativo"
+    },
+    {
+      "language": "Inglês",
+      "level": "B2 / Intermediário funcional"
+    }
+  ],
+  "certifications": [
+    {
+      "name": "Formação Completa em Frontend & UI/UX Design",
+      "issuer": "Origamid",
+      "date": "mai de 2026"
+    }
+  ]
+}

@@ -4,7 +4,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 const source = resolve('src-tauri/target/release/reoli-cv.exe');
-const outputDirectory = resolve('dist-portable');
+const outputDirectory = resolve('release/bin');
 const destination = resolve(outputDirectory, 'reoli-cv.exe');
 
 await stat(source);

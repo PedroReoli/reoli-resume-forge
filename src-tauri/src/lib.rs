@@ -1,3 +1,5 @@
+pub mod core;
+
 #[tauri::command]
 fn app_version() -> &'static str {
     env!("CARGO_PKG_VERSION")

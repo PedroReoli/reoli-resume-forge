@@ -1,0 +1,257 @@
+{
+  "config": {
+    "output": {
+      "basename": "Pedro_Lucas_Reis_Senior_Frontend_FullStack_EN",
+      "directory": "E:\\Hermes\\vault\\scripts\\gerador-curriculo\\output\\05_internacional_en",
+      "generate_docx": true,
+      "generate_pdf": true
+    },
+    "colors": {
+      "primary": "#1F374D",
+      "text": "#222222",
+      "muted": "#5A5A5A",
+      "divider": "#D9E0E6"
+    },
+    "tech_label": "Technologies",
+    "section_names": {
+      "summary": "Professional Summary",
+      "skills": "Technical Core Competencies",
+      "soft_skills": "Behavioral Competencies",
+      "experience": "Professional Experience",
+      "education": "Education",
+      "languages": "Languages",
+      "certifications": "Certifications"
+    }
+  },
+  "person": {
+    "name": "Pedro Lucas Reis",
+    "location": "Volta Redonda, RJ - Brazil",
+    "work_preference": "100% Remote (Global / Worldwide)",
+    "phone": "+55 (24) 99326-4040",
+    "email": "pedrosousa2160@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/pedro-lucas-reis-a93945171/",
+    "portfolio": "https://pedroreoli.vercel.app",
+    "github": "https://github.com/PedroReoli"
+  },
+  "headline": "Senior Frontend & Full Stack Engineer | React • Next.js • TypeScript • Node.js • AI Workflows",
+  "summary": "Senior Frontend and Full Stack Software Engineer with 4 years of experience delivering scalable web platforms, enterprise ERP portals, and SaaS products. Proven track record architecting corporate Design Systems with 500+ components (cutting frontend delivery time by up to 70%), optimizing Core Web Vitals to achieve near-100 Lighthouse scores, and engineering resilient full-stack applications with React, Next.js, TypeScript, Node.js, and PostgreSQL.",
+  "target_keywords": [
+    "React",
+    "Next.js",
+    "TypeScript",
+    "Node.js",
+    "Design Systems",
+    "Full Stack",
+    "Web Performance",
+    "Lighthouse",
+    "REST APIs",
+    "PostgreSQL",
+    "AI Engineering"
+  ],
+  "skills": {
+    "Frontend Engineering": [
+      "React (18/19)",
+      "Next.js (App Router)",
+      "TypeScript",
+      "JavaScript (ES6+)",
+      "Tailwind CSS",
+      "Design Systems (500+ components)",
+      "HTML5 / CSS3"
+    ],
+    "Performance & Architecture": [
+      "Core Web Vitals Optimization",
+      "Lighthouse ~100",
+      "WCAG 2.1 AA Accessibility",
+      "Zustand",
+      "TanStack Query",
+      "Microfrontends"
+    ],
+    "Backend & APIs": [
+      "Node.js",
+      "NestJS",
+      "Express",
+      "Fastify",
+      "C# / .NET",
+      "RESTful APIs",
+      "JWT Auth / RBAC",
+      "Webhooks"
+    ],
+    "Database & Cloud": [
+      "PostgreSQL",
+      "Supabase",
+      "SQL Server",
+      "MySQL",
+      "Prisma ORM",
+      "AWS (S3, API Gateway)",
+      "Docker",
+      "CI/CD"
+    ],
+    "AI & Tooling": [
+      "AI-Assisted Software Engineering",
+      "Claude Code",
+      "Prompt Engineering",
+      "Git / GitHub Flow",
+      "Jest / RTL"
+    ]
+  },
+  "soft_skills": [
+    "Technical Leadership & Mentoring",
+    "Clear Async Communication",
+    "Product & Business Acumen",
+    "Pragmatic Problem Solving",
+    "Autonomous High-Standard Delivery"
+  ],
+  "experience": [
+    {
+      "company": "Domus - Sua Solução Digital",
+      "role": "Senior Software Engineer | Frontend & Full Stack Developer",
+      "dates": "Oct 2025 – Present",
+      "location": "Remote",
+      "work_mode": "Contract",
+      "summary": "End-to-end development of digital products, scalable SaaS platforms, and enterprise administrative solutions.",
+      "bullets": [
+        "Engineered full-stack websites, SaaS products, and administrative platforms across 20+ digital projects using React (18/19), Next.js (App Router), TypeScript, and Node.js.",
+        "Designed and deployed reusable React and Next.js foundations applied across 10+ production products, ensuring high maintainability.",
+        "Developed resilient REST APIs, webhook handlers, and database persistence utilizing PostgreSQL and Supabase.",
+        "Achieved near-100 Google Lighthouse scores across Performance, SEO, Accessibility, and Best Practices through strict Core Web Vitals optimization.",
+        "Reduced exploratory and repetitive development cycles by approximately 35% via AI-assisted software engineering practices (prompt workflows and test automation)."
+      ],
+      "technologies": [
+        "TypeScript",
+        "React",
+        "Next.js",
+        "Node.js",
+        "Express",
+        "Fastify",
+        "PostgreSQL",
+        "Supabase",
+        "REST APIs",
+        "AI Workflows"
+      ]
+    },
+    {
+      "company": "SIVIS Tecnologia",
+      "role": "Frontend & Full Stack Engineer | Integrations",
+      "dates": "Nov 2025 – Present",
+      "location": "Remote",
+      "work_mode": "Contract",
+      "summary": "Frontend architecture, corporate system modernization, and enterprise API integrations.",
+      "bullets": [
+        "Modernized React, Next.js, Angular, and TypeScript interfaces across 15+ production corporate applications.",
+        "Connected frontend user experiences to REST APIs and backend services across 10+ operational integrations, reducing visual rework by 25% through standardized componentization.",
+        "Optimized PostgreSQL and MySQL relational queries supporting heavy reporting workflows, reducing database response times by approximately 35% in production."
+      ],
+      "technologies": [
+        "React",
+        "Next.js",
+        "Angular",
+        "TypeScript",
+        "Node.js",
+        "PostgreSQL",
+        "MySQL",
+        "REST APIs",
+        "Git"
+      ]
+    },
+    {
+      "company": "Autocom3",
+      "role": "Frontend Lead & Full Stack Engineer",
+      "dates": "Nov 2024 – Present",
+      "location": "Volta Redonda, Brazil",
+      "work_mode": "Hybrid",
+      "summary": "Development of high-scale enterprise ERP platforms, unified web portals, and corporate Design System governance.",
+      "bullets": [
+        "Architected and governed the corporate Design System with 500+ reusable components, accelerating new screen delivery by up to 70% across engineering squads.",
+        "Engineered unified ERP portals with 100+ production pages serving more than 20 corporate client organizations daily.",
+        "Improved enterprise application performance by reducing initial load times by up to 40% through frontend architecture optimizations.",
+        "Developed secure REST APIs, JWT authentication, RBAC authorization, event-driven webhooks, and integrations across Node.js, C#, .NET, PostgreSQL, and SQL Server.",
+        "Configured deployment pipelines and AWS cloud services (S3, API Gateway) while enforcing code quality through peer code reviews."
+      ],
+      "technologies": [
+        "TypeScript",
+        "React",
+        "Next.js",
+        "Node.js",
+        "NestJS",
+        "C#",
+        ".NET",
+        "PostgreSQL",
+        "SQL Server",
+        "AWS",
+        "Docker",
+        "Design Systems",
+        "REST APIs"
+      ]
+    },
+    {
+      "company": "Centro Universitário de Volta Redonda (UniFOA) & SEBRAE",
+      "role": "Technology Mentor",
+      "dates": "Jun 2024 – Dec 2024",
+      "location": "Volta Redonda, Brazil",
+      "work_mode": "On-site / Temporary",
+      "summary": "Technical instructor and mentor in the EvaTech program focused on digital skills, generative AI, and modern software engineering.",
+      "bullets": [
+        "Facilitated hands-on workshops on Generative AI, prompt engineering, programming fundamentals, and technical problem-solving for 30+ participants.",
+        "Mentored junior engineers and participants through real-world technology projects over a 7-month mentoring engagement.",
+        "Developed structured educational materials translating complex software concepts into accessible, practice-oriented training."
+      ],
+      "technologies": [
+        "Generative AI",
+        "Prompt Engineering",
+        "Agile Methodologies",
+        "Technical Mentoring",
+        "Leadership"
+      ]
+    },
+    {
+      "company": "SIVIS Tecnologia",
+      "role": "Junior Full Stack Engineer",
+      "dates": "Aug 2022 – Jun 2024",
+      "location": "Volta Redonda, Brazil",
+      "work_mode": "Hybrid",
+      "summary": "Building corporate dashboards, ERP business modules, and relational database integrations.",
+      "bullets": [
+        "Built React, TypeScript, and JavaScript interfaces for ERP modules and corporate administrative platforms (30+ production interfaces delivered).",
+        "Developed 20+ REST APIs and integrations connecting frontend applications, backend services, and relational databases.",
+        "Collaborated in Agile squads (Scrum/Kanban) performing code reviews, pair programming, and stability improvements that reduced production bugs by 20%."
+      ],
+      "technologies": [
+        "React",
+        "TypeScript",
+        "JavaScript",
+        "Node.js",
+        "C#",
+        "PHP",
+        "PostgreSQL",
+        "MySQL",
+        "REST APIs",
+        "Scrum",
+        "Git"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "degree": "Bachelor of Science in Information Systems",
+      "institution": "University Center of Volta Redonda (UniFOA)",
+      "dates": "Completed in 2025"
+    }
+  ],
+  "languages": [
+    {
+      "language": "English",
+      "level": "B2 / Functional intermediate"
+    },
+    {
+      "language": "Portuguese",
+      "level": "Native"
+    }
+  ],
+  "certifications": [
+    {
+      "name": "Frontend Engineering & UI/UX Design Certification",
+      "issuer": "Origamid",
+      "date": "May 2026"
+    }
+  ]
+}

@@ -1,0 +1,239 @@
+{
+  "config": {
+    "output": {
+      "basename": "Pedro_Lucas_Reis_Fullstack_DotNet",
+      "directory": "E:\\Hermes\\vault\\scripts\\gerador-curriculo\\output\\03_fullstack_dotnet",
+      "generate_docx": true,
+      "generate_pdf": true
+    },
+    "colors": {
+      "primary": "#1F374D",
+      "text": "#222222",
+      "muted": "#5A5A5A",
+      "divider": "#D9E0E6"
+    },
+    "tech_label": "Tecnologias",
+    "section_names": {
+      "summary": "Resumo Profissional",
+      "skills": "Competências Técnicas",
+      "soft_skills": "Competências Comportamentais",
+      "experience": "Experiência Profissional",
+      "education": "Formação Acadêmica",
+      "languages": "Idiomas",
+      "certifications": "Certificações"
+    }
+  },
+  "person": {
+    "name": "Pedro Lucas Reis",
+    "location": "Volta Redonda, RJ - Brasil",
+    "work_preference": "100% Remoto (Brasil e Internacional)",
+    "phone": "+55 (24) 99326-4040",
+    "email": "pedrosousa2160@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/pedro-lucas-reis-a93945171/",
+    "portfolio": "https://pedroreoli.vercel.app",
+    "github": "https://github.com/PedroReoli"
+  },
+  "headline": "Full Stack Engineer | C# • .NET • React • TypeScript • SQL Server • ERP Corporativo",
+  "summary": "Engenheiro de Software Full Stack com sólida bagagem em sistemas corporativos ERP, regras de negócio complexas e integração de ecossistemas corporativos. Combina robustez de backend em C# / .NET e microsserviços corporativos com interfaces web modernas de alta performance em React, Next.js e TypeScript. Experiência em portais com 100+ páginas em produção, modelagem relacional em SQL Server e PostgreSQL e modernização de legados corporativos.",
+  "target_keywords": [
+    ".NET",
+    "C#",
+    "ASP.NET Core",
+    "React",
+    "TypeScript",
+    "SQL Server",
+    "PostgreSQL",
+    "ERP",
+    "Clean Architecture",
+    "APIs RESTful"
+  ],
+  "skills": {
+    "Backend .NET": [
+      "C#",
+      ".NET 8 / .NET Core",
+      "ASP.NET Core Web API",
+      "Entity Framework Core",
+      "Clean Architecture",
+      "APIs RESTful corporativas"
+    ],
+    "Frontend Moderno": [
+      "React",
+      "Next.js",
+      "TypeScript",
+      "Tailwind CSS",
+      "Design Systems",
+      "Angular",
+      "Modernização de Legados"
+    ],
+    "Banco de Dados": [
+      "SQL Server (T-SQL, Stored Procedures)",
+      "PostgreSQL",
+      "MySQL",
+      "Otimização de Queries e Índices"
+    ],
+    "Integrações & Corporativo": [
+      "Autenticação JWT",
+      "Módulos Fiscais e Emissão de NF-e",
+      "Webhooks",
+      "Node.js",
+      "Docker",
+      "AWS API Gateway"
+    ],
+    "Metodologias": [
+      "Scrum",
+      "Kanban",
+      "Code Review",
+      "Git Flow",
+      "Padrões SOLID"
+    ]
+  },
+  "soft_skills": [
+    "Domínio de Regras de Negócio Críticas",
+    "Paciência e Rigor na Migração de Legados",
+    "Trabalho Colaborativo com Equipes Multidisciplinares",
+    "Orientação a Resultados e Estabilidade"
+  ],
+  "experience": [
+    {
+      "company": "Autocom3",
+      "role": "Full Stack Engineer (C# / .NET & React)",
+      "dates": "nov de 2024 – Presente",
+      "location": "Volta Redonda, RJ",
+      "work_mode": "Híbrido",
+      "summary": "Desenvolvimento de plataformas ERP corporativas de alta complexidade integrando backend C# / .NET e frontend React.",
+      "bullets": [
+        "Desenvolvo e modernizo plataformas ERP e portais corporativos utilizando C#, .NET 8, ASP.NET Core, TypeScript, React e Next.js para mais de 20 organizações operacionais.",
+        "Construo APIs REST corporativas, autenticação JWT, controle de acessos RBAC, regras de faturamento e parsing automatizado de XMLs fiscais (NF-e/NFC-e).",
+        "Atuo na modelagem relacional avançada, otimização de queries T-SQL, Stored Procedures, migrations e índices em SQL Server e PostgreSQL.",
+        "Liderei a arquitetura do Design System corporativo com 500+ componentes, reduzindo em 70% o tempo de entrega de novas telas corporativas integradas ao ERP.",
+        "Integro serviços em nuvem na AWS, conteinerização com Docker e conduzo revisões técnicas de código na equipe."
+      ],
+      "technologies": [
+        "C#",
+        ".NET 8",
+        "ASP.NET Core",
+        "SQL Server",
+        "React",
+        "Next.js",
+        "TypeScript",
+        "PostgreSQL",
+        "Docker",
+        "AWS",
+        "Design Systems"
+      ]
+    },
+    {
+      "company": "SIVIS Tecnologia",
+      "role": "Full Stack Engineer | C# & Integrations",
+      "dates": "nov de 2025 – Presente",
+      "location": "Remoto",
+      "work_mode": "Freelance",
+      "summary": "Integração de sistemas corporativos de retaguarda, modernização de interfaces e otimização de bancos relacionais.",
+      "bullets": [
+        "Modernizo interfaces web corporativas e integro serviços de backend legados e modernos em C# e Node.js.",
+        "Otimizo consultas e relatórios em bancos relacionais PostgreSQL e MySQL, reduzindo em cerca de 35% o tempo de processamento de relatórios pesados.",
+        "Refatoro plataformas legadas aplicando Clean Architecture, separação de responsabilidades e tipagem estrita com TypeScript.",
+        "Reduzo retrabalho de interface em 25% por meio de componentização consistente e contratos de API padronizados."
+      ],
+      "technologies": [
+        "C#",
+        ".NET",
+        "PostgreSQL",
+        "MySQL",
+        "React",
+        "Next.js",
+        "Angular",
+        "TypeScript",
+        "APIs REST"
+      ]
+    },
+    {
+      "company": "Domus - Sua Solução Digital",
+      "role": "Desenvolvedor Full Stack",
+      "dates": "out de 2025 – Presente",
+      "location": "Remoto",
+      "work_mode": "Autônomo",
+      "summary": "Construção de aplicações web escaláveis, sistemas administrativos e produtos SaaS com arquitetura modular.",
+      "bullets": [
+        "Arquiteto e implemento aplicações corporativas completas envolvendo frontend moderno (React/Next.js), backend estruturado e bancos relacionais.",
+        "Desenvolvo APIs REST de alta confiabilidade com persistência de dados em PostgreSQL e Supabase.",
+        "Otimizo sistemas corporativos atingindo métricas de ~100 no Google Lighthouse em performance e estabilidade.",
+        "Utilizo fluxos de Inteligência Artificial para apoiar testes unitários, automação e especificação arquitetural."
+      ],
+      "technologies": [
+        "TypeScript",
+        "React",
+        "Next.js",
+        "Node.js",
+        "PostgreSQL",
+        "Supabase",
+        "APIs REST",
+        "AI Workflows"
+      ]
+    },
+    {
+      "company": "SIVIS Tecnologia",
+      "role": "Junior Full Stack Engineer (C# / .NET)",
+      "dates": "ago de 2022 – jun de 2024",
+      "location": "Volta Redonda, RJ",
+      "work_mode": "Híbrido",
+      "summary": "Desenvolvimento de módulos ERP administrativos, lógica de negócios corporativa e rotinas em C# e bancos de dados.",
+      "bullets": [
+        "Desenvolvi regras de negócio em C# e Node.js para mais de 10 módulos de faturamento e gestão operacional utilizados diariamente por clientes.",
+        "Construí e mantive mais de 20 APIs REST e integrações conectando o backend a telas web desenvolvidas em React e TypeScript.",
+        "Modelei esquemas de dados relacionais e implementei procedures em PostgreSQL e MySQL com entrega de 30+ interfaces em produção."
+      ],
+      "technologies": [
+        "C#",
+        ".NET",
+        "PostgreSQL",
+        "MySQL",
+        "React",
+        "TypeScript",
+        "APIs REST",
+        "Git",
+        "Scrum"
+      ]
+    },
+    {
+      "company": "Centro Universitário de Volta Redonda (UniFOA) & SEBRAE",
+      "role": "Mentor de Tecnologia",
+      "dates": "jun de 2024 – dez de 2024",
+      "location": "Volta Redonda, RJ",
+      "work_mode": "Presencial / Temporário",
+      "summary": "Mentoria técnica e instrutoria em lógica de programação e inteligência artificial no programa EvaTech.",
+      "bullets": [
+        "Capacitei mais de 30 alunos em lógica algorítmica, programação estruturada e ferramentas modernas de produtividade com IA."
+      ],
+      "technologies": [
+        "Lógica de Programação",
+        "Inteligência Artificial",
+        "Mentoria Técnica"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "degree": "Bacharelado em Sistemas de Informação",
+      "institution": "Centro Universitário de Volta Redonda (UniFOA)",
+      "dates": "Concluído em 2025"
+    }
+  ],
+  "languages": [
+    {
+      "language": "Português",
+      "level": "Nativo"
+    },
+    {
+      "language": "Inglês",
+      "level": "B2 / Intermediário funcional"
+    }
+  ],
+  "certifications": [
+    {
+      "name": "Formação Completa em Frontend & UI/UX Design",
+      "issuer": "Origamid",
+      "date": "mai de 2026"
+    }
+  ]
+}

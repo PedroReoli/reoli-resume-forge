@@ -10,7 +10,7 @@ temp_skills/
 # Dependências e builds
 node_modules/
 dist/
-dist-portable/
+release/bin/
 src-tauri/target/
 *.log
 

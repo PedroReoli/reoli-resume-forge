@@ -1,0 +1,244 @@
+{
+  "config": {
+    "output": {
+      "basename": "Pedro_Lucas_Reis_Fullstack_Node",
+      "directory": "E:\\Hermes\\vault\\scripts\\gerador-curriculo\\output\\02_fullstack_node",
+      "generate_docx": true,
+      "generate_pdf": true
+    },
+    "colors": {
+      "primary": "#1F374D",
+      "text": "#222222",
+      "muted": "#5A5A5A",
+      "divider": "#D9E0E6"
+    },
+    "tech_label": "Tecnologias",
+    "section_names": {
+      "summary": "Resumo Profissional",
+      "skills": "Competências Técnicas",
+      "soft_skills": "Competências Comportamentais",
+      "experience": "Experiência Profissional",
+      "education": "Formação Acadêmica",
+      "languages": "Idiomas",
+      "certifications": "Certificações"
+    }
+  },
+  "person": {
+    "name": "Pedro Lucas Reis",
+    "location": "Volta Redonda, RJ - Brasil",
+    "work_preference": "100% Remoto (Brasil e Internacional)",
+    "phone": "+55 (24) 99326-4040",
+    "email": "pedrosousa2160@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/pedro-lucas-reis-a93945171/",
+    "portfolio": "https://pedroreoli.vercel.app",
+    "github": "https://github.com/PedroReoli"
+  },
+  "headline": "Full Stack Engineer | React • Next.js • Node.js • TypeScript • PostgreSQL • REST APIs",
+  "summary": "Full Stack Software Engineer com cerca de 4 anos de experiência no desenvolvimento end-to-end de aplicações SaaS, plataformas ERP e microsserviços escaláveis. Forte domínio no ecossistema JavaScript/TypeScript de ponta a ponta (React, Next.js, Node.js, NestJS, Express, Fastify), modelagem de dados e persistência em PostgreSQL e Supabase, APIs RESTful de alta resiliência e esteiras de engenharia assistidas por Inteligência Artificial (redução de 35% no ciclo exploratório).",
+  "target_keywords": [
+    "Fullstack",
+    "React",
+    "Next.js",
+    "Node.js",
+    "TypeScript",
+    "NestJS",
+    "PostgreSQL",
+    "Supabase",
+    "APIs RESTful",
+    "Microsserviços",
+    "Docker"
+  ],
+  "skills": {
+    "Backend & APIs": [
+      "Node.js",
+      "NestJS",
+      "Express",
+      "Fastify",
+      "APIs RESTful",
+      "Autenticação JWT / RBAC",
+      "Webhooks Event-Driven"
+    ],
+    "Frontend": [
+      "React",
+      "Next.js (App Router)",
+      "TypeScript",
+      "Tailwind CSS",
+      "Design Systems",
+      "TanStack Query",
+      "Zustand"
+    ],
+    "Banco de Dados & ORM": [
+      "PostgreSQL",
+      "Supabase",
+      "SQL Server",
+      "MySQL",
+      "Prisma ORM",
+      "Drizzle ORM",
+      "Modelagem Relacional"
+    ],
+    "Cloud & DevOps": [
+      "AWS (S3, API Gateway)",
+      "Docker",
+      "CI/CD Pipelines",
+      "Git / GitHub Flow",
+      "Vercel",
+      "Linux"
+    ],
+    "Qualidade & Engenharia": [
+      "Clean Architecture",
+      "Code Review",
+      "Testes Automatizados (Jest, RTL)",
+      "AI-assisted Software Engineering"
+    ]
+  },
+  "soft_skills": [
+    "Visão de Produto End-to-End",
+    "Autonomia Técnica",
+    "Comunicação Ágil em Squads",
+    "Capacidade de Entrega Contínua",
+    "Foco em Soluções Escaláveis"
+  ],
+  "experience": [
+    {
+      "company": "Domus - Sua Solução Digital",
+      "role": "Desenvolvedor Full Stack (Node.js & React)",
+      "dates": "out de 2025 – Presente",
+      "location": "Remoto",
+      "work_mode": "Autônomo",
+      "summary": "Desenvolvimento end-to-end de produtos digitais, aplicações SaaS, plataformas administrativas e APIs escaláveis.",
+      "bullets": [
+        "Desenvolvo aplicações Full Stack robustas utilizando React, Next.js, TypeScript e Node.js (Express e Fastify) com arquitetura orientada a serviços.",
+        "Construo e mantenho APIs RESTful com autenticação segura, persistência e modelagem avançada de dados em PostgreSQL e Supabase.",
+        "Estruturo aplicações modulares voltadas para escalabilidade, manutenibilidade de longo prazo e reuso de serviços backend.",
+        "Utilizo Inteligência Artificial aplicada como acelerador em especificação técnica, testes automatizados e revisão de código, reduzindo em ~35% o ciclo de desenvolvimento."
+      ],
+      "technologies": [
+        "TypeScript",
+        "Node.js",
+        "Express",
+        "Fastify",
+        "React",
+        "Next.js",
+        "PostgreSQL",
+        "Supabase",
+        "APIs REST",
+        "AI Workflows"
+      ]
+    },
+    {
+      "company": "SIVIS Tecnologia",
+      "role": "Full Stack Engineer | Backend & Integrations",
+      "dates": "nov de 2025 – Presente",
+      "location": "Remoto",
+      "work_mode": "Freelance",
+      "summary": "Integração de sistemas corporativos de retaguarda, refatoração arquitetural e otimização de persistência de dados.",
+      "bullets": [
+        "Integro aplicações frontend a APIs REST corporativas e microsserviços de retaguarda com alta confiabilidade.",
+        "Otimizo consultas, índices e relatórios em bancos relacionais PostgreSQL e MySQL, reduzindo em cerca de 35% o tempo de resposta em relatórios operacionais pesados.",
+        "Refatoro plataformas legadas aplicando Clean Code, arquitetura modular e tipagem estrita com TypeScript ponta a ponta.",
+        "Garante consistência técnica, resiliência de integrações e segurança no tráfego de dados entre plataformas heterogêneas."
+      ],
+      "technologies": [
+        "Node.js",
+        "TypeScript",
+        "PostgreSQL",
+        "MySQL",
+        "APIs REST",
+        "React",
+        "Clean Code",
+        "Git"
+      ]
+    },
+    {
+      "company": "Autocom3",
+      "role": "Full Stack Engineer",
+      "dates": "nov de 2024 – Presente",
+      "location": "Volta Redonda, RJ",
+      "work_mode": "Híbrido",
+      "summary": "Desenvolvimento de plataformas ERP e portais corporativos de alta escala integrando Node.js, microsserviços e bancos relacionais.",
+      "bullets": [
+        "Construo APIs REST corporativas, fluxos de autenticação JWT, controle de acessos RBAC, rate limiting e Webhooks assíncronos event-driven utilizando Node.js e NestJS.",
+        "Atuo na modelagem relacional, migrations, procedures e otimização de queries em bancos PostgreSQL e SQL Server.",
+        "Arquitetei soluções corporativas e portais unificados com mais de 100 páginas em produção atendendo a mais de 20 organizações operacionais.",
+        "Estruturo pipelines de deploy e integração em nuvem na AWS (S3, API Gateway) e orquestração de contêineres com Docker."
+      ],
+      "technologies": [
+        "Node.js",
+        "NestJS",
+        "TypeScript",
+        "React",
+        "PostgreSQL",
+        "SQL Server",
+        "AWS",
+        "Docker",
+        "REST APIs",
+        "JWT / RBAC"
+      ]
+    },
+    {
+      "company": "Centro Universitário de Volta Redonda (UniFOA) & SEBRAE",
+      "role": "Mentor de Tecnologia",
+      "dates": "jun de 2024 – dez de 2024",
+      "location": "Volta Redonda, RJ",
+      "work_mode": "Presencial / Temporário",
+      "summary": "Instrutor e mentor técnico no programa EvaTech capacitando participantes em fundamentos de programação e IA.",
+      "bullets": [
+        "Conduzi atividades práticas, workshops e conteúdos educacionais sobre programação, lógica computacional e ferramentas de IA para 30+ alunos.",
+        "Mentorei o desenvolvimento de projetos práticos end-to-end fortalecendo a maturidade técnica dos participantes."
+      ],
+      "technologies": [
+        "Lógica de Programação",
+        "Inteligência Artificial",
+        "Metodologias Ágeis",
+        "Mentoria Técnica"
+      ]
+    },
+    {
+      "company": "SIVIS Tecnologia",
+      "role": "Junior Full Stack Engineer",
+      "dates": "ago de 2022 – jun de 2024",
+      "location": "Volta Redonda, RJ",
+      "work_mode": "Híbrido",
+      "summary": "Construção de APIs REST, lógica de backend e modelagem relacional para plataformas ERP administrativas.",
+      "bullets": [
+        "Construí e mantive mais de 20 APIs REST e integrações conectando fluxos operacionais de clientes corporativos com Node.js e bancos SQL.",
+        "Modelei esquemas de dados relacionais em PostgreSQL e MySQL, garantindo integridade transacional de dados.",
+        "Desenvolvi telas administrativas e dashboards conectados à retaguarda com React, TypeScript e JavaScript."
+      ],
+      "technologies": [
+        "Node.js",
+        "PostgreSQL",
+        "MySQL",
+        "React",
+        "TypeScript",
+        "APIs REST",
+        "Scrum",
+        "Git"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "degree": "Bacharelado em Sistemas de Informação",
+      "institution": "Centro Universitário de Volta Redonda (UniFOA)",
+      "dates": "Concluído em 2025"
+    }
+  ],
+  "languages": [
+    {
+      "language": "Português",
+      "level": "Nativo"
+    },
+    {
+      "language": "Inglês",
+      "level": "B2 / Intermediário funcional"
+    }
+  ],
+  "certifications": [
+    {
+      "name": "Formação Completa em Frontend & UI/UX Design",
+      "issuer": "Origamid",
+      "date": "mai de 2026"
+    }
+  ]
+}
