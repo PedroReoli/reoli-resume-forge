@@ -13,7 +13,7 @@ Editor desktop e compilador headless, local-first, para criar currículos legív
 - Experiências e projetos em fichas recolhíveis, com progresso de preenchimento e contagem de evidências sem alongar toda a área de trabalho.
 - Ordem livre, ocultação e blocos opcionais para projetos, voluntariado, cursos, publicações, prêmios e conteúdo personalizado.
 - Skills em lista categorizada, tabela semântica, tags ou níveis manuais; experiências em bullets, parágrafos ou métricas priorizadas.
-- Exportação consistente em PDF, DOCX, Markdown e JSON, com texto selecionável, hyperlinks reais e paginação que protege títulos e blocos curtos.
+- Exportação consistente em PDF, DOCX, Markdown e JSON, com texto selecionável, hyperlinks reais e paginação que protege títulos e repete a identidade de experiências ou projetos quando um bloco continua na página seguinte.
 - Auditoria documental herdada do Vault: até duas páginas, resumo enxuto, bullets legíveis, links válidos e alerta para layouts de maior risco ATS.
 - CLI `generate`, `tailor`, `batch` e `ui` para automações locais.
 - Nenhuma conta, telemetria ou transmissão de dados pessoais.

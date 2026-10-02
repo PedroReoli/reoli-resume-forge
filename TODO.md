@@ -33,6 +33,7 @@
 - [x] Histórico local de edição com desfazer/refazer e proteção contra substituição acidental.
 - [x] Fichas recolhíveis para experiências e projetos com indicadores de conteúdo.
 - [x] Paginação PDF protegendo parágrafos, cabeçalhos de registros e margens em fontes monoespaçadas.
+- [x] Continuação de experiências e projetos sem bullets ou tecnologias órfãs no início da página.
 
 ## Próximos ciclos
 
