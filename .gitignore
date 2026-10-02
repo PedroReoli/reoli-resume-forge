@@ -6,3 +6,21 @@
 .claude/skills
 .claude/temp/
 temp_skills/
+
+# Dependências e builds
+node_modules/
+dist/
+dist-portable/
+src-tauri/target/
+*.log
+
+# Configuração local e evidências temporárias
+.env
+.env.*
+!.env.example
+.impeccable/review/
+.impeccable/config.local.json
+
+# Saídas geradas pelo produto
+output/
+exports/

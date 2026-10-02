@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+:root {
+  color: #e9ece8;
+  background: #0d100f;
+  font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-width: 320px;
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  min-height: 100vh;
+}
+
+.scaffold-shell {
+  display: grid;
+  min-height: 100vh;
+  place-content: center;
+  gap: 0.75rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.scaffold-shell h1,
+.scaffold-shell p {
+  margin: 0;
+}
+
+.scaffold-shell p {
+  color: #8f9993;
+}

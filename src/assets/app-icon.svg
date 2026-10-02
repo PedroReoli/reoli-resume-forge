@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">Marca do Reoli Resume Forge</title>
+  <rect width="512" height="512" rx="104" fill="#0d100f"/>
+  <path d="M151 116h150l60 60v220H151z" fill="#e9ece8"/>
+  <path d="M301 116v60h60" fill="none" stroke="#9fc6ae" stroke-width="22" stroke-linejoin="round"/>
+  <path d="M205 233h102M205 281h102M205 329h70" fill="none" stroke="#202622" stroke-width="18" stroke-linecap="round"/>
+  <path d="M116 164h48M140 140v48M348 348h48M372 324v48" fill="none" stroke="#9fc6ae" stroke-width="12" stroke-linecap="round"/>
+</svg>
