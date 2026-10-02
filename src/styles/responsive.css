@@ -77,9 +77,10 @@
   .app-header { align-items: flex-start; }
   .brand-lockup strong { font-size: 13px; }
   .brand-lockup > div { align-items: flex-start; }
-  .workspace-controls { grid-template-columns: 1fr; }
+  .workspace-controls { position: static; grid-template-columns: 1fr; }
   .workspace-controls label:last-child { grid-column: auto; }
   .two-columns { grid-template-columns: 1fr; }
+  .record-meta-grid { grid-template-columns: 1fr; }
   .skill-group { grid-template-columns: 1fr; }
   .record-block { padding-left: 22px; }
   .section-heading { align-items: flex-start; }

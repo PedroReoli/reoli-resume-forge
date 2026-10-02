@@ -1,7 +1,7 @@
 import { Focus, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { removeCustomSection } from '../../domain/resumeLayout';
-import type { Certification, Experience, Language, Project, ResumeProfile } from '../../types/resume';
+import type { Certification, Education, Experience, Language, Project, ResumeProfile } from '../../types/resume';
 import { SectionHeading } from '../common/SectionHeading';
 import { FocusedEditorModal, type FocusedEditorConfig } from './FocusedEditorModal';
 import { LayoutControls } from './LayoutControls';
@@ -37,6 +37,24 @@ export function ProfileEditor({
     onProfile({
       ...profile,
       projects: profile.projects.map((item, itemIndex) => itemIndex === index ? { ...item, ...patch } : item),
+    });
+  };
+  const updateEducation = (index: number, patch: Partial<Education>) => {
+    onProfile({
+      ...profile,
+      education: profile.education.map((item, itemIndex) => itemIndex === index ? { ...item, ...patch } : item),
+    });
+  };
+  const updateCertification = (index: number, patch: Partial<Certification>) => {
+    onProfile({
+      ...profile,
+      certifications: profile.certifications.map((item, itemIndex) => itemIndex === index ? { ...item, ...patch } : item),
+    });
+  };
+  const updateLanguage = (index: number, patch: Partial<Language>) => {
+    onProfile({
+      ...profile,
+      languages: profile.languages.map((item, itemIndex) => itemIndex === index ? { ...item, ...patch } : item),
     });
   };
   const openFocus = (config: FocusedEditorConfig) => setFocusedEditor(config);
@@ -189,33 +207,68 @@ export function ProfileEditor({
       </section>
 
       <section className="editor-section" id={editorSectionId('education')}>
-        <SectionHeading title="Formação" hint="Curso, instituição e período" />
-        <TextArea
-          label="Curso | Instituição | Período"
-          value={profile.education.map((item) => `${item.degree} | ${item.institution} | ${item.dates}`).join('\n')}
-          rows={4}
-          onChange={(value) => onProfile({ ...profile, education: parseEducation(value) })}
+        <SectionHeading
+          title="Formação"
+          hint="Curso, instituição e período em campos independentes"
+          action={<IconButton label="Adicionar formação" onClick={() => onProfile({ ...profile, education: [...profile.education, emptyEducation()] })} />}
         />
+        {profile.education.map((item, index) => (
+          <div className="record-block compact-record" key={`${item.degree}-${index}`}>
+            <div className="record-index">F{String(index + 1).padStart(2, '0')}</div>
+            <Field label="Curso ou grau" value={item.degree} onChange={(degree) => updateEducation(index, { degree })} />
+            <div className="form-grid two-columns record-meta-grid">
+              <Field label="Instituição" value={item.institution} onChange={(institution) => updateEducation(index, { institution })} />
+              <Field label="Período" value={item.dates} onChange={(dates) => updateEducation(index, { dates })} />
+            </div>
+            <button className="remove-button" type="button" onClick={() => onProfile({ ...profile, education: profile.education.filter((_, itemIndex) => itemIndex !== index) })}>
+              <Trash2 size={14} /> Remover formação
+            </button>
+          </div>
+        ))}
+        {!profile.education.length ? <p className="empty-hint">Nenhuma formação adicionada.</p> : null}
       </section>
 
       <section className="editor-section" id={editorSectionId('certifications')}>
-        <SectionHeading title="Certificações" hint="Certificação, emissor e data" />
-        <TextArea
-          label="Certificação | Emissor | Data"
-          value={profile.certifications.map((item) => `${item.name} | ${item.issuer} | ${item.date}`).join('\n')}
-          rows={4}
-          onChange={(value) => onProfile({ ...profile, certifications: parseCertifications(value) })}
+        <SectionHeading
+          title="Certificações"
+          hint="Credencial, organização emissora e data"
+          action={<IconButton label="Adicionar certificação" onClick={() => onProfile({ ...profile, certifications: [...profile.certifications, emptyCertification()] })} />}
         />
+        {profile.certifications.map((item, index) => (
+          <div className="record-block compact-record" key={`${item.name}-${index}`}>
+            <div className="record-index">C{String(index + 1).padStart(2, '0')}</div>
+            <Field label="Certificação" value={item.name} onChange={(name) => updateCertification(index, { name })} />
+            <div className="form-grid two-columns record-meta-grid">
+              <Field label="Organização emissora" value={item.issuer} onChange={(issuer) => updateCertification(index, { issuer })} />
+              <Field label="Data" value={item.date} onChange={(date) => updateCertification(index, { date })} />
+            </div>
+            <button className="remove-button" type="button" onClick={() => onProfile({ ...profile, certifications: profile.certifications.filter((_, itemIndex) => itemIndex !== index) })}>
+              <Trash2 size={14} /> Remover certificação
+            </button>
+          </div>
+        ))}
+        {!profile.certifications.length ? <p className="empty-hint">Nenhuma certificação adicionada.</p> : null}
       </section>
 
       <section className="editor-section" id={editorSectionId('languages')}>
-        <SectionHeading title="Idiomas" hint="Idioma e nível real" />
-        <TextArea
-          label="Idioma | Nível"
-          value={profile.languages.map((item) => `${item.language} | ${item.level}`).join('\n')}
-          rows={3}
-          onChange={(value) => onProfile({ ...profile, languages: parseLanguages(value) })}
+        <SectionHeading
+          title="Idiomas"
+          hint="Informe somente o nível que consegue sustentar"
+          action={<IconButton label="Adicionar idioma" onClick={() => onProfile({ ...profile, languages: [...profile.languages, emptyLanguage()] })} />}
         />
+        {profile.languages.map((item, index) => (
+          <div className="record-block compact-record language-record" key={`${item.language}-${index}`}>
+            <div className="record-index">I{String(index + 1).padStart(2, '0')}</div>
+            <div className="form-grid two-columns">
+              <Field label="Idioma" value={item.language} onChange={(language) => updateLanguage(index, { language })} />
+              <Field label="Nível real" value={item.level} onChange={(level) => updateLanguage(index, { level })} />
+            </div>
+            <button className="remove-button" type="button" onClick={() => onProfile({ ...profile, languages: profile.languages.filter((_, itemIndex) => itemIndex !== index) })}>
+              <Trash2 size={14} /> Remover idioma
+            </button>
+          </div>
+        ))}
+        {!profile.languages.length ? <p className="empty-hint">Nenhum idioma adicionado.</p> : null}
       </section>
 
       {profile.custom_sections.map((section) => (
@@ -279,31 +332,22 @@ function splitLines(value: string): string[] {
   return value.split('\n').map((item) => item.trim().replace(/^[-•]\s*/, '')).filter(Boolean);
 }
 
-function parseEducation(value: string): ResumeProfile['education'] {
-  return splitLines(value).map((line) => {
-    const [degree = '', institution = '', dates = ''] = line.split('|').map((item) => item.trim());
-    return { degree, institution, dates };
-  });
-}
-
-function parseCertifications(value: string): Certification[] {
-  return splitLines(value).map((line) => {
-    const [name = '', issuer = '', date = ''] = line.split('|').map((item) => item.trim());
-    return { name, issuer, date };
-  });
-}
-
-function parseLanguages(value: string): Language[] {
-  return splitLines(value).map((line) => {
-    const [language = '', level = ''] = line.split('|').map((item) => item.trim());
-    return { language, level };
-  });
-}
-
 function emptyExperience(): Experience {
   return { company: 'Empresa', role: 'Cargo', dates: '', location: '', work_mode: '', summary: '', bullets: [], technologies: [] };
 }
 
 function emptyProject(): Project {
   return { name: 'Novo projeto', description: '', metrics: [], technologies: [] };
+}
+
+function emptyEducation(): Education {
+  return { degree: '', institution: '', dates: '' };
+}
+
+function emptyCertification(): Certification {
+  return { name: '', issuer: '', date: '' };
+}
+
+function emptyLanguage(): Language {
+  return { language: '', level: '' };
 }
