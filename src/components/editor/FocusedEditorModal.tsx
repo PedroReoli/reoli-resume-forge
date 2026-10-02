@@ -1,5 +1,6 @@
 import { ArrowUpNarrowWide, List, ListX, Save, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { useDialogFocus } from '../../hooks/useDialogFocus';
 
 export interface FocusedEditorConfig {
   title: string;
@@ -18,14 +19,9 @@ interface FocusedEditorModalProps {
 export function FocusedEditorModal({ config, onClose }: FocusedEditorModalProps) {
   const [draft, setDraft] = useState(config?.value ?? '');
   const editor = useRef<HTMLTextAreaElement>(null);
+  const dialogRef = useDialogFocus<HTMLElement>(Boolean(config), onClose, '[data-dialog-initial-focus="true"]');
 
   useEffect(() => setDraft(config?.value ?? ''), [config]);
-  useEffect(() => {
-    if (!config) return undefined;
-    const closeOnEscape = (event: KeyboardEvent) => event.key === 'Escape' && onClose();
-    window.addEventListener('keydown', closeOnEscape);
-    return () => window.removeEventListener('keydown', closeOnEscape);
-  }, [config, onClose]);
 
   if (!config) return null;
 
@@ -47,7 +43,7 @@ export function FocusedEditorModal({ config, onClose }: FocusedEditorModalProps)
 
   return (
     <div className="dialog-backdrop focused-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
-      <section className="focused-editor" role="dialog" aria-modal="true" aria-labelledby="focused-editor-title">
+      <section ref={dialogRef} className="focused-editor" role="dialog" aria-modal="true" aria-labelledby="focused-editor-title">
         <header>
           <div>
             <h2 id="focused-editor-title">{config.title}</h2>
@@ -64,7 +60,7 @@ export function FocusedEditorModal({ config, onClose }: FocusedEditorModalProps)
             </div>
             <textarea
               ref={editor}
-              autoFocus
+              data-dialog-initial-focus="true"
               value={draft}
               rows={config.multiline === false ? 4 : 16}
               maxLength={config.multiline === false ? 320 : 4_000}

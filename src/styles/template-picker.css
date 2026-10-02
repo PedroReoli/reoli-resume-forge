@@ -40,7 +40,8 @@
 .picker-kicker,
 .template-picker > footer p,
 .template-facts,
-.selected-mark {
+.selected-mark,
+.template-picker-actions {
   display: flex;
   align-items: center;
 }
@@ -111,6 +112,14 @@
   gap: 4px;
   color: var(--accent-bright);
   font-size: 8.5px;
+}
+
+.current-mark {
+  flex: 0 0 auto;
+  color: #839188;
+  font-size: 8.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 .template-description {
@@ -206,6 +215,57 @@
   gap: 7px;
 }
 
+.template-picker-decision {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.template-picker-decision > span {
+  color: var(--accent);
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.11em;
+}
+
+.template-picker-decision strong {
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.template-picker-decision small {
+  max-width: 420px;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.template-picker-footer-side {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 18px;
+}
+
+.template-picker-footer-side > p {
+  max-width: 205px;
+}
+
+.template-picker-actions {
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.template-apply {
+  min-width: 142px;
+  justify-content: center;
+}
+
 .workspace-control {
   display: grid;
   gap: 7px;
@@ -272,6 +332,9 @@
   .template-picker-backdrop { padding: 12px; }
   .template-picker { max-height: calc(100vh - 24px); }
   .template-contact-sheet { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .template-picker > footer { align-items: flex-end; }
+  .template-picker-footer-side { align-items: flex-end; flex-direction: column; gap: 8px; }
+  .template-picker-footer-side > p { max-width: none; }
 }
 
 @media (max-width: 480px) {
@@ -281,5 +344,10 @@
   .template-choice { grid-template-columns: 100px minmax(0, 1fr); grid-template-rows: auto; align-items: center; padding: 13px; }
   .template-miniature { width: 88px; height: 124px; }
   .template-description { min-height: 0; }
-  .template-picker > footer { align-items: stretch; flex-direction: column; padding: 12px 15px; }
+  .template-picker > footer { align-items: stretch; flex-direction: column; gap: 10px; padding: 12px 15px; }
+  .template-picker-decision small,
+  .template-picker-footer-side > p { display: none; }
+  .template-picker-footer-side { align-items: stretch; }
+  .template-picker-actions > button { flex: 1 1 0; justify-content: center; }
+  .template-apply { min-width: 0; }
 }
