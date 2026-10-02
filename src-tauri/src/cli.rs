@@ -89,6 +89,7 @@ fn tailor_one(options: &HashMap<String, String>) -> Result<(), String> {
             "score": result.report.score,
             "matched": result.report.matched,
             "missing": result.report.missing,
+            "detectedDomains": result.report.job.detected_domains,
             "files": files,
         }))
         .map_err(|error| error.to_string())?
@@ -153,6 +154,7 @@ fn batch(options: &HashMap<String, String>) -> Result<(), String> {
             "company": job.company,
             "jobTitle": job.job_title,
             "score": tailored.report.score,
+            "detectedDomains": tailored.report.job.detected_domains,
             "files": files,
         }));
     }

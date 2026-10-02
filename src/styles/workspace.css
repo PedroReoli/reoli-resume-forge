@@ -562,6 +562,14 @@
 .seniority-badge svg { grid-row: 1 / 3; color: var(--accent); }
 .seniority-badge strong { color: var(--ink); font-size: 10px; }
 
+.ats-domains { display: grid; gap: 8px; padding: 10px; border: 1px solid #34473b; background: #101a14; }
+.ats-domains > header { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 9.5px; }
+.ats-domains > header svg { color: var(--accent); }
+.ats-domains > div { display: flex; flex-wrap: wrap; gap: 7px; }
+.ats-domain { display: flex; min-height: 29px; align-items: center; gap: 7px; padding: 5px 8px; border: 1px solid #3e5847; background: #17251c; }
+.ats-domain strong { color: #c3d8c8; font-size: 9.5px; font-weight: 600; }
+.ats-domain small { color: #7f9485; font-family: var(--mono); font-size: 8px; }
+
 .requirement-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .requirement-list { min-width: 0; padding: 10px; border: 1px solid var(--line); background: #0f1712; }
 .requirement-list h3 { display: flex; align-items: center; gap: 6px; margin: 0 0 7px; font-size: 10px; }

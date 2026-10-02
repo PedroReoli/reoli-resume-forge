@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Check, Circle, ShieldCheck, Sparkles, Target, TriangleAlert } from 'lucide-react';
+import { BriefcaseBusiness, Check, Circle, ShieldCheck, Sparkles, Target, TriangleAlert } from 'lucide-react';
 import { auditResume } from '../../domain/resumeAudit';
 import type { JobRequirement, MatchReport, ResumeProfile, ResumeTemplate } from '../../types/resume';
 import { SectionHeading } from '../common/SectionHeading';
@@ -41,6 +41,19 @@ export function AtsPanel({ report, profile, template, pageCount, canTailor, busy
         </div>
         {report?.job.seniority ? <div className="seniority-badge"><Target size={14} /><span>Senioridade detectada</span><strong>{report.job.seniority}</strong></div> : null}
       </div>
+      {report?.job.detectedDomains?.length ? (
+        <div className="ats-domains" aria-label="Áreas profissionais reconhecidas">
+          <header><BriefcaseBusiness size={14} /><span>Áreas reconhecidas na vaga</span></header>
+          <div>
+            {report.job.detectedDomains.map((domain) => (
+              <span className="ats-domain" key={domain.id} title={domain.matchedKeywords.join(', ')}>
+                <strong>{domain.label}</strong>
+                <small>{domain.matchedKeywords.length} {domain.matchedKeywords.length === 1 ? 'sinal' : 'sinais'}</small>
+              </span>
+            ))}
+          </div>
+        </div>
+      ) : null}
       <div className="term-columns">
         <TermList title={`Pontos fortes (${report?.matched.length ?? 0})`} terms={report?.matched ?? []} matched />
         <TermList title={`Lacunas (${report?.missing.length ?? 0})`} terms={report?.missing ?? []} />

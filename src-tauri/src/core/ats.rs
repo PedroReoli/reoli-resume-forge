@@ -1,8 +1,9 @@
 use super::model::ResumeProfile;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use serde_json::Value;
 use std::cmp::Reverse;
-use std::sync::OnceLock;
+
+mod catalog;
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -22,10 +23,19 @@ pub enum RequirementLevel {
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
+pub struct DetectedDomain {
+    pub id: String,
+    pub label: String,
+    pub matched_keywords: Vec<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct JobAnalysis {
     pub keywords: Vec<String>,
     pub required_keywords: Vec<String>,
     pub seniority: String,
+    pub detected_domains: Vec<DetectedDomain>,
     pub requirements: Vec<JobRequirement>,
 }
 
@@ -56,15 +66,6 @@ pub struct TailorResult {
     pub quantified_percent: f64,
     pub provenance: Vec<BulletProvenance>,
 }
-
-#[derive(Deserialize)]
-struct KeywordDefinition {
-    canonical: String,
-    aliases: Vec<String>,
-}
-
-const KEYWORD_CATALOG: &str = include_str!("../../../src/data/ats-keywords.json");
-static KEYWORDS: OnceLock<Vec<KeywordDefinition>> = OnceLock::new();
 
 pub fn analyze(profile: &ResumeProfile, job_description: &str) -> Result<MatchReport, String> {
     profile.validate()?;
@@ -266,10 +267,17 @@ fn parse_job_description(text: &str) -> Result<JobAnalysis, String> {
         } else {
             section
         };
-        let keywords = keyword_catalog()
+        let mut positioned_keywords = catalog::keyword_definitions()
             .iter()
-            .filter(|definition| matches_aliases(&line, &definition.aliases))
-            .map(|definition| definition.canonical.clone())
+            .filter_map(|definition| {
+                first_alias_position(&line, &definition.aliases)
+                    .map(|position| (position, definition.canonical.clone()))
+            })
+            .collect::<Vec<_>>();
+        positioned_keywords.sort_by_key(|(position, _)| *position);
+        let keywords = positioned_keywords
+            .into_iter()
+            .map(|(_, canonical)| canonical)
             .collect();
         requirements.push(JobRequirement {
             text: line,
@@ -289,6 +297,7 @@ fn parse_job_description(text: &str) -> Result<JobAnalysis, String> {
             .flat_map(|requirement| requirement.keywords.iter().cloned()),
     );
     keywords.sort_by_key(|keyword| !required_keywords.contains(keyword));
+    let detected_domains = catalog::detect_domains(&keywords);
     let seniority = [
         (
             "lead",
@@ -308,6 +317,7 @@ fn parse_job_description(text: &str) -> Result<JobAnalysis, String> {
         keywords,
         required_keywords,
         seniority,
+        detected_domains,
         requirements,
     })
 }
@@ -315,8 +325,11 @@ fn parse_job_description(text: &str) -> Result<JobAnalysis, String> {
 fn split_requirements(text: &str) -> Vec<String> {
     let mut result = Vec::new();
     let mut current = String::new();
-    for character in text.chars() {
-        if matches!(character, '\n' | ';' | '.' | '!' | '?') {
+    let mut characters = text.chars().peekable();
+    while let Some(character) = characters.next() {
+        let sentence_period =
+            character == '.' && characters.peek().is_none_or(|next| next.is_whitespace());
+        if matches!(character, '\n' | ';' | '!' | '?') || sentence_period {
             let value = current.trim();
             if !value.is_empty() {
                 result.push(value.to_string());
@@ -343,9 +356,7 @@ fn evidence_text(profile: &ResumeProfile) -> Result<String, String> {
 }
 
 fn profile_supports(evidence: &str, canonical: &str) -> bool {
-    keyword_catalog()
-        .iter()
-        .find(|definition| definition.canonical == canonical)
+    catalog::keyword_definition(canonical)
         .is_some_and(|definition| matches_aliases(evidence, &definition.aliases))
 }
 
@@ -365,17 +376,15 @@ fn keyword_weight(keyword: &str, required: &[String]) -> u32 {
     }
 }
 
-fn keyword_catalog() -> &'static [KeywordDefinition] {
-    KEYWORDS
-        .get_or_init(|| {
-            serde_json::from_str(KEYWORD_CATALOG)
-                .expect("src/data/ats-keywords.json deve conter um catálogo válido")
-        })
-        .as_slice()
-}
-
 fn matches_aliases(text: &str, aliases: &[String]) -> bool {
     aliases.iter().any(|alias| contains_term(text, alias))
+}
+
+fn first_alias_position(text: &str, aliases: &[String]) -> Option<usize> {
+    aliases
+        .iter()
+        .filter_map(|alias| term_position(text, alias))
+        .min()
 }
 
 fn contains_any(text: &str, aliases: &[&str]) -> bool {
@@ -383,12 +392,17 @@ fn contains_any(text: &str, aliases: &[&str]) -> bool {
 }
 
 fn contains_term(text: &str, term: &str) -> bool {
+    term_position(text, term).is_some()
+}
+
+fn term_position(text: &str, term: &str) -> Option<usize> {
     let haystack = normalize(text);
     let needle = normalize(term);
-    haystack.match_indices(&needle).any(|(index, _)| {
+    haystack.match_indices(&needle).find_map(|(index, _)| {
         let before = haystack[..index].chars().next_back();
         let after = haystack[index + needle.len()..].chars().next();
-        !before.is_some_and(is_word_character) && !after.is_some_and(is_word_character)
+        (!before.is_some_and(is_word_character) && !after.is_some_and(is_word_character))
+            .then_some(index)
     })
 }
 
@@ -518,5 +532,78 @@ mod tests {
                 .contains(&"Kubernetes".into())
         );
         assert_eq!(result.profile.experience.len(), profile.experience.len());
+    }
+
+    #[test]
+    fn detects_supply_chain_and_legal_domains_in_portuguese() {
+        let supply_chain = parse_job_description(
+            "Requisitos: experiência com S&OP, planejamento de demanda, MRP, gestão de estoques e OTIF.",
+        )
+        .unwrap();
+        assert_eq!(supply_chain.detected_domains[0].id, "supply-chain");
+        assert!(supply_chain.keywords.contains(&"Demand Planning".into()));
+        assert!(
+            supply_chain
+                .keywords
+                .contains(&"Inventory Management".into())
+        );
+
+        let legal = parse_job_description(
+            "Advogado com OAB ativa, experiência em contratos empresariais, due diligence, LGPD e contencioso.",
+        )
+        .unwrap();
+        assert_eq!(legal.detected_domains[0].id, "legal");
+        assert!(legal.keywords.contains(&"OAB".into()));
+        assert!(legal.keywords.contains(&"Contract Law".into()));
+    }
+
+    #[test]
+    fn detects_qa_and_it_infrastructure_domains() {
+        let qa = parse_job_description(
+            "QA Engineer responsável por automação de testes com Playwright, Cypress, testes de API e regressão.",
+        )
+        .unwrap();
+        assert_eq!(qa.detected_domains[0].id, "quality-assurance");
+        assert!(qa.keywords.contains(&"Test Automation".into()));
+
+        let it = parse_job_description(
+            "Analista de tecnologia da informação com Active Directory, Microsoft 365, ITIL, gestão de incidentes e redes.",
+        )
+        .unwrap();
+        assert_eq!(it.detected_domains[0].id, "it-infrastructure");
+        assert!(it.keywords.contains(&"Active Directory".into()));
+    }
+
+    #[test]
+    fn preserves_dotted_technology_names_when_splitting_requirements() {
+        let analysis = parse_job_description(
+            "Obrigatório: Next.js e .NET para APIs. Desejável: Node.js e React.",
+        )
+        .unwrap();
+        assert!(analysis.keywords.contains(&"Next.js".into()));
+        assert!(analysis.keywords.contains(&".NET".into()));
+        assert!(analysis.keywords.contains(&"Node.js".into()));
+    }
+
+    #[test]
+    fn short_terms_respect_word_boundaries() {
+        assert!(!contains_term("integração com Google Workspace", "go"));
+        assert!(!contains_term("perfil participativo", "ti"));
+        assert!(contains_term("desenvolvimento em Go", "go"));
+        assert!(contains_term("operação de TI", "ti"));
+    }
+
+    #[test]
+    fn canonical_names_are_always_searchable() {
+        let analysis = parse_job_description(
+            "Conhecimentos desejáveis em SAP, Scrum, NPS, CAD e Statistics para atuação multidisciplinar.",
+        )
+        .unwrap();
+        for keyword in ["SAP", "Scrum", "NPS", "CAD", "Statistics"] {
+            assert!(
+                analysis.keywords.contains(&keyword.into()),
+                "ausente: {keyword}"
+            );
+        }
     }
 }

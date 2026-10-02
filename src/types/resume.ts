@@ -158,10 +158,17 @@ export interface JobRequirement {
   keywords: string[];
 }
 
+export interface DetectedJobDomain {
+  id: string;
+  label: string;
+  matchedKeywords: string[];
+}
+
 export interface JobAnalysis {
   keywords: string[];
   requiredKeywords: string[];
   seniority: string;
+  detectedDomains: DetectedJobDomain[];
   requirements: JobRequirement[];
 }
 

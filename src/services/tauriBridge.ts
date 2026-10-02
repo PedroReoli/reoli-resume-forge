@@ -65,7 +65,7 @@ export async function tailorProfile(
   }
   return {
     profile: structuredClone(profile),
-    report: browserPreviewAnalysis(profile, jobDescription),
+    report: await browserPreviewAnalysis(profile, jobDescription),
     quantifiedPercent: 0,
     provenance: [],
   };
@@ -98,7 +98,8 @@ export async function resumeToMarkdown(profile: ResumeProfile): Promise<string> 
   return isDesktop() ? invoke('resume_to_markdown', { profile }) : browserMarkdown(profile);
 }
 
-function browserPreviewAnalysis(profile: ResumeProfile, jobDescription: string): MatchReport {
+async function browserPreviewAnalysis(profile: ResumeProfile, jobDescription: string): Promise<MatchReport> {
+  const { detectJobDomains } = await import('../domain/atsCatalog');
   const job = normalize(jobDescription);
   const candidates = Array.from(
     new Set(
@@ -117,7 +118,13 @@ function browserPreviewAnalysis(profile: ResumeProfile, jobDescription: string):
     scoreKind: 'browser_preview_only',
     matched,
     missing,
-    job: { keywords: expected, requiredKeywords: [], seniority: '', requirements: [] },
+    job: {
+      keywords: expected,
+      requiredKeywords: [],
+      seniority: '',
+      detectedDomains: detectJobDomains(jobDescription),
+      requirements: [],
+    },
     warnings: ['PREVIEW: o score definitivo é calculado pelo núcleo Rust no desktop.'],
   };
 }
