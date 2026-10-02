@@ -27,6 +27,8 @@
 - [x] Paridade de ordem e visibilidade em PDF, DOCX e Markdown.
 - [x] Galeria visual comparativa com indicação de leitura ATS por template.
 - [x] Histórico local de edição com desfazer/refazer e proteção contra substituição acidental.
+- [x] Fichas recolhíveis para experiências e projetos com indicadores de conteúdo.
+- [x] Paginação PDF protegendo parágrafos, cabeçalhos de registros e margens em fontes monoespaçadas.
 
 ## Próximos ciclos
 

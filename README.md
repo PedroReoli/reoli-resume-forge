@@ -10,9 +10,10 @@ Editor desktop e compilador headless, local-first, para criar currículos legív
 - Tailoring conservador: reordena apenas evidências existentes e nunca fabrica experiências, tecnologias ou métricas.
 - Oito layouts em uma galeria visual comparativa: **Classic Reoli**, Tech Minimalist, Modern Split, Executive Bold, Academic, Clean Slate, Compact Linear e Executive Accent.
 - Histórico local com desfazer/refazer, atalhos seguros e confirmação antes de substituir um trabalho em edição.
+- Experiências e projetos em fichas recolhíveis, com progresso de preenchimento e contagem de evidências sem alongar toda a área de trabalho.
 - Ordem livre, ocultação e blocos opcionais para projetos, voluntariado, cursos, publicações, prêmios e conteúdo personalizado.
 - Skills em lista categorizada, tabela semântica, tags ou níveis manuais; experiências em bullets, parágrafos ou métricas priorizadas.
-- Exportação consistente em PDF, DOCX, Markdown e JSON, com texto selecionável e hyperlinks reais.
+- Exportação consistente em PDF, DOCX, Markdown e JSON, com texto selecionável, hyperlinks reais e paginação que protege títulos e blocos curtos.
 - Auditoria documental herdada do Vault: até duas páginas, resumo enxuto, bullets legíveis, links válidos e alerta para layouts de maior risco ATS.
 - CLI `generate`, `tailor`, `batch` e `ui` para automações locais.
 - Nenhuma conta, telemetria ou transmissão de dados pessoais.
@@ -34,7 +35,7 @@ O arquivo é distribuído sem sidecars. A GUI usa o Microsoft Edge WebView2 inst
 
 1. Escolha um arquétipo e compare os oito layouts pela galeria visual, ou importe um perfil JSON.
 2. Reordene, oculte ou adicione seções pelo sumário lateral; ajuste a densidade e a apresentação de cada bloco.
-3. Edite os campos à esquerda, no modal de foco ou diretamente sobre a página A4; use `Ctrl+Z` e `Ctrl+Y` fora dos campos para navegar pelo histórico.
+3. Expanda somente a experiência ou projeto em edição, altere os campos à esquerda, no modal de foco ou diretamente sobre a página A4; use `Ctrl+Z` e `Ctrl+Y` fora dos campos para navegar pelo histórico.
 4. Cole a descrição completa da vaga para calcular obrigatórios, desejáveis, senioridade, forças e lacunas.
 5. Use **Criar versão adaptada** para priorizar fatos já presentes no perfil.
 6. Revise a auditoria ATS e exporte com `Ctrl+P` (PDF), `Ctrl+D` (DOCX) ou `Ctrl+M` (Markdown).
