@@ -33,7 +33,7 @@ O arquivo é distribuído sem sidecars. A GUI usa o Microsoft Edge WebView2 inst
 
 ## Interface
 
-1. Escolha um arquétipo e compare os oito layouts pela galeria visual, ou importe um perfil JSON.
+1. Escolha um arquétipo e compare os oito layouts pela galeria visual. A escolha fica em rascunho até **Usar modelo**; cancelar ou pressionar `Esc` preserva o currículo atual. Também é possível importar um perfil JSON.
 2. Reordene, oculte ou adicione seções pelo sumário; em telas estreitas, a faixa compacta permanece visível e acompanha automaticamente o bloco em edição.
 3. Expanda somente a experiência ou projeto em edição; mova, duplique ou remova fichas para priorizar evidências e altere os campos à esquerda, no modal de foco ou diretamente sobre a página A4. Use `Ctrl+Z` e `Ctrl+Y` fora dos campos para navegar pelo histórico.
 4. Cole a descrição completa da vaga para calcular obrigatórios, desejáveis, senioridade, forças e lacunas.
@@ -41,6 +41,8 @@ O arquivo é distribuído sem sidecars. A GUI usa o Microsoft Edge WebView2 inst
 6. Salve a versão editável com `Ctrl+S` (JSON); conteúdo, estrutura e template serão restaurados na importação. O cabeçalho e a barra de status indicam alterações pendentes, e o nome sugerido usa a pessoa do perfil. Depois, revise a auditoria ATS e exporte com `Ctrl+P` (PDF), `Ctrl+D` (DOCX) ou `Ctrl+M` (Markdown).
 
 Em telas abaixo de 1040 px, use a alternância **Editor / Preview** para preservar a legibilidade do documento.
+
+Os diálogos mantêm o foco do teclado dentro da área ativa e o devolvem ao botão de origem ao fechar. Assim, a biblioteca de modelos, a edição focada e a inclusão de seções podem ser operadas com `Tab`, `Shift+Tab` e `Esc`.
 
 Trocar o idioma localiza títulos e níveis conhecidos sem reescrever textos livres. Essa escolha é deliberada: experiências, métricas e proficiências não são traduzidas ou inventadas silenciosamente.
 

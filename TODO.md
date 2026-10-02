@@ -30,6 +30,7 @@
 - [x] Localização estrutural PT-BR, EN-US e ES-ES sem adulterar texto profissional.
 - [x] Paridade de ordem e visibilidade em PDF, DOCX e Markdown.
 - [x] Galeria visual comparativa com indicação de leitura ATS por template.
+- [x] Comparação segura de templates com confirmação explícita, cancelamento sem efeitos e navegação de teclado contida nos diálogos.
 - [x] Histórico local de edição com desfazer/refazer e proteção contra substituição acidental.
 - [x] Fichas recolhíveis para experiências e projetos com indicadores de conteúdo.
 - [x] Paginação PDF protegendo parágrafos, cabeçalhos de registros e margens em fontes monoespaçadas.
