@@ -1,5 +1,6 @@
 pub mod archetypes;
 pub mod ats;
+pub mod export;
 pub mod model;
 
 pub use archetypes::{ArchetypeMetadata, list_archetypes, load_archetype};
