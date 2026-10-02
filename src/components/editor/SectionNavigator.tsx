@@ -15,7 +15,7 @@ import {
   Sparkles,
   Wrench,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   addCustomSection,
   moveSection,
@@ -43,7 +43,60 @@ const ICONS: Record<string, LucideIcon> = {
 
 export function SectionNavigator({ profile, onProfile }: SectionNavigatorProps) {
   const [adding, setAdding] = useState(false);
+  const [activeSection, setActiveSection] = useState(profile.layout.section_order[0] ?? 'summary');
+  const itemRefs = useRef(new Map<string, HTMLDivElement>());
   const hidden = new Set(profile.layout.hidden_sections);
+
+  useEffect(() => {
+    const sectionIds = profile.layout.section_order;
+    const editorContent = document.querySelector<HTMLElement>('.editor-content');
+    const mobileNavigator = document.querySelector<HTMLElement>('.section-navigator');
+    let animationFrame = 0;
+
+    const updateActiveSection = () => {
+      const anchor = window.matchMedia('(max-width: 1040px)').matches
+        ? (mobileNavigator?.getBoundingClientRect().bottom ?? 155) + 20
+        : (editorContent?.getBoundingClientRect().top ?? 0) + 24;
+      const measured = sectionIds
+        .map((sectionId) => ({
+          sectionId,
+          top: document.getElementById(editorSectionId(sectionId))?.getBoundingClientRect().top,
+        }))
+        .filter((item): item is { sectionId: string; top: number } => item.top !== undefined);
+
+      if (measured.length === 0) return;
+      const passed = measured.filter((item) => item.top <= anchor);
+      const next = passed.at(-1) ?? measured.reduce((closest, item) => (
+        Math.abs(item.top - anchor) < Math.abs(closest.top - anchor) ? item : closest
+      ));
+      setActiveSection((current) => current === next.sectionId ? current : next.sectionId);
+    };
+
+    const scheduleUpdate = () => {
+      window.cancelAnimationFrame(animationFrame);
+      animationFrame = window.requestAnimationFrame(updateActiveSection);
+    };
+
+    window.addEventListener('scroll', scheduleUpdate, { passive: true });
+    window.addEventListener('resize', scheduleUpdate);
+    editorContent?.addEventListener('scroll', scheduleUpdate, { passive: true });
+    scheduleUpdate();
+
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+      window.removeEventListener('scroll', scheduleUpdate);
+      window.removeEventListener('resize', scheduleUpdate);
+      editorContent?.removeEventListener('scroll', scheduleUpdate);
+    };
+  }, [profile.layout.section_order]);
+
+  useEffect(() => {
+    itemRefs.current.get(activeSection)?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+      inline: 'nearest',
+    });
+  }, [activeSection]);
 
   const addSection = (kind: CustomSectionKind, title: string) => {
     const nextProfile = addCustomSection(profile, kind, title);
@@ -64,12 +117,23 @@ export function SectionNavigator({ profile, onProfile }: SectionNavigatorProps) 
             const Icon = iconFor(sectionId, profile);
             const isHidden = hidden.has(sectionId);
             return (
-              <div className={`navigator-item ${isHidden ? 'is-hidden' : ''}`} key={sectionId}>
+              <div
+                ref={(node) => {
+                  if (node) itemRefs.current.set(sectionId, node);
+                  else itemRefs.current.delete(sectionId);
+                }}
+                className={`navigator-item ${activeSection === sectionId ? 'is-active' : ''} ${isHidden ? 'is-hidden' : ''}`}
+                key={sectionId}
+              >
                 <button
                   className="navigator-jump"
                   type="button"
                   title={`Ir para ${sectionLabel(profile, sectionId)}`}
-                  onClick={() => scrollToSection(sectionId)}
+                  aria-current={activeSection === sectionId ? 'location' : undefined}
+                  onClick={() => {
+                    setActiveSection(sectionId);
+                    scrollToSection(sectionId);
+                  }}
                 >
                   <Icon size={15} />
                   <span>{sectionLabel(profile, sectionId)}</span>
