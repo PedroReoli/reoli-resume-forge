@@ -15,45 +15,9 @@ pub fn render_with_template(
 ) -> Result<Vec<u8>, String> {
     let theme = PdfTheme::for_template(template);
     let mut writer = PdfWriter::new(theme);
-    writer.text(
-        &profile.person.name,
-        theme.name_size,
-        true,
-        theme.name_line_height,
-        theme.margin_x,
-        None,
-    );
-    writer.text(
-        &profile.headline,
-        theme.headline_size,
-        true,
-        theme.headline_line_height,
-        theme.margin_x,
-        None,
-    );
-    writer.text(
-        &join_non_empty([&profile.person.location, &profile.person.work_preference]),
-        theme.meta_size,
-        false,
-        theme.meta_line_height,
-        theme.margin_x,
-        None,
-    );
-    writer.text(
-        &join_non_empty([&profile.person.phone, &profile.person.email]),
-        theme.meta_size,
-        false,
-        theme.meta_line_height,
-        theme.margin_x,
-        None,
-    );
-    for link in [
-        &profile.person.linkedin,
-        &profile.person.portfolio,
-        &profile.person.github,
-    ] {
-        writer.link(link, link);
-    }
+    writer.begin_header();
+    writer.header(profile, template);
+    writer.end_header();
 
     writer.section(profile.section_name("summary", "Resumo Profissional"));
     writer.paragraph(&profile.summary);
@@ -185,6 +149,9 @@ struct PdfTheme {
     role_line_height: f32,
     record_spacing: f32,
     accent: (f32, f32, f32),
+    normal_font: BuiltinFont,
+    bold_font: BuiltinFont,
+    header_band: bool,
 }
 
 impl PdfTheme {
@@ -211,6 +178,9 @@ impl PdfTheme {
                 role_line_height: 4.0,
                 record_spacing: 3.0,
                 accent: (0.12, 0.24, 0.32),
+                normal_font: BuiltinFont::TimesRoman,
+                bold_font: BuiltinFont::TimesBold,
+                header_band: false,
             },
             ResumeTemplate::Compact => Self {
                 margin_x: 14.0,
@@ -233,6 +203,9 @@ impl PdfTheme {
                 role_line_height: 3.6,
                 record_spacing: 1.8,
                 accent: (0.16, 0.18, 0.20),
+                normal_font: BuiltinFont::Helvetica,
+                bold_font: BuiltinFont::HelveticaBold,
+                header_band: false,
             },
             ResumeTemplate::Executive => Self {
                 margin_x: 18.0,
@@ -255,6 +228,9 @@ impl PdfTheme {
                 role_line_height: 4.0,
                 record_spacing: 3.4,
                 accent: (0.09, 0.29, 0.23),
+                normal_font: BuiltinFont::Helvetica,
+                bold_font: BuiltinFont::HelveticaBold,
+                header_band: true,
             },
         }
     }
@@ -265,6 +241,7 @@ struct PdfWriter {
     current: Vec<Op>,
     y: f32,
     theme: PdfTheme,
+    text_color: (f32, f32, f32),
 }
 
 impl PdfWriter {
@@ -274,6 +251,140 @@ impl PdfWriter {
             current: Vec::new(),
             y: theme.top_y,
             theme,
+            text_color: (0.12, 0.15, 0.14),
+        }
+    }
+
+    fn begin_header(&mut self) {
+        if !self.theme.header_band {
+            return;
+        }
+        self.current.extend([
+            Op::SetFillColor {
+                col: rgb(0.09, 0.21, 0.18),
+            },
+            Op::DrawPolygon {
+                polygon: Rect::from_xywh(
+                    Pt::from(Mm(0.0)),
+                    Pt::from(Mm(237.0)),
+                    Pt::from(Mm(PAGE_WIDTH)),
+                    Pt::from(Mm(60.0)),
+                )
+                .to_polygon(),
+            },
+            Op::SetFillColor {
+                col: rgb(0.56, 0.71, 0.62),
+            },
+            Op::DrawPolygon {
+                polygon: Rect::from_xywh(
+                    Pt::from(Mm(0.0)),
+                    Pt::from(Mm(237.0)),
+                    Pt::from(Mm(PAGE_WIDTH)),
+                    Pt::from(Mm(2.0)),
+                )
+                .to_polygon(),
+            },
+        ]);
+        self.text_color = (0.96, 0.98, 0.97);
+    }
+
+    fn header(&mut self, profile: &ResumeProfile, template: ResumeTemplate) {
+        if matches!(template, ResumeTemplate::Compact) {
+            self.text(
+                &profile.person.name,
+                self.theme.name_size,
+                true,
+                self.theme.name_line_height,
+                self.theme.margin_x,
+                None,
+            );
+            self.text(
+                &profile.headline,
+                self.theme.headline_size,
+                true,
+                self.theme.headline_line_height,
+                self.theme.margin_x,
+                None,
+            );
+            self.text(
+                &join_non_empty([&profile.person.location, &profile.person.work_preference]),
+                self.theme.meta_size,
+                false,
+                self.theme.meta_line_height,
+                self.theme.margin_x,
+                None,
+            );
+            self.text(
+                &join_non_empty([&profile.person.phone, &profile.person.email]),
+                self.theme.meta_size,
+                false,
+                self.theme.meta_line_height,
+                self.theme.margin_x,
+                None,
+            );
+            for link in [
+                &profile.person.linkedin,
+                &profile.person.portfolio,
+                &profile.person.github,
+            ] {
+                self.link(link, link);
+            }
+            return;
+        }
+
+        let start_y = self.y;
+        let contact_x = if matches!(template, ResumeTemplate::Executive) {
+            132.0
+        } else {
+            130.0
+        };
+        let identity_width = contact_x - self.theme.margin_x - 10.0;
+        let contact_width = PAGE_WIDTH - self.theme.margin_x - contact_x;
+        let name_end = self.text_block(
+            &profile.person.name,
+            self.theme.name_size,
+            true,
+            self.theme.name_line_height,
+            self.theme.margin_x,
+            identity_width,
+            start_y,
+        );
+        let identity_end = self.text_block(
+            &profile.headline,
+            self.theme.headline_size,
+            true,
+            self.theme.headline_line_height,
+            self.theme.margin_x,
+            identity_width,
+            name_end,
+        );
+
+        let mut contact_y = start_y;
+        for value in [
+            &profile.person.email,
+            &profile.person.phone,
+            &profile.person.location,
+        ] {
+            contact_y = self.text_block(
+                value,
+                self.theme.meta_size,
+                false,
+                self.theme.meta_line_height,
+                contact_x,
+                contact_width,
+                contact_y,
+            );
+        }
+        for link in [&profile.person.linkedin, &profile.person.portfolio] {
+            contact_y = self.link_block(link, link, contact_x, contact_width, contact_y);
+        }
+        self.y = identity_end.min(contact_y) - 4.0;
+    }
+
+    fn end_header(&mut self) {
+        if self.theme.header_band {
+            self.y = self.y.min(234.0);
+            self.text_color = (0.12, 0.15, 0.14);
         }
     }
 
@@ -302,6 +413,10 @@ impl PdfWriter {
     fn section(&mut self, title: &str) {
         self.ensure_space(10.0);
         self.y -= self.theme.section_spacing;
+        let previous_color = self.text_color;
+        if self.theme.header_band {
+            self.text_color = self.theme.accent;
+        }
         self.text(
             &title.to_uppercase(),
             self.theme.section_size,
@@ -310,6 +425,7 @@ impl PdfWriter {
             self.theme.margin_x,
             None,
         );
+        self.text_color = previous_color;
         self.current.push(Op::SetOutlineColor {
             col: rgb(
                 self.theme.accent.0,
@@ -355,29 +471,85 @@ impl PdfWriter {
         let max_chars = ((available_width / (size * 0.19)).floor() as usize).max(24);
         for line in wrap(value, max_chars) {
             self.ensure_space(line_height_mm + 1.0);
-            self.current.extend([
-                Op::StartTextSection,
-                Op::SetTextCursor {
-                    pos: Point::new(Mm(x), Mm(self.y)),
-                },
-                Op::SetFont {
-                    font: PdfFontHandle::Builtin(if bold {
-                        BuiltinFont::HelveticaBold
-                    } else {
-                        BuiltinFont::Helvetica
-                    }),
-                    size: Pt(size),
-                },
-                Op::SetFillColor {
-                    col: rgb(0.12, 0.15, 0.14),
-                },
-                Op::ShowText {
-                    items: vec![TextItem::Text(line)],
-                },
-                Op::EndTextSection,
-            ]);
+            self.text_line(&line, size, bold, x, self.y);
             self.y -= line_height_mm;
         }
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn text_block(
+        &mut self,
+        value: &str,
+        size: f32,
+        bold: bool,
+        line_height_mm: f32,
+        x: f32,
+        width: f32,
+        mut y: f32,
+    ) -> f32 {
+        if value.trim().is_empty() {
+            return y;
+        }
+        let max_chars = ((width / (size * 0.19)).floor() as usize).max(12);
+        for line in wrap(value, max_chars) {
+            self.text_line(&line, size, bold, x, y);
+            y -= line_height_mm;
+        }
+        y
+    }
+
+    fn text_line(&mut self, value: &str, size: f32, bold: bool, x: f32, y: f32) {
+        self.current.extend([
+            Op::StartTextSection,
+            Op::SetTextCursor {
+                pos: Point::new(Mm(x), Mm(y)),
+            },
+            Op::SetFont {
+                font: PdfFontHandle::Builtin(if bold {
+                    self.theme.bold_font
+                } else {
+                    self.theme.normal_font
+                }),
+                size: Pt(size),
+            },
+            Op::SetFillColor {
+                col: rgb(self.text_color.0, self.text_color.1, self.text_color.2),
+            },
+            Op::ShowText {
+                items: vec![TextItem::Text(value.to_string())],
+            },
+            Op::EndTextSection,
+        ]);
+    }
+
+    fn link_block(&mut self, label: &str, target: &str, x: f32, width: f32, y: f32) -> f32 {
+        if label.trim().is_empty() || !is_safe_link(target) {
+            return y;
+        }
+        let end_y = self.text_block(
+            label,
+            self.theme.meta_size,
+            false,
+            self.theme.meta_line_height,
+            x,
+            width,
+            y,
+        );
+        self.current.push(Op::LinkAnnotation {
+            link: LinkAnnotation::new(
+                Rect::from_xywh(
+                    Pt::from(Mm(x)),
+                    Pt::from(Mm(end_y)),
+                    Pt::from(Mm(width)),
+                    Pt::from(Mm(y - end_y + 1.0)),
+                ),
+                Actions::uri(target.to_string()),
+                Some(BorderArray::Solid([0.0, 0.0, 0.0])),
+                Some(ColorArray::Transparent),
+                Some(HighlightingMode::Outline),
+            ),
+        });
+        end_y
     }
 
     fn link(&mut self, label: &str, target: &str) {

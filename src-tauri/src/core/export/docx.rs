@@ -269,7 +269,7 @@ impl DocxTheme {
     fn for_template(template: ResumeTemplate) -> Self {
         match template {
             ResumeTemplate::Clean => Self {
-                font: "Arial",
+                font: "Georgia",
                 body_size: 19,
                 line: 240,
                 margin: 893,

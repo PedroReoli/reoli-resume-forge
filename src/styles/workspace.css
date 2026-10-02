@@ -121,6 +121,39 @@
   scrollbar-width: thin;
 }
 
+@media (min-width: 1041px) {
+  .editor-pane {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    overflow: hidden;
+  }
+
+  .profile-editor {
+    min-height: 0;
+    overflow: auto;
+    scrollbar-color: #3d4a43 transparent;
+    scrollbar-width: thin;
+  }
+
+  .ats-panel {
+    max-height: 246px;
+    overflow: auto;
+    padding-top: 14px;
+    padding-bottom: 16px;
+    border-top: 1px solid var(--line-strong);
+    scrollbar-color: #3d4a43 transparent;
+    scrollbar-width: thin;
+  }
+
+  .ats-panel .score-row strong {
+    font-size: 34px;
+  }
+
+  .ats-panel .term {
+    min-height: 26px;
+  }
+}
+
 .workspace-controls {
   position: sticky;
   z-index: 4;
