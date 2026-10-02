@@ -43,7 +43,7 @@ pub fn render_with_template(
     zip_store::create(&entries)
 }
 
-fn document_xml(profile: &ResumeProfile, template: ResumeTemplate) -> String {
+pub(super) fn document_xml(profile: &ResumeProfile, template: ResumeTemplate) -> String {
     let mut body = String::new();
     paragraph(&mut body, "ResumeName", &profile.person.name);
     paragraph(&mut body, "ResumeHeadline", &profile.headline);
@@ -65,115 +65,9 @@ fn document_xml(profile: &ResumeProfile, template: ResumeTemplate) -> String {
         hyperlink_paragraph(&mut body, &format!("rId{}", index + 2), link);
     }
 
-    section(
-        &mut body,
-        profile.section_name("summary", "Resumo Profissional"),
-    );
-    paragraph(&mut body, "Normal", &profile.summary);
-    section(
-        &mut body,
-        profile.section_name("skills", "Competências Técnicas"),
-    );
-    for (label, values) in &profile.skills {
-        let values = values
-            .as_array()
-            .map(|items| {
-                items
-                    .iter()
-                    .filter_map(|item| item.as_str())
-                    .collect::<Vec<_>>()
-                    .join(", ")
-            })
-            .unwrap_or_else(|| values.as_str().unwrap_or_default().to_string());
-        labeled_paragraph(&mut body, label, &values);
-    }
-    if !profile.soft_skills.is_empty() {
-        section(
-            &mut body,
-            profile.section_name("soft_skills", "Competências Comportamentais"),
-        );
-        paragraph(&mut body, "Normal", &profile.soft_skills.join(" | "));
-    }
-
-    section(
-        &mut body,
-        profile.section_name("experience", "Experiência Profissional"),
-    );
-    for experience in &profile.experience {
-        paragraph(&mut body, "ResumeCompany", &experience.company);
-        paragraph(&mut body, "ResumeRole", &experience.role);
-        let meta = [
-            &experience.dates,
-            &experience.location,
-            &experience.work_mode,
-        ]
-        .into_iter()
-        .filter(|value| !value.trim().is_empty())
-        .map(String::as_str)
-        .collect::<Vec<_>>()
-        .join(" | ");
-        paragraph(&mut body, "ResumeMeta", &meta);
-        paragraph(&mut body, "Normal", &experience.summary);
-        for bullet in &experience.bullets {
-            paragraph(&mut body, "ResumeBullet", &format!("• {bullet}"));
-        }
-        if !experience.technologies.is_empty() {
-            labeled_paragraph(
-                &mut body,
-                tech_label(profile),
-                &experience.technologies.join(", "),
-            );
-        }
-    }
-
-    if !profile.projects.is_empty() {
-        section(&mut body, profile.section_name("projects", "Projetos"));
-        for project in &profile.projects {
-            paragraph(&mut body, "ResumeCompany", &project.name);
-            paragraph(&mut body, "Normal", &project.description);
-            for metric in &project.metrics {
-                paragraph(&mut body, "ResumeBullet", &format!("• {metric}"));
-            }
-            if !project.technologies.is_empty() {
-                labeled_paragraph(
-                    &mut body,
-                    tech_label(profile),
-                    &project.technologies.join(", "),
-                );
-            }
-        }
-    }
-
-    section(
-        &mut body,
-        profile.section_name("education", "Formação Acadêmica"),
-    );
-    for item in &profile.education {
-        paragraph(
-            &mut body,
-            "Normal",
-            &join_non_empty([&item.degree, &item.institution, &item.dates]),
-        );
-    }
-    section(&mut body, profile.section_name("languages", "Idiomas"));
-    let languages = profile
-        .languages
-        .iter()
-        .map(|item| format!("{}: {}", item.language, item.level))
-        .collect::<Vec<_>>()
-        .join(" | ");
-    paragraph(&mut body, "Normal", &languages);
-    if !profile.certifications.is_empty() {
-        section(
-            &mut body,
-            profile.section_name("certifications", "Certificações"),
-        );
-        for item in &profile.certifications {
-            paragraph(
-                &mut body,
-                "Normal",
-                &join_non_empty([&item.name, &item.issuer, &item.date]),
-            );
+    for section_id in &profile.layout.section_order {
+        if !profile.layout.hidden_sections.contains(section_id) {
+            render_section(&mut body, profile, section_id);
         }
     }
 
@@ -182,6 +76,187 @@ fn document_xml(profile: &ResumeProfile, template: ResumeTemplate) -> String {
         r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:body>{body}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="{margin}" w:right="{margin}" w:bottom="{margin}" w:left="{margin}" w:header="0" w:footer="0" w:gutter="0"/></w:sectPr></w:body></w:document>"#
     )
+}
+
+fn render_section(body: &mut String, profile: &ResumeProfile, section_id: &str) {
+    match section_id {
+        "summary" => {
+            section(body, profile.section_name("summary", "Resumo Profissional"));
+            paragraph(body, "Normal", &profile.summary);
+        }
+        "skills" if !profile.skills.is_empty() => {
+            section(
+                body,
+                profile.section_name("skills", "Competências Técnicas"),
+            );
+            if profile.layout.skills_style == "tags" {
+                let values = profile
+                    .skills
+                    .values()
+                    .flat_map(string_list)
+                    .collect::<Vec<_>>()
+                    .join(" • ");
+                paragraph(body, "Normal", &values);
+            } else {
+                for (label, values) in &profile.skills {
+                    labeled_paragraph(body, label, &formatted_skills(profile, values));
+                }
+            }
+        }
+        "soft_skills" if !profile.soft_skills.is_empty() => {
+            section(
+                body,
+                profile.section_name("soft_skills", "Competências Comportamentais"),
+            );
+            paragraph(body, "Normal", &profile.soft_skills.join(" | "));
+        }
+        "experience" if !profile.experience.is_empty() => render_experience(body, profile),
+        "projects" if !profile.projects.is_empty() => render_projects(body, profile),
+        "education" if !profile.education.is_empty() => {
+            section(
+                body,
+                profile.section_name("education", "Formação Acadêmica"),
+            );
+            for item in &profile.education {
+                paragraph(
+                    body,
+                    "Normal",
+                    &join_non_empty([&item.degree, &item.institution, &item.dates]),
+                );
+            }
+        }
+        "languages" if !profile.languages.is_empty() => {
+            section(body, profile.section_name("languages", "Idiomas"));
+            let values = profile
+                .languages
+                .iter()
+                .map(|item| format!("{}: {}", item.language, item.level))
+                .collect::<Vec<_>>()
+                .join(" | ");
+            paragraph(body, "Normal", &values);
+        }
+        "certifications" if !profile.certifications.is_empty() => {
+            section(
+                body,
+                profile.section_name("certifications", "Certificações"),
+            );
+            for item in &profile.certifications {
+                paragraph(
+                    body,
+                    "Normal",
+                    &join_non_empty([&item.name, &item.issuer, &item.date]),
+                );
+            }
+        }
+        custom if custom.starts_with("custom:") => {
+            let id = custom.trim_start_matches("custom:");
+            if let Some(item) = profile.custom_sections.iter().find(|item| item.id == id) {
+                section(body, &item.title);
+                for value in &item.items {
+                    paragraph(body, "ResumeBullet", &format!("• {value}"));
+                }
+            }
+        }
+        _ => {}
+    }
+}
+
+fn render_experience(body: &mut String, profile: &ResumeProfile) {
+    section(
+        body,
+        profile.section_name("experience", "Experiência Profissional"),
+    );
+    for item in &profile.experience {
+        paragraph(body, "ResumeCompany", &item.company);
+        paragraph(body, "ResumeRole", &item.role);
+        paragraph(
+            body,
+            "ResumeMeta",
+            &join_non_empty([&item.dates, &item.location, &item.work_mode]),
+        );
+        paragraph(body, "Normal", &item.summary);
+        if profile.layout.experience_style == "paragraphs" {
+            paragraph(body, "Normal", &item.bullets.join(" "));
+        } else {
+            for bullet in ordered_metrics(&item.bullets, &profile.layout.experience_style) {
+                paragraph(body, "ResumeBullet", &format!("• {bullet}"));
+            }
+        }
+        if !item.technologies.is_empty() {
+            labeled_paragraph(body, tech_label(profile), &item.technologies.join(", "));
+        }
+    }
+}
+
+fn render_projects(body: &mut String, profile: &ResumeProfile) {
+    section(body, profile.section_name("projects", "Projetos"));
+    for item in &profile.projects {
+        paragraph(body, "ResumeCompany", &item.name);
+        paragraph(body, "Normal", &item.description);
+        if profile.layout.projects_style == "paragraphs" {
+            paragraph(body, "Normal", &item.metrics.join(" "));
+        } else {
+            for metric in ordered_metrics(&item.metrics, &profile.layout.projects_style) {
+                paragraph(body, "ResumeBullet", &format!("• {metric}"));
+            }
+        }
+        if !item.technologies.is_empty() {
+            labeled_paragraph(body, tech_label(profile), &item.technologies.join(", "));
+        }
+    }
+}
+
+fn string_values(value: &serde_json::Value) -> String {
+    value
+        .as_array()
+        .map(|items| {
+            items
+                .iter()
+                .filter_map(|item| item.as_str())
+                .collect::<Vec<_>>()
+                .join(", ")
+        })
+        .unwrap_or_else(|| value.as_str().unwrap_or_default().to_string())
+}
+
+fn string_list(value: &serde_json::Value) -> Vec<String> {
+    value
+        .as_array()
+        .map(|items| {
+            items
+                .iter()
+                .filter_map(|item| item.as_str().map(str::to_string))
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+fn formatted_skills(profile: &ResumeProfile, value: &serde_json::Value) -> String {
+    if profile.layout.skills_style != "levels" {
+        return string_values(value);
+    }
+    string_list(value)
+        .into_iter()
+        .map(|skill| {
+            let level = profile
+                .layout
+                .skill_levels
+                .get(&skill)
+                .and_then(serde_json::Value::as_u64)
+                .map(|value| format!("{value}/5"))
+                .unwrap_or_else(|| "não definido".into());
+            format!("{skill} — {level}")
+        })
+        .collect::<Vec<_>>()
+        .join(", ")
+}
+
+fn ordered_metrics<'a>(values: &'a [String], style: &str) -> Vec<&'a str> {
+    let mut items = values.iter().map(String::as_str).collect::<Vec<_>>();
+    if style == "metrics" {
+        items.sort_by_key(|value| !value.chars().any(|character| character.is_ascii_digit()));
+    }
+    items
 }
 
 fn section(output: &mut String, title: &str) {
@@ -268,6 +343,20 @@ struct DocxTheme {
 impl DocxTheme {
     fn for_template(template: ResumeTemplate) -> Self {
         match template {
+            ResumeTemplate::Classic => Self {
+                font: "Arial",
+                body_size: 19,
+                line: 235,
+                margin: 893,
+                alignment: "center",
+                name_size: 40,
+                headline_size: 21,
+                section_size: 22,
+                section_before: 110,
+                company_before: 75,
+                accent: "1F374D",
+                border: "D9E0E6",
+            },
             ResumeTemplate::Clean => Self {
                 font: "Georgia",
                 body_size: 19,
@@ -309,6 +398,62 @@ impl DocxTheme {
                 company_before: 90,
                 accent: "174A3B",
                 border: "8FB49F",
+            },
+            ResumeTemplate::TechMinimalist => Self {
+                font: "Consolas",
+                body_size: 17,
+                line: 220,
+                margin: 720,
+                alignment: "left",
+                name_size: 37,
+                headline_size: 19,
+                section_size: 19,
+                section_before: 80,
+                company_before: 45,
+                accent: "3178C6",
+                border: "8CB7DB",
+            },
+            ResumeTemplate::ModernSplit => Self {
+                font: "Arial",
+                body_size: 18,
+                line: 232,
+                margin: 900,
+                alignment: "left",
+                name_size: 42,
+                headline_size: 21,
+                section_size: 21,
+                section_before: 110,
+                company_before: 70,
+                accent: "1C567F",
+                border: "73ADBF",
+            },
+            ResumeTemplate::ExecutiveBold => Self {
+                font: "Aptos",
+                body_size: 19,
+                line: 245,
+                margin: 980,
+                alignment: "left",
+                name_size: 46,
+                headline_size: 22,
+                section_size: 23,
+                section_before: 145,
+                company_before: 95,
+                accent: "111E2E",
+                border: "B3852E",
+            },
+            ResumeTemplate::Academic => Self {
+                font: "Times New Roman",
+                body_size: 19,
+                line: 250,
+                margin: 1020,
+                alignment: "center",
+                name_size: 39,
+                headline_size: 20,
+                section_size: 21,
+                section_before: 145,
+                company_before: 90,
+                accent: "592933",
+                border: "B28B93",
             },
         }
     }

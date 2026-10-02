@@ -3,7 +3,8 @@ export type JsonValue = string | number | boolean | null | JsonValue[] | { [key:
 export interface ResumeConfig {
   tech_label: string;
   section_names: Record<string, string>;
-  [key: string]: JsonValue | Record<string, string>;
+  locale?: ResumeLocale;
+  [key: string]: JsonValue | Record<string, string> | undefined;
 }
 
 export interface Person {
@@ -52,8 +53,39 @@ export interface Certification {
   date: string;
 }
 
+export type ResumeLocale = 'pt-BR' | 'en-US' | 'es-ES';
+export type SkillsLayout = 'categorized' | 'table' | 'tags' | 'levels';
+export type NarrativeLayout = 'bullets' | 'paragraphs' | 'metrics';
+export type ResumeDensity = 'compact' | 'balanced' | 'relaxed';
+
+export interface ResumeLayoutConfig {
+  section_order: string[];
+  hidden_sections: string[];
+  skills_style: SkillsLayout;
+  experience_style: NarrativeLayout;
+  projects_style: NarrativeLayout;
+  density: ResumeDensity;
+  emphasize_metrics: boolean;
+  skill_levels: Record<string, number>;
+}
+
+export type CustomSectionKind =
+  | 'volunteering'
+  | 'courses'
+  | 'publications'
+  | 'awards'
+  | 'custom';
+
+export interface CustomSection {
+  id: string;
+  title: string;
+  kind: CustomSectionKind;
+  items: string[];
+}
+
 export interface ResumeProfile {
   config: ResumeConfig;
+  layout: ResumeLayoutConfig;
   person: Person;
   headline: string;
   summary: string;
@@ -65,6 +97,7 @@ export interface ResumeProfile {
   education: Education[];
   languages: Language[];
   certifications: Certification[];
+  custom_sections: CustomSection[];
 }
 
 export interface ArchetypeMetadata {
@@ -107,5 +140,13 @@ export interface TailorResult {
   }>;
 }
 
-export type ResumeTemplate = 'clean' | 'compact' | 'executive';
+export type ResumeTemplate =
+  | 'classic'
+  | 'clean'
+  | 'compact'
+  | 'executive'
+  | 'tech-minimalist'
+  | 'modern-split'
+  | 'executive-bold'
+  | 'academic';
 export type ExportFormat = 'pdf' | 'docx' | 'json' | 'markdown';

@@ -5,6 +5,7 @@ import node from '../data/archetypes/02_fullstack_node.json';
 import dotnet from '../data/archetypes/03_fullstack_dotnet.json';
 import lead from '../data/archetypes/04_tech_lead.json';
 import international from '../data/archetypes/05_internacional_en.json';
+import { normalizeResumeProfile } from '../domain/resumeLayout';
 import type {
   ArchetypeMetadata,
   ExportFormat,
@@ -39,7 +40,7 @@ export async function listArchetypes(): Promise<ArchetypeMetadata[]> {
 }
 
 export async function loadArchetype(id: string): Promise<ResumeProfile> {
-  if (isDesktop()) return invoke('load_archetype', { id });
+  if (isDesktop()) return normalizeResumeProfile(await invoke('load_archetype', { id }));
   const profile = profiles[id];
   if (!profile) throw new Error(`Arquétipo desconhecido: ${id}`);
   return structuredClone(profile);
@@ -121,11 +122,42 @@ function browserPreviewAnalysis(profile: ResumeProfile, jobDescription: string):
 }
 
 function browserMarkdown(profile: ResumeProfile): string {
-  const lines = [`# ${profile.person.name}`, profile.headline, '', `## ${profile.config.section_names.summary}`, profile.summary, ''];
-  for (const item of profile.experience) {
-    lines.push(`## ${item.company} — ${item.role}`, item.summary, ...item.bullets.map((bullet) => `- ${bullet}`), '');
+  const lines = [`# ${profile.person.name}`, `**${profile.headline}**`, ''];
+  const pushSection = (title: string, values: string[]) => {
+    if (values.some(Boolean)) lines.push(`## ${title}`, '', ...values.filter(Boolean), '');
+  };
+  for (const sectionId of profile.layout.section_order) {
+    if (profile.layout.hidden_sections.includes(sectionId)) continue;
+    if (sectionId === 'summary') pushSection(sectionTitle(profile, 'summary', 'Resumo Profissional'), [profile.summary]);
+    if (sectionId === 'skills') pushSection(sectionTitle(profile, 'skills', 'Competências Técnicas'), Object.entries(profile.skills).map(([label, value]) => `**${label}:** ${asStrings(value).join(', ')}`));
+    if (sectionId === 'soft_skills') pushSection(sectionTitle(profile, 'soft_skills', 'Competências Comportamentais'), [profile.soft_skills.join(' | ')]);
+    if (sectionId === 'experience') {
+      const values = profile.experience.flatMap((item) => [
+        `### ${item.company} — ${item.role}`,
+        item.summary,
+        ...(profile.layout.experience_style === 'paragraphs' ? [item.bullets.join(' ')] : item.bullets.map((bullet) => `- ${bullet}`)),
+      ]);
+      pushSection(sectionTitle(profile, 'experience', 'Experiência Profissional'), values);
+    }
+    if (sectionId === 'projects') pushSection(sectionTitle(profile, 'projects', 'Projetos'), profile.projects.flatMap((item) => [`### ${item.name}`, item.description, ...item.metrics.map((metric) => `- ${metric}`)]));
+    if (sectionId === 'education') pushSection(sectionTitle(profile, 'education', 'Formação Acadêmica'), profile.education.map((item) => `- ${[item.degree, item.institution, item.dates].filter(Boolean).join(' | ')}`));
+    if (sectionId === 'certifications') pushSection(sectionTitle(profile, 'certifications', 'Certificações'), profile.certifications.map((item) => `- ${[item.name, item.issuer, item.date].filter(Boolean).join(' | ')}`));
+    if (sectionId === 'languages') pushSection(sectionTitle(profile, 'languages', 'Idiomas'), profile.languages.map((item) => `- ${item.language}: ${item.level}`));
+    if (sectionId.startsWith('custom:')) {
+      const custom = profile.custom_sections.find((item) => item.id === sectionId.slice(7));
+      if (custom) pushSection(custom.title, custom.items.map((item) => `- ${item}`));
+    }
   }
-  return `${lines.join('\n')}\n`;
+  return `${lines.join('\n').trim()}\n`;
+}
+
+function sectionTitle(profile: ResumeProfile, id: string, fallback: string): string {
+  return profile.config.section_names[id] || fallback;
+}
+
+function asStrings(value: unknown): string[] {
+  if (Array.isArray(value)) return value.filter((item): item is string => typeof item === 'string');
+  return typeof value === 'string' ? [value] : [];
 }
 
 function normalize(value: string): string {
@@ -142,15 +174,5 @@ function downloadText(content: string, filename: string): void {
 }
 
 function normalizeProfile(raw: unknown): ResumeProfile {
-  const profile = raw as ResumeProfile;
-  return {
-    ...profile,
-    target_keywords: profile.target_keywords ?? [],
-    soft_skills: profile.soft_skills ?? [],
-    experience: profile.experience ?? [],
-    projects: profile.projects ?? [],
-    education: profile.education ?? [],
-    languages: profile.languages ?? [],
-    certifications: profile.certifications ?? [],
-  };
+  return normalizeResumeProfile(raw as ResumeProfile);
 }

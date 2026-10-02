@@ -25,111 +25,221 @@ pub fn to_markdown(profile: &ResumeProfile) -> String {
         }
     }
 
-    section(
-        &mut output,
-        profile.section_name("summary", "Resumo Profissional"),
-    );
-    line(&mut output, &profile.summary);
-
-    section(
-        &mut output,
-        profile.section_name("skills", "Competências Técnicas"),
-    );
-    for (label, values) in &profile.skills {
-        let values = values
-            .as_array()
-            .map(|items| {
-                items
-                    .iter()
-                    .filter_map(|item| item.as_str())
-                    .collect::<Vec<_>>()
-                    .join(", ")
-            })
-            .unwrap_or_else(|| values.as_str().unwrap_or_default().to_string());
-        line(&mut output, &format!("**{label}:** {values}"));
+    for section_id in &profile.layout.section_order {
+        if !profile.layout.hidden_sections.contains(section_id) {
+            render_section(&mut output, profile, section_id);
+        }
     }
-    if !profile.soft_skills.is_empty() {
-        section(
-            &mut output,
-            profile.section_name("soft_skills", "Competências Comportamentais"),
-        );
-        line(&mut output, &profile.soft_skills.join(" | "));
-    }
+    output.trim().to_string() + "\n"
+}
 
-    section(
-        &mut output,
-        profile.section_name("experience", "Experiência Profissional"),
-    );
-    for experience in &profile.experience {
-        line(
-            &mut output,
-            &format!("### {} — {}", experience.company, experience.role),
-        );
-        let meta = [
-            &experience.dates,
-            &experience.location,
-            &experience.work_mode,
-        ]
+fn render_section(output: &mut String, profile: &ResumeProfile, section_id: &str) {
+    match section_id {
+        "summary" => {
+            section(
+                output,
+                profile.section_name("summary", "Resumo Profissional"),
+            );
+            line(output, &profile.summary);
+        }
+        "skills" if !profile.skills.is_empty() => {
+            section(
+                output,
+                profile.section_name("skills", "Competências Técnicas"),
+            );
+            if profile.layout.skills_style == "tags" {
+                line(
+                    output,
+                    &profile
+                        .skills
+                        .values()
+                        .flat_map(string_list)
+                        .collect::<Vec<_>>()
+                        .join(" · "),
+                );
+            } else {
+                for (label, values) in &profile.skills {
+                    line(
+                        output,
+                        &format!("**{label}:** {}", formatted_skills(profile, values)),
+                    );
+                }
+            }
+        }
+        "soft_skills" if !profile.soft_skills.is_empty() => {
+            section(
+                output,
+                profile.section_name("soft_skills", "Competências Comportamentais"),
+            );
+            line(output, &profile.soft_skills.join(" | "));
+        }
+        "experience" if !profile.experience.is_empty() => {
+            section(
+                output,
+                profile.section_name("experience", "Experiência Profissional"),
+            );
+            for item in &profile.experience {
+                line(output, &format!("### {} — {}", item.company, item.role));
+                line(
+                    output,
+                    &format!(
+                        "*{}*",
+                        join_non_empty([&item.dates, &item.location, &item.work_mode])
+                    ),
+                );
+                line(output, &item.summary);
+                if profile.layout.experience_style == "paragraphs" {
+                    line(output, &item.bullets.join(" "));
+                } else {
+                    for bullet in ordered_metrics(&item.bullets, &profile.layout.experience_style) {
+                        line(output, &format!("- {bullet}"));
+                    }
+                }
+                if !item.technologies.is_empty() {
+                    line(
+                        output,
+                        &format!(
+                            "**{}:** {}",
+                            tech_label(profile),
+                            item.technologies.join(", ")
+                        ),
+                    );
+                }
+            }
+        }
+        "projects" if !profile.projects.is_empty() => {
+            section(output, profile.section_name("projects", "Projetos"));
+            for item in &profile.projects {
+                line(output, &format!("### {}", item.name));
+                line(output, &item.description);
+                if profile.layout.projects_style == "paragraphs" {
+                    line(output, &item.metrics.join(" "));
+                } else {
+                    for metric in ordered_metrics(&item.metrics, &profile.layout.projects_style) {
+                        line(output, &format!("- {metric}"));
+                    }
+                }
+                if !item.technologies.is_empty() {
+                    line(
+                        output,
+                        &format!(
+                            "**{}:** {}",
+                            tech_label(profile),
+                            item.technologies.join(", ")
+                        ),
+                    );
+                }
+            }
+        }
+        "education" if !profile.education.is_empty() => {
+            section(
+                output,
+                profile.section_name("education", "Formação Acadêmica"),
+            );
+            for item in &profile.education {
+                line(
+                    output,
+                    &format!(
+                        "- {}",
+                        join_non_empty([&item.degree, &item.institution, &item.dates])
+                    ),
+                );
+            }
+        }
+        "languages" if !profile.languages.is_empty() => {
+            section(output, profile.section_name("languages", "Idiomas"));
+            for item in &profile.languages {
+                line(output, &format!("- {}: {}", item.language, item.level));
+            }
+        }
+        "certifications" if !profile.certifications.is_empty() => {
+            section(
+                output,
+                profile.section_name("certifications", "Certificações"),
+            );
+            for item in &profile.certifications {
+                line(
+                    output,
+                    &format!(
+                        "- {}",
+                        join_non_empty([&item.name, &item.issuer, &item.date])
+                    ),
+                );
+            }
+        }
+        custom if custom.starts_with("custom:") => {
+            let id = custom.trim_start_matches("custom:");
+            if let Some(item) = profile.custom_sections.iter().find(|item| item.id == id) {
+                section(output, &item.title);
+                for value in &item.items {
+                    line(output, &format!("- {value}"));
+                }
+            }
+        }
+        _ => {}
+    }
+}
+
+fn string_values(value: &serde_json::Value) -> String {
+    value
+        .as_array()
+        .map(|items| {
+            items
+                .iter()
+                .filter_map(|item| item.as_str())
+                .collect::<Vec<_>>()
+                .join(", ")
+        })
+        .unwrap_or_else(|| value.as_str().unwrap_or_default().to_string())
+}
+
+fn string_list(value: &serde_json::Value) -> Vec<String> {
+    value
+        .as_array()
+        .map(|items| {
+            items
+                .iter()
+                .filter_map(|item| item.as_str().map(str::to_string))
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+fn formatted_skills(profile: &ResumeProfile, value: &serde_json::Value) -> String {
+    if profile.layout.skills_style != "levels" {
+        return string_values(value);
+    }
+    string_list(value)
+        .into_iter()
+        .map(|skill| {
+            let level = profile
+                .layout
+                .skill_levels
+                .get(&skill)
+                .and_then(serde_json::Value::as_u64)
+                .map(|value| format!("{value}/5"))
+                .unwrap_or_else(|| "não definido".into());
+            format!("{skill} — {level}")
+        })
+        .collect::<Vec<_>>()
+        .join(", ")
+}
+
+fn ordered_metrics<'a>(values: &'a [String], style: &str) -> Vec<&'a str> {
+    let mut items = values.iter().map(String::as_str).collect::<Vec<_>>();
+    if style == "metrics" {
+        items.sort_by_key(|value| !value.chars().any(|character| character.is_ascii_digit()));
+    }
+    items
+}
+
+fn join_non_empty<const N: usize>(values: [&String; N]) -> String {
+    values
         .into_iter()
         .filter(|value| !value.trim().is_empty())
         .map(String::as_str)
         .collect::<Vec<_>>()
-        .join(" | ");
-        line(&mut output, &format!("*{meta}*"));
-        line(&mut output, &experience.summary);
-        for bullet in &experience.bullets {
-            line(&mut output, &format!("- {bullet}"));
-        }
-        if !experience.technologies.is_empty() {
-            line(
-                &mut output,
-                &format!(
-                    "**{}:** {}",
-                    tech_label(profile),
-                    experience.technologies.join(", ")
-                ),
-            );
-        }
-    }
-
-    if !profile.projects.is_empty() {
-        section(&mut output, profile.section_name("projects", "Projetos"));
-        for project in &profile.projects {
-            line(&mut output, &format!("### {}", project.name));
-            line(&mut output, &project.description);
-            for metric in &project.metrics {
-                line(&mut output, &format!("- {metric}"));
-            }
-        }
-    }
-
-    section(
-        &mut output,
-        profile.section_name("education", "Formação Acadêmica"),
-    );
-    for item in &profile.education {
-        line(
-            &mut output,
-            &format!("- {} | {} | {}", item.degree, item.institution, item.dates),
-        );
-    }
-    section(&mut output, profile.section_name("languages", "Idiomas"));
-    for item in &profile.languages {
-        line(&mut output, &format!("- {}: {}", item.language, item.level));
-    }
-    if !profile.certifications.is_empty() {
-        section(
-            &mut output,
-            profile.section_name("certifications", "Certificações"),
-        );
-        for item in &profile.certifications {
-            line(
-                &mut output,
-                &format!("- {} | {} | {}", item.name, item.issuer, item.date),
-            );
-        }
-    }
-    output.trim().to_string() + "\n"
+        .join(" | ")
 }
 
 fn tech_label(profile: &ResumeProfile) -> &str {

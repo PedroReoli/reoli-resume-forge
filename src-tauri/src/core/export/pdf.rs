@@ -1,13 +1,20 @@
 use super::super::model::ResumeProfile;
 use super::ResumeTemplate;
+use super::pdf_content::{
+    estimate_text_width, is_safe_link, is_split_sidebar_section, join_non_empty, string_values,
+    wrap,
+};
+use super::pdf_theme::PdfTheme;
 use printpdf::{
-    Actions, BorderArray, BuiltinFont, Color, ColorArray, HighlightingMode, Line, LinePoint,
-    LinkAnnotation, Mm, Op, PdfDocument, PdfFontHandle, PdfPage, PdfSaveOptions, Point, Pt, Rect,
-    Rgb, TextItem,
+    Actions, BorderArray, Color, ColorArray, HighlightingMode, Line, LinePoint, LinkAnnotation, Mm,
+    Op, PdfDocument, PdfFontHandle, PdfPage, PdfSaveOptions, Point, Pt, Rect, Rgb, TextItem,
 };
 
 const PAGE_WIDTH: f32 = 210.0;
 const PAGE_HEIGHT: f32 = 297.0;
+
+mod sections;
+use sections::render_section;
 
 pub fn render_with_template(
     profile: &ResumeProfile,
@@ -18,228 +25,28 @@ pub fn render_with_template(
     writer.begin_header();
     writer.header(profile, template);
     writer.end_header();
-
-    writer.section(profile.section_name("summary", "Resumo Profissional"));
-    writer.paragraph(&profile.summary);
-    writer.section(profile.section_name("skills", "Competências Técnicas"));
-    for (label, values) in &profile.skills {
-        let values = values
-            .as_array()
-            .map(|items| {
-                items
-                    .iter()
-                    .filter_map(|item| item.as_str())
-                    .collect::<Vec<_>>()
-                    .join(", ")
-            })
-            .unwrap_or_else(|| values.as_str().unwrap_or_default().to_string());
-        writer.paragraph(&format!("{label}: {values}"));
+    let split = matches!(template, ResumeTemplate::ModernSplit);
+    if split {
+        writer.enable_split_layout(profile);
     }
-    if !profile.soft_skills.is_empty() {
-        writer.section(profile.section_name("soft_skills", "Competências Comportamentais"));
-        writer.paragraph(&profile.soft_skills.join(" | "));
-    }
-
-    writer.section(profile.section_name("experience", "Experiência Profissional"));
-    for experience in &profile.experience {
-        writer.text(
-            &experience.company,
-            theme.company_size,
-            true,
-            theme.company_line_height,
-            theme.margin_x,
-            Some(theme.record_spacing),
-        );
-        writer.text(
-            &experience.role,
-            theme.role_size,
-            true,
-            theme.role_line_height,
-            theme.margin_x,
-            None,
-        );
-        writer.text(
-            &join_non_empty([
-                &experience.dates,
-                &experience.location,
-                &experience.work_mode,
-            ]),
-            theme.meta_size,
-            false,
-            theme.meta_line_height,
-            theme.margin_x,
-            None,
-        );
-        writer.paragraph(&experience.summary);
-        for bullet in &experience.bullets {
-            writer.bullet(bullet);
+    for section_id in &profile.layout.section_order {
+        if profile.layout.hidden_sections.contains(section_id)
+            || (split && is_split_sidebar_section(section_id))
+        {
+            continue;
         }
-        if !experience.technologies.is_empty() {
-            let label = if profile.config.tech_label.trim().is_empty() {
-                "Tecnologias"
-            } else {
-                &profile.config.tech_label
-            };
-            writer.paragraph(&format!("{label}: {}", experience.technologies.join(", ")));
-        }
-    }
-
-    if !profile.projects.is_empty() {
-        writer.section(profile.section_name("projects", "Projetos"));
-        for project in &profile.projects {
-            writer.text(
-                &project.name,
-                theme.company_size,
-                true,
-                theme.company_line_height,
-                theme.margin_x,
-                Some(theme.record_spacing),
-            );
-            writer.paragraph(&project.description);
-            for metric in &project.metrics {
-                writer.bullet(metric);
-            }
-        }
-    }
-    writer.section(profile.section_name("education", "Formação Acadêmica"));
-    for item in &profile.education {
-        writer.paragraph(&join_non_empty([
-            &item.degree,
-            &item.institution,
-            &item.dates,
-        ]));
-    }
-    writer.section(profile.section_name("languages", "Idiomas"));
-    writer.paragraph(
-        &profile
-            .languages
-            .iter()
-            .map(|item| format!("{}: {}", item.language, item.level))
-            .collect::<Vec<_>>()
-            .join(" | "),
-    );
-    if !profile.certifications.is_empty() {
-        writer.section(profile.section_name("certifications", "Certificações"));
-        for item in &profile.certifications {
-            writer.paragraph(&join_non_empty([&item.name, &item.issuer, &item.date]));
-        }
+        render_section(&mut writer, profile, section_id, theme);
     }
     Ok(writer.finish(&profile.person.name))
-}
-
-#[derive(Clone, Copy)]
-struct PdfTheme {
-    margin_x: f32,
-    top_y: f32,
-    bottom_y: f32,
-    name_size: f32,
-    name_line_height: f32,
-    headline_size: f32,
-    headline_line_height: f32,
-    meta_size: f32,
-    meta_line_height: f32,
-    body_size: f32,
-    body_line_height: f32,
-    section_size: f32,
-    section_line_height: f32,
-    section_spacing: f32,
-    company_size: f32,
-    company_line_height: f32,
-    role_size: f32,
-    role_line_height: f32,
-    record_spacing: f32,
-    accent: (f32, f32, f32),
-    normal_font: BuiltinFont,
-    bold_font: BuiltinFont,
-    header_band: bool,
-}
-
-impl PdfTheme {
-    fn for_template(template: ResumeTemplate) -> Self {
-        match template {
-            ResumeTemplate::Clean => Self {
-                margin_x: 16.0,
-                top_y: 282.0,
-                bottom_y: 15.0,
-                name_size: 20.0,
-                name_line_height: 7.2,
-                headline_size: 10.5,
-                headline_line_height: 4.8,
-                meta_size: 8.4,
-                meta_line_height: 3.7,
-                body_size: 9.2,
-                body_line_height: 4.1,
-                section_size: 10.5,
-                section_line_height: 4.8,
-                section_spacing: 3.0,
-                company_size: 10.0,
-                company_line_height: 4.3,
-                role_size: 9.3,
-                role_line_height: 4.0,
-                record_spacing: 3.0,
-                accent: (0.12, 0.24, 0.32),
-                normal_font: BuiltinFont::TimesRoman,
-                bold_font: BuiltinFont::TimesBold,
-                header_band: false,
-            },
-            ResumeTemplate::Compact => Self {
-                margin_x: 14.0,
-                top_y: 284.0,
-                bottom_y: 13.0,
-                name_size: 18.0,
-                name_line_height: 6.1,
-                headline_size: 9.8,
-                headline_line_height: 4.2,
-                meta_size: 7.9,
-                meta_line_height: 3.35,
-                body_size: 8.6,
-                body_line_height: 3.65,
-                section_size: 9.3,
-                section_line_height: 4.0,
-                section_spacing: 1.8,
-                company_size: 9.4,
-                company_line_height: 3.85,
-                role_size: 8.8,
-                role_line_height: 3.6,
-                record_spacing: 1.8,
-                accent: (0.16, 0.18, 0.20),
-                normal_font: BuiltinFont::Helvetica,
-                bold_font: BuiltinFont::HelveticaBold,
-                header_band: false,
-            },
-            ResumeTemplate::Executive => Self {
-                margin_x: 18.0,
-                top_y: 280.0,
-                bottom_y: 16.0,
-                name_size: 22.0,
-                name_line_height: 7.8,
-                headline_size: 11.0,
-                headline_line_height: 5.0,
-                meta_size: 8.3,
-                meta_line_height: 3.8,
-                body_size: 9.2,
-                body_line_height: 4.15,
-                section_size: 10.8,
-                section_line_height: 4.9,
-                section_spacing: 3.8,
-                company_size: 10.2,
-                company_line_height: 4.4,
-                role_size: 9.4,
-                role_line_height: 4.0,
-                record_spacing: 3.4,
-                accent: (0.09, 0.29, 0.23),
-                normal_font: BuiltinFont::Helvetica,
-                bold_font: BuiltinFont::HelveticaBold,
-                header_band: true,
-            },
-        }
-    }
 }
 
 struct PdfWriter {
     pages: Vec<Vec<Op>>,
     current: Vec<Op>,
     y: f32,
+    content_x: f32,
+    content_right: f32,
+    split_first_page: bool,
     theme: PdfTheme,
     text_color: (f32, f32, f32),
 }
@@ -250,6 +57,9 @@ impl PdfWriter {
             pages: Vec::new(),
             current: Vec::new(),
             y: theme.top_y,
+            content_x: theme.margin_x,
+            content_right: PAGE_WIDTH - theme.margin_x,
+            split_first_page: false,
             theme,
             text_color: (0.12, 0.15, 0.14),
         }
@@ -261,7 +71,11 @@ impl PdfWriter {
         }
         self.current.extend([
             Op::SetFillColor {
-                col: rgb(0.09, 0.21, 0.18),
+                col: rgb(
+                    self.theme.band_color.0,
+                    self.theme.band_color.1,
+                    self.theme.band_color.2,
+                ),
             },
             Op::DrawPolygon {
                 polygon: Rect::from_xywh(
@@ -273,7 +87,11 @@ impl PdfWriter {
                 .to_polygon(),
             },
             Op::SetFillColor {
-                col: rgb(0.56, 0.71, 0.62),
+                col: rgb(
+                    self.theme.band_rule.0,
+                    self.theme.band_rule.1,
+                    self.theme.band_rule.2,
+                ),
             },
             Op::DrawPolygon {
                 polygon: Rect::from_xywh(
@@ -289,7 +107,41 @@ impl PdfWriter {
     }
 
     fn header(&mut self, profile: &ResumeProfile, template: ResumeTemplate) {
-        if matches!(template, ResumeTemplate::Compact) {
+        if self.theme.centered_header {
+            self.centered_text(
+                &profile.person.name,
+                self.theme.name_size,
+                true,
+                self.theme.name_line_height,
+            );
+            self.centered_text(
+                &profile.headline,
+                self.theme.headline_size,
+                true,
+                self.theme.headline_line_height,
+            );
+            self.centered_text(
+                &join_non_empty([&profile.person.location, &profile.person.work_preference]),
+                self.theme.meta_size,
+                false,
+                self.theme.meta_line_height,
+            );
+            self.centered_text(
+                &join_non_empty([&profile.person.phone, &profile.person.email]),
+                self.theme.meta_size,
+                false,
+                self.theme.meta_line_height,
+            );
+            self.centered_links([
+                &profile.person.linkedin,
+                &profile.person.portfolio,
+                &profile.person.github,
+            ]);
+            self.y -= 2.0;
+            return;
+        }
+
+        if self.theme.compact_header {
             self.text(
                 &profile.person.name,
                 self.theme.name_size,
@@ -333,7 +185,10 @@ impl PdfWriter {
         }
 
         let start_y = self.y;
-        let contact_x = if matches!(template, ResumeTemplate::Executive) {
+        let contact_x = if matches!(
+            template,
+            ResumeTemplate::Executive | ResumeTemplate::ExecutiveBold
+        ) {
             132.0
         } else {
             130.0
@@ -375,7 +230,11 @@ impl PdfWriter {
                 contact_y,
             );
         }
-        for link in [&profile.person.linkedin, &profile.person.portfolio] {
+        for link in [
+            &profile.person.linkedin,
+            &profile.person.portfolio,
+            &profile.person.github,
+        ] {
             contact_y = self.link_block(link, link, contact_x, contact_width, contact_y);
         }
         self.y = identity_end.min(contact_y) - 4.0;
@@ -388,13 +247,155 @@ impl PdfWriter {
         }
     }
 
+    fn enable_split_layout(&mut self, profile: &ResumeProfile) {
+        self.current.extend([
+            Op::SetFillColor {
+                col: rgb(0.11, 0.34, 0.50),
+            },
+            Op::DrawPolygon {
+                polygon: Rect::from_xywh(
+                    Pt::from(Mm(0.0)),
+                    Pt::from(Mm(0.0)),
+                    Pt::from(Mm(68.0)),
+                    Pt::from(Mm(237.0)),
+                )
+                .to_polygon(),
+            },
+        ]);
+
+        let previous_color = self.text_color;
+        self.text_color = (0.95, 0.98, 1.0);
+        let mut sidebar_y = 227.0;
+        let hidden = &profile.layout.hidden_sections;
+
+        if !hidden.iter().any(|id| id == "skills") && !profile.skills.is_empty() {
+            sidebar_y =
+                self.sidebar_title(profile.section_name("skills", "Competências"), sidebar_y);
+            for (label, values) in &profile.skills {
+                sidebar_y =
+                    self.sidebar_value(&format!("{label}: {}", string_values(values)), sidebar_y);
+            }
+        }
+        if !hidden.iter().any(|id| id == "soft_skills") && !profile.soft_skills.is_empty() {
+            sidebar_y = self.sidebar_title(
+                profile.section_name("soft_skills", "Comportamentais"),
+                sidebar_y,
+            );
+            sidebar_y = self.sidebar_value(&profile.soft_skills.join(" · "), sidebar_y);
+        }
+        if !hidden.iter().any(|id| id == "education") && !profile.education.is_empty() {
+            sidebar_y =
+                self.sidebar_title(profile.section_name("education", "Formação"), sidebar_y);
+            for item in &profile.education {
+                sidebar_y = self.sidebar_value(
+                    &join_non_empty([&item.degree, &item.institution, &item.dates]),
+                    sidebar_y,
+                );
+            }
+        }
+        if !hidden.iter().any(|id| id == "certifications") && !profile.certifications.is_empty() {
+            sidebar_y = self.sidebar_title(
+                profile.section_name("certifications", "Certificações"),
+                sidebar_y,
+            );
+            for item in profile.certifications.iter().take(6) {
+                sidebar_y = self.sidebar_value(
+                    &join_non_empty([&item.name, &item.issuer, &item.date]),
+                    sidebar_y,
+                );
+            }
+        }
+        if !hidden.iter().any(|id| id == "languages") && !profile.languages.is_empty() {
+            sidebar_y = self.sidebar_title(profile.section_name("languages", "Idiomas"), sidebar_y);
+            for item in &profile.languages {
+                sidebar_y =
+                    self.sidebar_value(&format!("{}: {}", item.language, item.level), sidebar_y);
+            }
+        }
+
+        self.text_color = previous_color;
+        self.content_x = 76.0;
+        self.content_right = 194.0;
+        self.y = self.y.min(229.0);
+        self.split_first_page = true;
+    }
+
+    fn sidebar_title(&mut self, title: &str, mut y: f32) -> f32 {
+        if y < 24.0 {
+            return y;
+        }
+        y -= 3.0;
+        self.text_block(&title.to_uppercase(), 8.5, true, 4.0, 11.0, 48.0, y) - 1.0
+    }
+
+    fn sidebar_value(&mut self, value: &str, y: f32) -> f32 {
+        if y < 18.0 {
+            return y;
+        }
+        self.text_block(value, 7.5, false, 3.4, 11.0, 48.0, y) - 1.0
+    }
+
+    fn centered_text(&mut self, value: &str, size: f32, bold: bool, line_height_mm: f32) {
+        if value.trim().is_empty() {
+            return;
+        }
+        let width = PAGE_WIDTH - (self.theme.margin_x * 2.0);
+        let max_chars = ((width / (size * 0.19)).floor() as usize).max(24);
+        for line in wrap(value, max_chars) {
+            self.ensure_space(line_height_mm + 1.0);
+            let estimated_width = estimate_text_width(&line, size).min(width);
+            let x = ((PAGE_WIDTH - estimated_width) / 2.0).max(self.theme.margin_x);
+            self.text_line(&line, size, bold, x, self.y);
+            self.y -= line_height_mm;
+        }
+    }
+
+    fn centered_links<const N: usize>(&mut self, values: [&String; N]) {
+        let links = values
+            .into_iter()
+            .map(String::as_str)
+            .filter(|value| !value.trim().is_empty() && is_safe_link(value))
+            .collect::<Vec<_>>();
+        if links.is_empty() {
+            return;
+        }
+        let label = links.join(" | ");
+        let size = self.theme.meta_size;
+        let line_height = self.theme.meta_line_height;
+        self.ensure_space(line_height + 1.0);
+        let width = estimate_text_width(&label, size).min(PAGE_WIDTH - (self.theme.margin_x * 2.0));
+        let x = ((PAGE_WIDTH - width) / 2.0).max(self.theme.margin_x);
+        let y = self.y;
+        self.text_line(&label, size, false, x, y);
+        self.y -= line_height;
+        let mut link_x = x;
+        for target in links {
+            let link_width = estimate_text_width(target, size);
+            self.current.push(Op::LinkAnnotation {
+                link: LinkAnnotation::new(
+                    Rect::from_xywh(
+                        Pt::from(Mm(link_x)),
+                        Pt::from(Mm(y - 1.0)),
+                        Pt::from(Mm(link_width)),
+                        Pt::from(Mm(line_height)),
+                    ),
+                    Actions::uri(target.to_string()),
+                    Some(BorderArray::Solid([0.0, 0.0, 0.0])),
+                    Some(ColorArray::Transparent),
+                    Some(HighlightingMode::Outline),
+                ),
+            });
+            link_x += link_width + estimate_text_width(" | ", size);
+        }
+    }
+
     fn paragraph(&mut self, value: &str) {
         self.text(
             value,
             self.theme.body_size,
             false,
             self.theme.body_line_height,
-            self.theme.margin_x,
+            self.content_x,
             Some(1.0),
         );
     }
@@ -405,7 +406,7 @@ impl PdfWriter {
             self.theme.body_size - 0.2,
             false,
             self.theme.body_line_height - 0.2,
-            self.theme.margin_x + 3.0,
+            self.content_x + 3.0,
             None,
         );
     }
@@ -422,7 +423,7 @@ impl PdfWriter {
             self.theme.section_size,
             true,
             self.theme.section_line_height,
-            self.theme.margin_x,
+            self.content_x,
             None,
         );
         self.text_color = previous_color;
@@ -438,11 +439,11 @@ impl PdfWriter {
             line: Line {
                 points: vec![
                     LinePoint {
-                        p: Point::new(Mm(self.theme.margin_x), Mm(self.y + 1.6)),
+                        p: Point::new(Mm(self.content_x), Mm(self.y + 1.6)),
                         bezier: false,
                     },
                     LinePoint {
-                        p: Point::new(Mm(PAGE_WIDTH - self.theme.margin_x), Mm(self.y + 1.6)),
+                        p: Point::new(Mm(self.content_right), Mm(self.y + 1.6)),
                         bezier: false,
                     },
                 ],
@@ -466,8 +467,7 @@ impl PdfWriter {
         if let Some(spacing) = before_mm {
             self.y -= spacing;
         }
-        let content_width = PAGE_WIDTH - (self.theme.margin_x * 2.0);
-        let available_width = content_width - (x - self.theme.margin_x);
+        let available_width = self.content_right - x;
         let max_chars = ((available_width / (size * 0.19)).floor() as usize).max(24);
         for line in wrap(value, max_chars) {
             self.ensure_space(line_height_mm + 1.0);
@@ -560,13 +560,13 @@ impl PdfWriter {
         let line_height = self.theme.meta_line_height;
         self.ensure_space(line_height + 1.0);
         let link_y = self.y;
-        self.text(label, size, false, line_height, self.theme.margin_x, None);
+        self.text(label, size, false, line_height, self.content_x, None);
         self.current.push(Op::LinkAnnotation {
             link: LinkAnnotation::new(
                 Rect::from_xywh(
-                    Pt::from(Mm(self.theme.margin_x)),
+                    Pt::from(Mm(self.content_x)),
                     Pt::from(Mm(link_y - 1.0)),
-                    Pt::from(Mm(PAGE_WIDTH - (self.theme.margin_x * 2.0))),
+                    Pt::from(Mm(self.content_right - self.content_x)),
                     Pt::from(Mm(line_height)),
                 ),
                 Actions::uri(target.to_string()),
@@ -581,6 +581,11 @@ impl PdfWriter {
         if self.y - needed < self.theme.bottom_y {
             self.pages.push(std::mem::take(&mut self.current));
             self.y = self.theme.top_y;
+            if self.split_first_page {
+                self.content_x = self.theme.margin_x;
+                self.content_right = PAGE_WIDTH - self.theme.margin_x;
+                self.split_first_page = false;
+            }
         }
     }
 
@@ -597,40 +602,6 @@ impl PdfWriter {
             .with_pages(pages)
             .save(&PdfSaveOptions::default(), &mut Vec::new())
     }
-}
-
-fn is_safe_link(value: &str) -> bool {
-    value.starts_with("https://") || value.starts_with("http://")
-}
-
-fn wrap(value: &str, max_chars: usize) -> Vec<String> {
-    let mut lines = Vec::new();
-    for paragraph in value.lines() {
-        let mut current = String::new();
-        for word in paragraph.split_whitespace() {
-            if !current.is_empty() && current.chars().count() + word.chars().count() + 1 > max_chars
-            {
-                lines.push(std::mem::take(&mut current));
-            }
-            if !current.is_empty() {
-                current.push(' ');
-            }
-            current.push_str(word);
-        }
-        if !current.is_empty() {
-            lines.push(current);
-        }
-    }
-    lines
-}
-
-fn join_non_empty<const N: usize>(values: [&String; N]) -> String {
-    values
-        .into_iter()
-        .filter(|value| !value.trim().is_empty())
-        .map(String::as_str)
-        .collect::<Vec<_>>()
-        .join(" | ")
 }
 
 fn rgb(r: f32, g: f32, b: f32) -> Color {

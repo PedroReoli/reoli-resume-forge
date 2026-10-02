@@ -65,7 +65,7 @@ pub fn export_resume(
 fn parse_template(value: Option<&str>) -> Result<ResumeTemplate, String> {
     value
         .map(ResumeTemplate::parse)
-        .unwrap_or(Ok(ResumeTemplate::Clean))
+        .unwrap_or(Ok(ResumeTemplate::Classic))
 }
 
 #[tauri::command]

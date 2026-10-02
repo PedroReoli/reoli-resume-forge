@@ -235,7 +235,7 @@ fn template(options: &HashMap<String, String>) -> Result<ResumeTemplate, String>
     options
         .get("template")
         .map(|value| ResumeTemplate::parse(value))
-        .unwrap_or(Ok(ResumeTemplate::Clean))
+        .unwrap_or(Ok(ResumeTemplate::Classic))
 }
 
 fn output_directory(options: &HashMap<String, String>) -> Result<PathBuf, String> {
@@ -348,11 +348,11 @@ fn print_success(command: &str, files: Vec<String>) {
 fn print_help() {
     println!(
         "Reoli Resume Forge v{}\n\n\
-Uso:\n  reoli-cv.exe ui\n  reoli-cv.exe generate --model ID --template clean --format pdf,docx --out DIRETORIO\n  \
+Uso:\n  reoli-cv.exe ui\n  reoli-cv.exe generate --model ID --template classic --format pdf,docx --out DIRETORIO\n  \
 reoli-cv.exe tailor --job VAGA.json [--profile PERFIL.json | --model ID] [--template compact] --format pdf,docx --out DIRETORIO\n  \
 reoli-cv.exe batch --jobs VAGAS.json [--model ID] [--template executive] --format pdf --out DIRETORIO\n\n\
 Modelos: 01_frontend, 02_fullstack_node, 03_fullstack_dotnet, 04_tech_lead, 05_internacional_en\n\
-Templates: clean, compact, executive\n\
+Templates: classic, clean, compact, executive, tech-minimalist, modern-split, executive-bold, academic\n\
 Formatos: pdf, docx, json, md",
         env!("CARGO_PKG_VERSION")
     );
@@ -384,8 +384,17 @@ mod tests {
     }
 
     #[test]
-    fn parses_the_three_templates() {
-        for name in ["clean", "compact", "executive"] {
+    fn parses_every_public_template() {
+        for name in [
+            "classic",
+            "clean",
+            "compact",
+            "executive",
+            "tech-minimalist",
+            "modern-split",
+            "executive-bold",
+            "academic",
+        ] {
             let options = HashMap::from([("template".into(), name.into())]);
             assert!(template(&options).is_ok());
         }

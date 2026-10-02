@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createBlankProfile } from '../data/blankProfile';
+import { localizeProfile, normalizeResumeProfile } from '../domain/resumeLayout';
 import {
   analyzeMatch,
   fallbackArchetypes,
@@ -11,6 +12,7 @@ import type {
   ArchetypeMetadata,
   MatchReport,
   ResumeProfile,
+  ResumeLocale,
   ResumeTemplate,
 } from '../types/resume';
 
@@ -20,14 +22,15 @@ export function useResumeWorkspace() {
   const [archetypes, setArchetypes] = useState<ArchetypeMetadata[]>(fallbackArchetypes);
   const [archetypeId, setArchetypeId] = useState(INITIAL_ARCHETYPE);
   const [profile, setProfile] = useState<ResumeProfile>(() => createBlankProfile());
+  const [locale, setLocale] = useState<ResumeLocale>('pt-BR');
   const [jobDescription, setJobDescription] = useState('');
   const [report, setReport] = useState<MatchReport | null>(null);
-  const [template, setTemplate] = useState<ResumeTemplate>('clean');
+  const [template, setTemplate] = useState<ResumeTemplate>('classic');
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const locale = useMemo(
-    () => archetypes.find((item) => item.id === archetypeId)?.locale ?? 'pt-BR',
+  const selectedArchetype = useMemo(
+    () => archetypes.find((item) => item.id === archetypeId),
     [archetypeId, archetypes],
   );
 
@@ -38,6 +41,7 @@ export function useResumeWorkspace() {
         if (!active) return;
         setArchetypes(items);
         setProfile(loaded);
+        setLocale((loaded.config.locale as ResumeLocale | undefined) ?? 'pt-BR');
       })
       .catch((reason: unknown) => active && setError(messageOf(reason)))
       .finally(() => active && setBusy(false));
@@ -65,22 +69,23 @@ export function useResumeWorkspace() {
     try {
       setProfile(await loadArchetype(id));
       setArchetypeId(id);
+      const nextLocale = archetypes.find((item) => item.id === id)?.locale;
+      setLocale(nextLocale?.startsWith('en') ? 'en-US' : 'pt-BR');
     } catch (reason) {
       setError(messageOf(reason));
     } finally {
       setBusy(false);
     }
-  }, []);
+  }, [archetypes]);
 
   const selectLocale = useCallback(
     async (nextLocale: string) => {
-      if (nextLocale.startsWith('en')) {
-        await selectArchetype('05_internacional_en');
-      } else if (locale.startsWith('en')) {
-        await selectArchetype('01_frontend');
-      }
+      const normalized = nextLocale === 'en-US' || nextLocale === 'es-ES' ? nextLocale : 'pt-BR';
+      setProfile((current) => localizeProfile(current, normalized));
+      setLocale(normalized);
+      setArchetypeId('custom');
     },
-    [locale, selectArchetype],
+    [],
   );
 
   const newProfile = useCallback(() => {
@@ -91,8 +96,10 @@ export function useResumeWorkspace() {
   }, [locale]);
 
   const importProfile = useCallback((next: ResumeProfile) => {
-    assertProfile(next);
-    setProfile(next);
+    const normalized = normalizeResumeProfile(next);
+    assertProfile(normalized);
+    setProfile(normalized);
+    setLocale((normalized.config.locale as ResumeLocale | undefined) ?? 'pt-BR');
     setArchetypeId('custom');
     setReport(null);
   }, []);
@@ -123,6 +130,7 @@ export function useResumeWorkspace() {
     template,
     setTemplate,
     locale,
+    selectedArchetype,
     busy,
     error,
     setError,

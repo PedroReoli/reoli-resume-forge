@@ -1,6 +1,8 @@
 mod docx;
 mod markdown;
 mod pdf;
+mod pdf_content;
+mod pdf_theme;
 mod zip_store;
 
 use super::model::ResumeProfile;
@@ -13,19 +15,29 @@ pub use markdown::to_markdown;
 #[serde(rename_all = "lowercase")]
 pub enum ResumeTemplate {
     #[default]
+    Classic,
     Clean,
     Compact,
     Executive,
+    TechMinimalist,
+    ModernSplit,
+    ExecutiveBold,
+    Academic,
 }
 
 impl ResumeTemplate {
     pub fn parse(value: &str) -> Result<Self, String> {
         match value.trim().to_ascii_lowercase().as_str() {
+            "classic" | "classic-reoli" => Ok(Self::Classic),
             "clean" | "clean-slate" => Ok(Self::Clean),
             "compact" | "compact-linear" => Ok(Self::Compact),
             "executive" | "executive-accent" => Ok(Self::Executive),
+            "tech-minimalist" | "tech" => Ok(Self::TechMinimalist),
+            "modern-split" | "split" => Ok(Self::ModernSplit),
+            "executive-bold" | "bold" => Ok(Self::ExecutiveBold),
+            "academic" | "chronological" => Ok(Self::Academic),
             other => Err(format!(
-                "template desconhecido: {other}. Use clean, compact ou executive"
+                "template desconhecido: {other}. Use classic, clean, compact, executive, tech-minimalist, modern-split, executive-bold ou academic"
             )),
         }
     }
@@ -62,7 +74,7 @@ impl ExportFormat {
 }
 
 pub fn render(profile: &ResumeProfile, format: ExportFormat) -> Result<Vec<u8>, String> {
-    render_with_template(profile, format, ResumeTemplate::Clean)
+    render_with_template(profile, format, ResumeTemplate::Classic)
 }
 
 pub fn render_with_template(
@@ -80,7 +92,7 @@ pub fn render_with_template(
 }
 
 pub fn write(profile: &ResumeProfile, format: ExportFormat, path: &Path) -> Result<(), String> {
-    write_with_template(profile, format, path, ResumeTemplate::Clean)
+    write_with_template(profile, format, path, ResumeTemplate::Classic)
 }
 
 pub fn write_with_template(
@@ -166,12 +178,17 @@ mod tests {
     }
 
     #[test]
-    fn accepts_the_three_public_templates() {
+    fn accepts_every_public_template() {
         let profile = load_archetype("01_frontend").unwrap();
         for template in [
+            ResumeTemplate::Classic,
             ResumeTemplate::Clean,
             ResumeTemplate::Compact,
             ResumeTemplate::Executive,
+            ResumeTemplate::TechMinimalist,
+            ResumeTemplate::ModernSplit,
+            ResumeTemplate::ExecutiveBold,
+            ResumeTemplate::Academic,
         ] {
             assert!(
                 !render_with_template(&profile, ExportFormat::Pdf, template)
@@ -184,5 +201,34 @@ mod tests {
                     .is_empty()
             );
         }
+    }
+
+    #[test]
+    fn section_order_visibility_and_custom_content_reach_text_exports() {
+        let mut profile = load_archetype("01_frontend").unwrap();
+        profile
+            .custom_sections
+            .push(crate::core::model::CustomSection {
+                id: "publicacoes".into(),
+                title: "Publicações".into(),
+                kind: "publications".into(),
+                items: vec!["Artigo sobre arquitetura modular".into()],
+            });
+        profile.layout.section_order = vec![
+            "custom:publicacoes".into(),
+            "summary".into(),
+            "experience".into(),
+        ];
+        profile.layout.hidden_sections = vec!["summary".into()];
+
+        let markdown = to_markdown(&profile);
+        assert!(markdown.contains("## Publicações"));
+        assert!(markdown.contains("Artigo sobre arquitetura modular"));
+        assert!(!markdown.contains("## Resumo Profissional"));
+        assert!(markdown.find("## Publicações") < markdown.find("## Experiência Profissional"));
+
+        let document = docx::document_xml(&profile, ResumeTemplate::Classic);
+        assert!(document.contains("PUBLICAÇÕES"));
+        assert!(!document.contains("RESUMO PROFISSIONAL"));
     }
 }

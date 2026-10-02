@@ -1,9 +1,11 @@
 import type { ResumeProfile } from '../types/resume';
+import { createDefaultLayout } from '../domain/resumeLayout';
 
 export function createBlankProfile(locale = 'pt-BR'): ResumeProfile {
   const english = locale.startsWith('en');
   return {
     config: {
+      locale: english ? 'en-US' : 'pt-BR',
       tech_label: english ? 'Technologies' : 'Tecnologias',
       section_names: {
         summary: english ? 'Professional Summary' : 'Resumo Profissional',
@@ -15,6 +17,7 @@ export function createBlankProfile(locale = 'pt-BR'): ResumeProfile {
         certifications: english ? 'Certifications' : 'Certificações',
       },
     },
+    layout: createDefaultLayout(),
     person: {
       name: english ? 'Your name' : 'Seu nome',
       location: '',
@@ -48,5 +51,6 @@ export function createBlankProfile(locale = 'pt-BR'): ResumeProfile {
     education: [],
     languages: [],
     certifications: [],
+    custom_sections: [],
   };
 }
