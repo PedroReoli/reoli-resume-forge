@@ -42,10 +42,13 @@ Requisitos: Node.js 24+, npm, Rust estável e as dependências de compilação d
 
 ```powershell
 npm ci
+npm run ops
 npm run tauri:dev
 npm run verify
 npm run build:portable
 ```
+
+`npm run ops` abre o Operations Console. Pressione `Enter` para iniciar o desktop com Tauri Dev, ou escolha os submenus de CLI, qualidade, diagnóstico e build. As mesmas ações aceitam aliases diretos, por exemplo `npm run ops -- verify`, `npm run ops -- doctor` e `npm run ops -- build`.
 
 O último comando grava o binário e seu checksum em `release/bin/`:
 

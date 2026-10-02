@@ -14,6 +14,8 @@
 
 ## Método
 
+O atalho recomendado é `npm run ops`. O menu usa `Tauri Dev` como ação padrão ao pressionar `Enter` e também concentra CLI/smoke test, validações, diagnóstico e build portátil. Para automações sem prompt, use `npm run ops -- dev`, `npm run ops -- verify`, `npm run ops -- doctor` ou `npm run ops -- build`.
+
 1. Instale de forma reproduzível: `npm ci`.
 2. Execute a barreira local: `npm run verify`.
 3. Gere o portátil: `npm run build:portable`.
