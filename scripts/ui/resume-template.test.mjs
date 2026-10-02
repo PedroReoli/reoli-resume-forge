@@ -4,14 +4,18 @@ import {
   applyResumePalette,
   applyResumeStylePreset,
   applyResumeTemplate,
+  applyResumeTypeface,
   normalizeResumeProfile,
   profilePalette,
   profileStylePreset,
   profileTemplate,
+  profileTypeface,
   RESUME_PALETTE_IDS,
   RESUME_PALETTES,
   RESUME_STYLE_PRESETS,
   RESUME_TEMPLATE_IDS,
+  RESUME_TYPEFACE_IDS,
+  RESUME_TYPEFACES,
   TEMPLATE_OPTIONS,
 } from '../../src/domain/resumeLayout.ts';
 
@@ -42,6 +46,7 @@ test('mantém compatibilidade com perfis antigos sem template', () => {
 
   assert.equal(normalized.config.template, 'classic');
   assert.equal(normalized.config.palette, 'template');
+  assert.equal(normalized.config.typeface, 'template');
 });
 
 test('troca o template sem alterar o perfil de origem', () => {
@@ -76,6 +81,24 @@ test('mantém o catálogo de paletas seguro e sem IDs duplicados', () => {
   )));
 });
 
+test('aplica uma tipografia segura sem alterar o perfil de origem', () => {
+  const original = normalizeResumeProfile(profileWith('classic'));
+  const updated = applyResumeTypeface(original, 'editorial-serif');
+
+  assert.equal(profileTypeface(original), 'template');
+  assert.equal(profileTypeface(updated), 'editorial-serif');
+  assert.notEqual(updated, original);
+  assert.notEqual(updated.config, original.config);
+});
+
+test('mantém o catálogo tipográfico seguro e sem IDs duplicados', () => {
+  const catalogIds = RESUME_TYPEFACES.map((option) => option.id);
+
+  assert.equal(new Set(catalogIds).size, 4);
+  assert.deepEqual([...catalogIds].sort(), [...RESUME_TYPEFACE_IDS].sort());
+  assert.ok(RESUME_TYPEFACES.every((option) => option.label && option.description && option.sample));
+});
+
 test('mantém o catálogo visual alinhado aos templates suportados', () => {
   const catalogIds = TEMPLATE_OPTIONS.map((option) => option.id);
 
@@ -92,6 +115,7 @@ test('aplica uma aparência completa em uma única alteração imutável', () =>
 
   assert.equal(profileTemplate(updated), 'tech-minimalist');
   assert.equal(profilePalette(updated), 'cobalt');
+  assert.equal(profileTypeface(updated), 'technical-mono');
   assert.equal(updated.layout.density, 'compact');
   assert.equal(updated.layout.skills_style, 'tags');
   assert.equal(updated.layout.experience_style, 'metrics');
@@ -126,5 +150,6 @@ test('mantém seis aparências curadas, completas e sem IDs duplicados', () => {
     && option.bestFor
     && RESUME_TEMPLATE_IDS.includes(option.template)
     && RESUME_PALETTE_IDS.includes(option.palette)
+    && RESUME_TYPEFACE_IDS.includes(option.typeface)
   )));
 });

@@ -1,5 +1,6 @@
 use super::ResumeTemplate;
 use super::palette::PaletteColors;
+use super::typeface::TypefacePreset;
 use printpdf::BuiltinFont;
 
 #[derive(Clone, Copy)]
@@ -279,6 +280,14 @@ impl PdfTheme {
         }
         self
     }
+
+    pub fn with_typeface(mut self, typeface: Option<TypefacePreset>) -> Self {
+        if let Some(preset) = typeface {
+            self.normal_font = preset.pdf_normal;
+            self.bold_font = preset.pdf_bold;
+        }
+        self
+    }
 }
 
 #[cfg(test)]
@@ -286,6 +295,7 @@ mod tests {
     use super::*;
     use crate::core::archetypes::load_archetype;
     use crate::core::export::palette::profile_palette;
+    use crate::core::export::typeface::profile_typeface;
 
     #[test]
     fn applies_profile_palette_to_pdf_accent_and_bands() {
@@ -303,5 +313,19 @@ mod tests {
             (23.0 / 255.0, 60.0 / 255.0, 101.0 / 255.0)
         );
         assert_eq!(theme.band_rule, theme.accent);
+    }
+
+    #[test]
+    fn applies_profile_typeface_to_pdf_fonts() {
+        let mut profile = load_archetype("01_frontend").unwrap();
+        profile
+            .config
+            .extra
+            .insert("typeface".into(), serde_json::json!("technical-mono"));
+
+        let theme = PdfTheme::for_template(ResumeTemplate::Classic)
+            .with_typeface(profile_typeface(&profile));
+        assert_eq!(theme.normal_font, BuiltinFont::Courier);
+        assert_eq!(theme.bold_font, BuiltinFont::CourierBold);
     }
 }

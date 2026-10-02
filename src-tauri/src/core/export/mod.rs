@@ -4,6 +4,7 @@ mod palette;
 mod pdf;
 mod pdf_content;
 mod pdf_theme;
+mod typeface;
 mod zip_store;
 
 use super::model::ResumeProfile;
@@ -227,17 +228,22 @@ mod tests {
     }
 
     #[test]
-    fn preserves_the_palette_in_editable_json_variants() {
+    fn preserves_visual_settings_in_editable_json_variants() {
         let mut profile = load_archetype("01_frontend").unwrap();
         profile
             .config
             .extra
             .insert("palette".into(), serde_json::json!("forest"));
+        profile
+            .config
+            .extra
+            .insert("typeface".into(), serde_json::json!("modern-sans"));
 
         let json =
             render_with_template(&profile, ExportFormat::Json, ResumeTemplate::Classic).unwrap();
         let document: serde_json::Value = serde_json::from_slice(&json).unwrap();
         assert_eq!(document["config"]["palette"], "forest");
+        assert_eq!(document["config"]["typeface"], "modern-sans");
     }
 
     #[test]

@@ -2,6 +2,7 @@
   "config": {
     "template": "tech-minimalist",
     "palette": "reoli-navy",
+    "typeface": "technical-mono",
     "colors": {
       "primary": "#1F374D",
       "dark": "#142636",

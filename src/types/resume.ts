@@ -18,6 +18,12 @@ export type ResumePalette =
   | 'burgundy'
   | 'graphite';
 
+export type ResumeTypeface =
+  | 'template'
+  | 'modern-sans'
+  | 'editorial-serif'
+  | 'technical-mono';
+
 export type ResumeStylePresetId =
   | 'reoli-classic'
   | 'tech-focus'
@@ -39,6 +45,7 @@ export interface ResumeConfig {
   locale?: ResumeLocale;
   template?: ResumeTemplate;
   palette?: ResumePalette;
+  typeface?: ResumeTypeface;
   colors?: ResumeColors;
   [key: string]: JsonValue | Record<string, string> | ResumeColors | undefined;
 }

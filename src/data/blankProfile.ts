@@ -8,6 +8,7 @@ export function createBlankProfile(locale = 'pt-BR'): ResumeProfile {
       locale: english ? 'en-US' : 'pt-BR',
       template: 'classic',
       palette: 'template',
+      typeface: 'template',
       tech_label: english ? 'Technologies' : 'Tecnologias',
       section_names: {
         summary: english ? 'Professional Summary' : 'Resumo Profissional',

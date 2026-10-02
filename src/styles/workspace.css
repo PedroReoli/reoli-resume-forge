@@ -376,7 +376,7 @@
 
 .layout-controls > summary::-webkit-details-marker { display: none; }
 .layout-controls > summary span { display: flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 700; }
-.layout-controls > summary small { color: var(--accent); font-family: var(--mono); font-size: 9px; }
+.layout-controls > summary small { max-width: 54%; overflow: hidden; color: var(--accent); font-family: var(--mono); font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
 
 .layout-control-grid {
   display: grid;

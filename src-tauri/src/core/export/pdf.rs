@@ -6,6 +6,7 @@ use super::pdf_content::{
     wrap,
 };
 use super::pdf_theme::PdfTheme;
+use super::typeface::profile_typeface;
 use printpdf::{
     Actions, BorderArray, BuiltinFont, Color, ColorArray, HighlightingMode, Line, LinePoint,
     LinkAnnotation, Mm, Op, PdfDocument, PdfFontHandle, PdfPage, PdfSaveOptions, Point, Pt, Rect,
@@ -22,7 +23,9 @@ pub fn render_with_template(
     profile: &ResumeProfile,
     template: ResumeTemplate,
 ) -> Result<Vec<u8>, String> {
-    let theme = PdfTheme::for_template(template).with_palette(profile_palette(profile));
+    let theme = PdfTheme::for_template(template)
+        .with_palette(profile_palette(profile))
+        .with_typeface(profile_typeface(profile));
     let mut writer = PdfWriter::new(theme);
     writer.begin_header();
     writer.header(profile, template);

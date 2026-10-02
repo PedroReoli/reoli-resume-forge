@@ -10,11 +10,13 @@ import type {
   ResumeProfile,
   ResumeStylePresetId,
   ResumeTemplate,
+  ResumeTypeface,
   SkillsLayout,
 } from '../types/resume';
 
 export const DEFAULT_RESUME_TEMPLATE: ResumeTemplate = 'classic';
 export const DEFAULT_RESUME_PALETTE: ResumePalette = 'template';
+export const DEFAULT_RESUME_TYPEFACE: ResumeTypeface = 'template';
 
 export const RESUME_PALETTE_IDS: readonly ResumePalette[] = [
   'template',
@@ -38,6 +40,25 @@ export const RESUME_PALETTES: Array<{
   { id: 'cobalt', label: 'Cobalt', description: 'Azul técnico com contraste limpo.', colors: { primary: '#245F9E', dark: '#173C65', soft: '#E8F0F8', divider: '#B8CCE1' }, swatches: ['#173c65', '#245f9e', '#b8cce1'] },
   { id: 'burgundy', label: 'Burgundy', description: 'Vinho editorial para perfis autorais.', colors: { primary: '#6B3340', dark: '#45202A', soft: '#F4E9EC', divider: '#D8BBC2' }, swatches: ['#45202a', '#6b3340', '#d8bbc2'] },
   { id: 'graphite', label: 'Graphite', description: 'Neutro rigoroso e altamente versátil.', colors: { primary: '#343A40', dark: '#202429', soft: '#ECEEEF', divider: '#C8CDD1' }, swatches: ['#202429', '#343a40', '#c8cdd1'] },
+];
+
+export const RESUME_TYPEFACE_IDS: readonly ResumeTypeface[] = [
+  'template',
+  'modern-sans',
+  'editorial-serif',
+  'technical-mono',
+];
+
+export const RESUME_TYPEFACES: Array<{
+  id: ResumeTypeface;
+  label: string;
+  description: string;
+  sample: string;
+}> = [
+  { id: 'template', label: 'Do modelo', description: 'Mantém a assinatura tipográfica original.', sample: 'Aa' },
+  { id: 'modern-sans', label: 'Sans moderna', description: 'Inter no preview e equivalentes seguros na exportação.', sample: 'Ag' },
+  { id: 'editorial-serif', label: 'Serif editorial', description: 'Ritmo clássico para leitura longa e perfis autorais.', sample: 'Aa' },
+  { id: 'technical-mono', label: 'Mono técnica', description: 'Precisão visual para engenharia e stack técnica.', sample: '01' },
 ];
 
 export const RESUME_TEMPLATE_IDS: readonly ResumeTemplate[] = [
@@ -86,6 +107,7 @@ export const RESUME_STYLE_PRESETS: Array<{
   bestFor: string;
   template: ResumeTemplate;
   palette: Exclude<ResumePalette, 'template'>;
+  typeface: ResumeTypeface;
   skillsStyle: SkillsLayout;
   experienceStyle: NarrativeLayout;
   projectsStyle: NarrativeLayout;
@@ -99,6 +121,7 @@ export const RESUME_STYLE_PRESETS: Array<{
     bestFor: 'ATS e uso geral',
     template: 'classic',
     palette: 'reoli-navy',
+    typeface: 'modern-sans',
     skillsStyle: 'categorized',
     experienceStyle: 'bullets',
     projectsStyle: 'bullets',
@@ -112,6 +135,7 @@ export const RESUME_STYLE_PRESETS: Array<{
     bestFor: 'Engenharia e DevOps',
     template: 'tech-minimalist',
     palette: 'cobalt',
+    typeface: 'technical-mono',
     skillsStyle: 'tags',
     experienceStyle: 'metrics',
     projectsStyle: 'metrics',
@@ -125,6 +149,7 @@ export const RESUME_STYLE_PRESETS: Array<{
     bestFor: 'Produto e frontend',
     template: 'clean',
     palette: 'forest',
+    typeface: 'modern-sans',
     skillsStyle: 'tags',
     experienceStyle: 'bullets',
     projectsStyle: 'metrics',
@@ -138,6 +163,7 @@ export const RESUME_STYLE_PRESETS: Array<{
     bestFor: 'Liderança e arquitetura',
     template: 'executive-bold',
     palette: 'graphite',
+    typeface: 'modern-sans',
     skillsStyle: 'categorized',
     experienceStyle: 'metrics',
     projectsStyle: 'bullets',
@@ -151,6 +177,7 @@ export const RESUME_STYLE_PRESETS: Array<{
     bestFor: 'Academia e perfis autorais',
     template: 'academic',
     palette: 'burgundy',
+    typeface: 'editorial-serif',
     skillsStyle: 'table',
     experienceStyle: 'paragraphs',
     projectsStyle: 'paragraphs',
@@ -164,6 +191,7 @@ export const RESUME_STYLE_PRESETS: Array<{
     bestFor: 'Envio direto e portfólio',
     template: 'modern-split',
     palette: 'reoli-navy',
+    typeface: 'modern-sans',
     skillsStyle: 'tags',
     experienceStyle: 'bullets',
     projectsStyle: 'metrics',
@@ -200,6 +228,7 @@ export function normalizeResumeProfile(raw: ResumeProfile): ResumeProfile {
   const customSections = Array.isArray(raw.custom_sections) ? raw.custom_sections : [];
   const layout = normalizeLayout(raw.layout, customSections);
   const palette = normalizeResumePalette(raw.config?.palette);
+  const typeface = normalizeResumeTypeface(raw.config?.typeface);
   const paletteColors = RESUME_PALETTES.find((option) => option.id === palette)?.colors;
   return {
     ...raw,
@@ -208,6 +237,7 @@ export function normalizeResumeProfile(raw: ResumeProfile): ResumeProfile {
       locale: normalizeLocale(raw.config?.locale),
       template: normalizeResumeTemplate(raw.config?.template),
       palette,
+      typeface,
       ...(paletteColors ? { colors: { ...paletteColors } } : {}),
       section_names: raw.config?.section_names ?? {},
       tech_label: raw.config?.tech_label ?? 'Tecnologias',
@@ -261,6 +291,29 @@ export function applyResumePalette(profile: ResumeProfile, palette: ResumePalett
   };
 }
 
+export function isResumeTypeface(value: unknown): value is ResumeTypeface {
+  return typeof value === 'string' && RESUME_TYPEFACE_IDS.includes(value as ResumeTypeface);
+}
+
+export function normalizeResumeTypeface(value: unknown): ResumeTypeface {
+  return isResumeTypeface(value) ? value : DEFAULT_RESUME_TYPEFACE;
+}
+
+export function profileTypeface(profile: ResumeProfile): ResumeTypeface {
+  return normalizeResumeTypeface(profile.config?.typeface);
+}
+
+export function applyResumeTypeface(profile: ResumeProfile, typeface: ResumeTypeface): ResumeProfile {
+  if (profileTypeface(profile) === typeface) return profile;
+  return {
+    ...profile,
+    config: {
+      ...profile.config,
+      typeface,
+    },
+  };
+}
+
 export function applyResumeTemplate(
   profile: ResumeProfile,
   template: ResumeTemplate,
@@ -278,9 +331,11 @@ export function applyResumeTemplate(
 export function profileStylePreset(profile: ResumeProfile): ResumeStylePresetId | null {
   const template = profileTemplate(profile);
   const palette = profilePalette(profile);
+  const typeface = profileTypeface(profile);
   const preset = RESUME_STYLE_PRESETS.find((option) => (
     option.template === template
     && option.palette === palette
+    && option.typeface === typeface
     && option.skillsStyle === profile.layout.skills_style
     && option.experienceStyle === profile.layout.experience_style
     && option.projectsStyle === profile.layout.projects_style
@@ -303,6 +358,7 @@ export function applyResumeStylePreset(
       ...profile.config,
       template: preset.template,
       palette: preset.palette,
+      typeface: preset.typeface,
       ...(colors ? { colors: { ...colors } } : {}),
     },
     layout: {

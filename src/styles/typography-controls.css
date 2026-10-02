@@ -1,0 +1,88 @@
+.typeface-control {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.typeface-control > button {
+  display: grid;
+  min-width: 0;
+  min-height: 48px;
+  grid-template-columns: 35px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  background: #101713;
+  color: var(--muted);
+  text-align: left;
+}
+
+.typeface-control > button:hover {
+  border-color: var(--line-strong);
+  background: #151f19;
+}
+
+.typeface-control > button[aria-pressed="true"] {
+  border-color: #789282;
+  background: #19261e;
+  box-shadow: inset 0 0 0 1px rgb(168 207 177 / 14%);
+}
+
+.typeface-control > button > span:last-child {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.typeface-control strong {
+  overflow: hidden;
+  color: #dce5df;
+  font-size: 9.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.typeface-control small {
+  overflow: hidden;
+  color: #7f8d84;
+  font-size: 7.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.typeface-sample {
+  display: grid;
+  width: 35px;
+  height: 32px;
+  place-items: center;
+  border: 1px solid #3a4940;
+  background: #edf0ed;
+  color: #1d2922;
+  font-size: 15px;
+  line-height: 1;
+}
+
+.typeface-sample.sample-template { font-family: Arial, Helvetica, sans-serif; }
+.typeface-sample.sample-modern-sans { font-family: "Inter Variable", Inter, Arial, sans-serif; font-weight: 650; }
+.typeface-sample.sample-editorial-serif { font-family: Georgia, "Times New Roman", serif; }
+.typeface-sample.sample-technical-mono { font-family: var(--mono); font-size: 13px; font-weight: 700; }
+
+.resume-sheet.typeface-modern-sans,
+.resume-sheet.typeface-modern-sans * {
+  font-family: "Inter Variable", Inter, Arial, Helvetica, sans-serif !important;
+}
+
+.resume-sheet.typeface-editorial-serif,
+.resume-sheet.typeface-editorial-serif * {
+  font-family: Georgia, "Times New Roman", Times, serif !important;
+}
+
+.resume-sheet.typeface-technical-mono,
+.resume-sheet.typeface-technical-mono * {
+  font-family: "JetBrains Mono Variable", "JetBrains Mono", "Cascadia Code", Consolas, monospace !important;
+}
+
+@media (max-width: 560px) {
+  .typeface-control { grid-template-columns: 1fr; }
+}

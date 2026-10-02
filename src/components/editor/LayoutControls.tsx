@@ -1,12 +1,15 @@
-import { Gauge, LayoutGrid, Palette, Rows3, Sparkles } from 'lucide-react';
+import { Gauge, LayoutGrid, Palette, Rows3, Sparkles, Type } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import {
   applyResumePalette,
   applyResumeStylePreset,
+  applyResumeTypeface,
   profilePalette,
   profileStylePreset,
+  profileTypeface,
   RESUME_PALETTES,
   RESUME_STYLE_PRESETS,
+  RESUME_TYPEFACES,
 } from '../../domain/resumeLayout';
 import type {
   NarrativeLayout,
@@ -14,6 +17,7 @@ import type {
   ResumePalette,
   ResumeProfile,
   ResumeStylePresetId,
+  ResumeTypeface,
   SkillsLayout,
 } from '../../types/resume';
 
@@ -43,7 +47,12 @@ const DENSITY_OPTIONS: Array<{ id: ResumeDensity; label: string }> = [
 
 export function LayoutControls({ profile, onProfile }: LayoutControlsProps) {
   const palette = profilePalette(profile);
+  const typeface = profileTypeface(profile);
   const stylePreset = profileStylePreset(profile);
+  const visualLabel = palette === 'template' && typeface === 'template'
+    ? 'Padrão do modelo'
+    : `${paletteLabel(palette)} · ${typefaceLabel(typeface)}`;
+  const customSummary = `${densityLabel(profile.layout.density)} · ${visualLabel}`;
   const patchLayout = (patch: Partial<ResumeProfile['layout']>) => {
     onProfile({ ...profile, layout: { ...profile.layout, ...patch } });
   };
@@ -52,7 +61,9 @@ export function LayoutControls({ profile, onProfile }: LayoutControlsProps) {
     <details className="layout-controls">
       <summary>
         <span><LayoutGrid size={15} /> Formatação do documento</span>
-        <small>{stylePreset ? stylePresetLabel(stylePreset) : `${densityLabel(profile.layout.density)} · ${paletteLabel(palette)}`}</small>
+        <small title={stylePreset ? stylePresetLabel(stylePreset) : customSummary}>
+          {stylePreset ? stylePresetLabel(stylePreset) : customSummary}
+        </small>
       </summary>
       <div className="layout-control-grid">
         <ControlGroup label="Aparências prontas" icon={Sparkles}>
@@ -63,6 +74,9 @@ export function LayoutControls({ profile, onProfile }: LayoutControlsProps) {
         </ControlGroup>
         <ControlGroup label="Paleta" icon={Palette}>
           <PaletteControl value={palette} onChange={(value) => onProfile(applyResumePalette(profile, value))} />
+        </ControlGroup>
+        <ControlGroup label="Tipografia" icon={Type}>
+          <TypefaceControl value={typeface} onChange={(value) => onProfile(applyResumeTypeface(profile, value))} />
         </ControlGroup>
         <ControlGroup label="Competências" icon={LayoutGrid}>
           <Segmented
@@ -126,6 +140,29 @@ export function LayoutControls({ profile, onProfile }: LayoutControlsProps) {
         </div>
       ) : null}
     </details>
+  );
+}
+
+function TypefaceControl({ value, onChange }: { value: ResumeTypeface; onChange: (value: ResumeTypeface) => void }) {
+  return (
+    <div className="typeface-control">
+      {RESUME_TYPEFACES.map((option) => (
+        <button
+          key={option.id}
+          type="button"
+          aria-label={`${option.label}: ${option.description}`}
+          aria-pressed={value === option.id}
+          title={option.description}
+          onClick={() => onChange(option.id)}
+        >
+          <span className={`typeface-sample sample-${option.id}`} aria-hidden="true">{option.sample}</span>
+          <span>
+            <strong>{option.label}</strong>
+            <small>{option.description}</small>
+          </span>
+        </button>
+      ))}
+    </div>
   );
 }
 
@@ -246,6 +283,10 @@ function densityLabel(value: ResumeDensity): string {
 
 function paletteLabel(value: ResumePalette): string {
   return RESUME_PALETTES.find((option) => option.id === value)?.label ?? value;
+}
+
+function typefaceLabel(value: ResumeTypeface): string {
+  return RESUME_TYPEFACES.find((option) => option.id === value)?.label ?? value;
 }
 
 function stylePresetLabel(value: ResumeStylePresetId): string {

@@ -1,5 +1,5 @@
 import type { ResumeProfile, ResumeTemplate } from '../../types/resume';
-import { profilePalette } from '../../domain/resumeLayout';
+import { profilePalette, profileTypeface } from '../../domain/resumeLayout';
 import { InlineEditable } from '../common/InlineEditable';
 import { ResumeSectionRenderer } from './ResumeSectionRenderer';
 
@@ -21,7 +21,7 @@ export function ResumePreview({ profile, template, onProfile }: ResumePreviewPro
 
   return (
     <article
-      className={`resume-sheet template-${template} palette-${profilePalette(profile)} density-${profile.layout.density} ${profile.layout.emphasize_metrics ? 'emphasize-metrics' : ''}`}
+      className={`resume-sheet template-${template} palette-${profilePalette(profile)} typeface-${profileTypeface(profile)} density-${profile.layout.density} ${profile.layout.emphasize_metrics ? 'emphasize-metrics' : ''}`}
       aria-label="Pré-visualização A4 editável"
     >
       <header className="resume-header">
