@@ -8,7 +8,7 @@ Editor desktop e compilador headless, local-first, para criar currículos legív
 - Cinco arquétipos nativos: frontend, full stack Node.js, full stack .NET, tech lead e internacional em inglês.
 - Matcher ATS determinístico, com requisitos obrigatórios ponderados e indicação dos termos atendidos/ausentes.
 - Tailoring conservador: reordena apenas evidências existentes e nunca fabrica experiências, tecnologias ou métricas.
-- Oito layouts em uma galeria visual comparativa: **Classic Reoli**, Tech Minimalist, Modern Split, Executive Bold, Academic, Clean Slate, Compact Linear e Executive Accent.
+- Oito layouts em uma galeria visual comparativa: **Classic Reoli**, Tech Minimalist, Modern Split, Executive Bold, Academic, Clean Slate, Compact Linear e Executive Accent; a escolha acompanha a variante JSON salva.
 - Histórico local com desfazer/refazer, atalhos seguros e confirmação antes de substituir um trabalho em edição.
 - Experiências e projetos em fichas recolhíveis, com progresso de preenchimento e contagem de evidências sem alongar toda a área de trabalho.
 - Ordem livre, ocultação e blocos opcionais para projetos, voluntariado, cursos, publicações, prêmios e conteúdo personalizado.
@@ -38,7 +38,7 @@ O arquivo é distribuído sem sidecars. A GUI usa o Microsoft Edge WebView2 inst
 3. Expanda somente a experiência ou projeto em edição; mova, duplique ou remova fichas para priorizar evidências e altere os campos à esquerda, no modal de foco ou diretamente sobre a página A4. Use `Ctrl+Z` e `Ctrl+Y` fora dos campos para navegar pelo histórico.
 4. Cole a descrição completa da vaga para calcular obrigatórios, desejáveis, senioridade, forças e lacunas.
 5. Use **Criar versão adaptada** para priorizar fatos já presentes no perfil.
-6. Salve a versão editável com `Ctrl+S` (JSON); o cabeçalho e a barra de status indicam alterações pendentes, e o nome sugerido usa a pessoa do perfil. Depois, revise a auditoria ATS e exporte com `Ctrl+P` (PDF), `Ctrl+D` (DOCX) ou `Ctrl+M` (Markdown).
+6. Salve a versão editável com `Ctrl+S` (JSON); conteúdo, estrutura e template serão restaurados na importação. O cabeçalho e a barra de status indicam alterações pendentes, e o nome sugerido usa a pessoa do perfil. Depois, revise a auditoria ATS e exporte com `Ctrl+P` (PDF), `Ctrl+D` (DOCX) ou `Ctrl+M` (Markdown).
 
 Em telas abaixo de 1040 px, use a alternância **Editor / Preview** para preservar a legibilidade do documento.
 

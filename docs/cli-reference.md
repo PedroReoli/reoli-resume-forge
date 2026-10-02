@@ -5,7 +5,7 @@
 - Saída de sucesso: JSON em `stdout`.
 - Erro: mensagem em `stderr` e código de saída `2`.
 - `--format` aceita uma lista separada por vírgulas: `pdf,docx,json,md`.
-- `--template` aceita os oito IDs da tabela abaixo; o padrão é `classic`.
+- `--template` aceita os oito IDs da tabela abaixo. Quando omitido, a CLI usa `config.template` do perfil e, para perfis antigos sem esse campo, `classic`.
 - `--out` aponta para um diretório. Ele é criado quando necessário.
 - Entradas locais são limitadas a 1 MiB.
 
@@ -26,7 +26,7 @@ Gera o arquétipo sem tailoring.
 reoli-cv.exe generate --model 01_frontend --template clean --format pdf,docx --out .\dist
 ```
 
-Opções obrigatórias: `--model`, `--out`. O formato padrão é `pdf` e o template padrão é `classic`.
+Opções obrigatórias: `--model`, `--out`. O formato padrão é `pdf`; os arquétipos nativos sem template explícito usam `classic`.
 
 ## `tailor`
 
@@ -58,6 +58,8 @@ reoli-cv.exe batch --jobs .\examples\jobs.json --model 02_fullstack_node --templ
 ```
 
 Cada item aceita `company`, `job_title`, `job_description`, `base_model`, `profile`, `template` e `confirmed_us_overlap`. Um perfil embutido no item tem precedência sobre o modelo; um template no item tem precedência sobre `--template`.
+
+A resolução do modelo visual segue esta ordem: `template` da vaga no lote, `--template`, `config.template` do perfil e, por último, `classic`.
 
 ## Templates
 

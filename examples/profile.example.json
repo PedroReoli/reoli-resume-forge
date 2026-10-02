@@ -1,5 +1,6 @@
 {
   "config": {
+    "template": "tech-minimalist",
     "tech_label": "Tecnologias",
     "section_names": {
       "summary": "Resumo Profissional",
