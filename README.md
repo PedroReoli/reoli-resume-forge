@@ -61,6 +61,7 @@ O core Rust não depende do React. GUI e CLI chamam as mesmas funções de anál
 - [Arquitetura](docs/architecture.md)
 - [Algoritmo ATS](docs/ats-algorithm.md)
 - [SOP de build e release](docs/build-release-sop.md)
+- [Assets e fontes](docs/assets.md)
 - [Como contribuir](docs/contributing.md)
 - [Roadmap público](TODO.md)
 
