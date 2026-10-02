@@ -25,6 +25,8 @@
 - [x] Auditoria ATS de extensão, resumo, bullets, links, seções essenciais e risco do layout.
 - [x] Localização estrutural PT-BR, EN-US e ES-ES sem adulterar texto profissional.
 - [x] Paridade de ordem e visibilidade em PDF, DOCX e Markdown.
+- [x] Galeria visual comparativa com indicação de leitura ATS por template.
+- [x] Histórico local de edição com desfazer/refazer e proteção contra substituição acidental.
 
 ## Próximos ciclos
 
