@@ -44,9 +44,16 @@ export function App() {
 
   useEffect(() => {
     const shortcuts = (event: KeyboardEvent) => {
-      if (!event.ctrlKey || event.altKey || event.shiftKey) return;
+      if ((!event.ctrlKey && !event.metaKey) || event.altKey) return;
       const key = event.key.toLowerCase();
-      if (!['p', 'd', 'm'].includes(key)) return;
+      const editable = isEditableTarget(event.target);
+      if (!editable && (key === 'z' || key === 'y')) {
+        event.preventDefault();
+        if (key === 'y' || event.shiftKey) workspace.redoProfile();
+        else workspace.undoProfile();
+        return;
+      }
+      if (event.shiftKey || !['p', 'd', 'm'].includes(key)) return;
       event.preventDefault();
       if (key === 'p') void exportFile('pdf');
       if (key === 'd') void exportFile('docx');
@@ -54,7 +61,7 @@ export function App() {
     };
     window.addEventListener('keydown', shortcuts);
     return () => window.removeEventListener('keydown', shortcuts);
-  }, [copyMarkdown, exportFile]);
+  }, [copyMarkdown, exportFile, workspace.redoProfile, workspace.undoProfile]);
 
   const importJson = async (file: File | undefined) => {
     if (!file) return;
@@ -72,7 +79,14 @@ export function App() {
 
   return (
     <main className="app-shell">
-      <AppHeader onImport={() => fileInput.current?.click()} onNew={workspace.newProfile} />
+      <AppHeader
+        canUndo={workspace.canUndo}
+        canRedo={workspace.canRedo}
+        onUndo={workspace.undoProfile}
+        onRedo={workspace.redoProfile}
+        onImport={() => fileInput.current?.click()}
+        onNew={workspace.newProfile}
+      />
       <input
         ref={fileInput}
         className="visually-hidden"
@@ -158,4 +172,9 @@ export function App() {
 
 function messageOf(reason: unknown): string {
   return reason instanceof Error ? reason.message : String(reason);
+}
+
+function isEditableTarget(target: EventTarget | null): boolean {
+  return target instanceof HTMLElement
+    && (target.matches('input, textarea, select') || target.isContentEditable);
 }

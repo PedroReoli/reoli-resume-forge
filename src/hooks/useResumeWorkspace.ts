@@ -15,14 +15,23 @@ import type {
   ResumeLocale,
   ResumeTemplate,
 } from '../types/resume';
+import { useProfileHistory } from './useProfileHistory';
 
 const INITIAL_ARCHETYPE = '01_frontend';
 
 export function useResumeWorkspace() {
+  const initialProfile = useMemo(() => createBlankProfile(), []);
   const [archetypes, setArchetypes] = useState<ArchetypeMetadata[]>(fallbackArchetypes);
   const [archetypeId, setArchetypeId] = useState(INITIAL_ARCHETYPE);
-  const [profile, setProfile] = useState<ResumeProfile>(() => createBlankProfile());
-  const [locale, setLocale] = useState<ResumeLocale>('pt-BR');
+  const {
+    profile,
+    setProfile,
+    replaceProfile,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+  } = useProfileHistory(initialProfile);
   const [jobDescription, setJobDescription] = useState('');
   const [report, setReport] = useState<MatchReport | null>(null);
   const [template, setTemplate] = useState<ResumeTemplate>('classic');
@@ -40,15 +49,14 @@ export function useResumeWorkspace() {
       .then(([items, loaded]) => {
         if (!active) return;
         setArchetypes(items);
-        setProfile(loaded);
-        setLocale((loaded.config.locale as ResumeLocale | undefined) ?? 'pt-BR');
+        replaceProfile(loaded);
       })
       .catch((reason: unknown) => active && setError(messageOf(reason)))
       .finally(() => active && setBusy(false));
     return () => {
       active = false;
     };
-  }, []);
+  }, [replaceProfile]);
 
   useEffect(() => {
     if (jobDescription.trim().length < 20) {
@@ -64,45 +72,46 @@ export function useResumeWorkspace() {
   }, [jobDescription, profile]);
 
   const selectArchetype = useCallback(async (id: string) => {
+    if (canUndo && !window.confirm('Trocar de arquétipo descarta o histórico de edição atual. Continuar?')) return;
     setBusy(true);
     setError(null);
     try {
-      setProfile(await loadArchetype(id));
+      replaceProfile(await loadArchetype(id));
       setArchetypeId(id);
-      const nextLocale = archetypes.find((item) => item.id === id)?.locale;
-      setLocale(nextLocale?.startsWith('en') ? 'en-US' : 'pt-BR');
     } catch (reason) {
       setError(messageOf(reason));
     } finally {
       setBusy(false);
     }
-  }, [archetypes]);
+  }, [canUndo, replaceProfile]);
 
   const selectLocale = useCallback(
     async (nextLocale: string) => {
       const normalized = nextLocale === 'en-US' || nextLocale === 'es-ES' ? nextLocale : 'pt-BR';
       setProfile((current) => localizeProfile(current, normalized));
-      setLocale(normalized);
       setArchetypeId('custom');
     },
     [],
   );
 
+  const locale = (profile.config.locale as ResumeLocale | undefined) ?? 'pt-BR';
+
   const newProfile = useCallback(() => {
-    setProfile(createBlankProfile(locale));
+    if (canUndo && !window.confirm('Criar um novo perfil descarta o histórico de edição atual. Continuar?')) return;
+    replaceProfile(createBlankProfile(locale));
     setArchetypeId('custom');
     setJobDescription('');
     setReport(null);
-  }, [locale]);
+  }, [canUndo, locale, replaceProfile]);
 
   const importProfile = useCallback((next: ResumeProfile) => {
+    if (canUndo && !window.confirm('Importar outro perfil descarta o histórico de edição atual. Continuar?')) return;
     const normalized = normalizeResumeProfile(next);
     assertProfile(normalized);
-    setProfile(normalized);
-    setLocale((normalized.config.locale as ResumeLocale | undefined) ?? 'pt-BR');
+    replaceProfile(normalized);
     setArchetypeId('custom');
     setReport(null);
-  }, []);
+  }, [canUndo, replaceProfile]);
 
   const applyTailoring = useCallback(async () => {
     if (jobDescription.trim().length < 20) {
@@ -124,6 +133,10 @@ export function useResumeWorkspace() {
     archetypeId,
     profile,
     setProfile,
+    undoProfile: undo,
+    redoProfile: redo,
+    canUndo,
+    canRedo,
     jobDescription,
     setJobDescription,
     report,

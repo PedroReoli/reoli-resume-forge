@@ -1,3 +1,26 @@
+.history-actions {
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--line);
+  background: #0d1310;
+}
+
+.history-actions button {
+  display: grid;
+  width: 29px;
+  height: 28px;
+  padding: 0;
+  place-content: center;
+  border: 0;
+  background: transparent;
+  color: #aeb8b2;
+}
+
+.history-actions button:hover:not(:disabled) {
+  background: #1a251e;
+  color: var(--accent-bright);
+}
+
 .dialog-backdrop {
   position: fixed;
   z-index: 50;
