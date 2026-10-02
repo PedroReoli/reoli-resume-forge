@@ -107,5 +107,5 @@ export interface TailorResult {
   }>;
 }
 
-export type ResumeTemplate = 'clean' | 'compact';
+export type ResumeTemplate = 'clean' | 'compact' | 'executive';
 export type ExportFormat = 'pdf' | 'docx' | 'json' | 'markdown';

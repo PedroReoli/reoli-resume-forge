@@ -10,6 +10,7 @@ import type {
   ExportFormat,
   MatchReport,
   ResumeProfile,
+  ResumeTemplate,
   TailorResult,
 } from '../types/resume';
 
@@ -68,7 +69,11 @@ export async function tailorProfile(
   };
 }
 
-export async function exportResume(profile: ResumeProfile, format: ExportFormat): Promise<string | null> {
+export async function exportResume(
+  profile: ResumeProfile,
+  format: ExportFormat,
+  template: ResumeTemplate,
+): Promise<string | null> {
   if (!isDesktop()) {
     if (format === 'json' || format === 'markdown') {
       const text = format === 'json' ? JSON.stringify(profile, null, 2) : browserMarkdown(profile);
@@ -84,7 +89,7 @@ export async function exportResume(profile: ResumeProfile, format: ExportFormat)
     filters: [{ name: extension.toUpperCase(), extensions: [extension] }],
   });
   if (!path) return null;
-  return invoke('export_resume', { profile, format, path });
+  return invoke('export_resume', { profile, format, template, path });
 }
 
 export async function resumeToMarkdown(profile: ResumeProfile): Promise<string> {

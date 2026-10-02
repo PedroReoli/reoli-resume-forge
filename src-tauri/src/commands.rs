@@ -1,4 +1,4 @@
-use crate::core::export::{self, ExportFormat};
+use crate::core::export::{self, ExportFormat, ResumeTemplate};
 use crate::core::{
     ArchetypeMetadata, MatchReport, ResumeProfile, TailorResult, analyze,
     list_archetypes as catalog, load_archetype as load, tailor,
@@ -40,8 +40,12 @@ pub fn tailor_profile(
 }
 
 #[tauri::command]
-pub fn render_pdf_preview(profile: ResumeProfile) -> Result<String, String> {
-    let bytes = export::render(&profile, ExportFormat::Pdf)?;
+pub fn render_pdf_preview(
+    profile: ResumeProfile,
+    template: Option<String>,
+) -> Result<String, String> {
+    let template = parse_template(template.as_deref())?;
+    let bytes = export::render_with_template(&profile, ExportFormat::Pdf, template)?;
     Ok(base64::engine::general_purpose::STANDARD.encode(bytes))
 }
 
@@ -49,11 +53,19 @@ pub fn render_pdf_preview(profile: ResumeProfile) -> Result<String, String> {
 pub fn export_resume(
     profile: ResumeProfile,
     format: String,
+    template: Option<String>,
     path: String,
 ) -> Result<String, String> {
     let format = ExportFormat::parse(&format)?;
-    export::write(&profile, format, Path::new(&path))?;
+    let template = parse_template(template.as_deref())?;
+    export::write_with_template(&profile, format, Path::new(&path), template)?;
     Ok(path)
+}
+
+fn parse_template(value: Option<&str>) -> Result<ResumeTemplate, String> {
+    value
+        .map(ResumeTemplate::parse)
+        .unwrap_or(Ok(ResumeTemplate::Clean))
 }
 
 #[tauri::command]

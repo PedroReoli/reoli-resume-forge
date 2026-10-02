@@ -141,11 +141,45 @@
 
 .template-compact {
   padding: 42px 48px;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
+.template-compact .resume-header { grid-template-columns: 1fr; gap: 12px; margin-bottom: 16px; }
+.template-compact .resume-contact { display: flex; flex-wrap: wrap; gap: 3px 14px; padding-top: 0; }
 .template-compact .resume-section { margin-top: 15px; }
 .template-compact .resume-section > h2 { font-family: var(--mono); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; }
 .template-compact .resume-records { gap: 10px; }
+
+.template-executive {
+  padding: 0 54px 58px;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.template-executive .resume-header {
+  position: relative;
+  left: -54px;
+  width: calc(100% + 108px);
+  padding: 42px 54px 30px;
+  color: #f7fbf8;
+  background: #17352d;
+  border-bottom: 6px solid #8fb49f;
+}
+
+.template-executive .resume-contact { color: #d7e5dc; }
+.template-executive .resume-headline { color: #bcd2c5; }
+.template-executive .resume-section { margin-top: 24px; }
+.template-executive .resume-section > h2 {
+  padding: 0 0 5px 10px;
+  border-bottom-color: #b5c8bd;
+  border-left: 4px solid #537b68;
+  color: #17352d;
+  font-size: 14px;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+}
+
+.template-executive .resume-company { color: #17352d; }
+.template-executive .resume-role { color: #537064; font-style: normal; }
 
 @media print {
   body { overflow: visible; background: white; }

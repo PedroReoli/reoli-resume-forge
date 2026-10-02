@@ -1,4 +1,4 @@
-use crate::core::export::{self, ExportFormat};
+use crate::core::export::{self, ExportFormat, ResumeTemplate};
 use crate::core::{ResumeProfile, load_archetype, tailor};
 use serde::Deserialize;
 use serde_json::{Value, json};
@@ -27,6 +27,8 @@ struct BatchJob {
     profile: Option<ResumeProfile>,
     #[serde(default, alias = "confirmedUsOverlap")]
     confirmed_us_overlap: bool,
+    #[serde(default)]
+    template: String,
 }
 
 pub fn is_ui_request(args: &[String]) -> bool {
@@ -58,8 +60,9 @@ fn generate(options: &HashMap<String, String>) -> Result<(), String> {
     let model = required(options, "model")?;
     let profile = load_archetype(model)?;
     let formats = formats(options)?;
+    let template = template(options)?;
     let output = output_directory(options)?;
-    let files = write_all(&profile, &formats, &output, None)?;
+    let files = write_all(&profile, &formats, &output, None, template)?;
     print_success("generate", files);
     Ok(())
 }
@@ -75,8 +78,9 @@ fn tailor_one(options: &HashMap<String, String>) -> Result<(), String> {
         parse_bool(options.get("confirmed-us-overlap"))?,
     )?;
     let formats = formats(options)?;
+    let template = template(options)?;
     let output = output_directory(options)?;
-    let files = write_all(&result.profile, &formats, &output, None)?;
+    let files = write_all(&result.profile, &formats, &output, None, template)?;
     println!(
         "{}",
         serde_json::to_string_pretty(&json!({
@@ -105,6 +109,7 @@ fn batch(options: &HashMap<String, String>) -> Result<(), String> {
         .cloned()
         .unwrap_or_else(|| "01_frontend".into());
     let formats = formats(options)?;
+    let default_template = template(options)?;
     let output = output_directory(options)?;
     let mut results = Vec::with_capacity(jobs.len());
 
@@ -128,7 +133,18 @@ fn batch(options: &HashMap<String, String>) -> Result<(), String> {
             job.confirmed_us_overlap,
         )?;
         let suffix = safe_suffix(&format!("{} {}", job.company, job.job_title));
-        let files = write_all(&tailored.profile, &formats, &output, Some(&suffix))?;
+        let job_template = if job.template.trim().is_empty() {
+            default_template
+        } else {
+            ResumeTemplate::parse(&job.template)?
+        };
+        let files = write_all(
+            &tailored.profile,
+            &formats,
+            &output,
+            Some(&suffix),
+            job_template,
+        )?;
         results.push(json!({
             "index": index + 1,
             "company": job.company,
@@ -215,6 +231,13 @@ fn formats(options: &HashMap<String, String>) -> Result<Vec<ExportFormat>, Strin
     Ok(result)
 }
 
+fn template(options: &HashMap<String, String>) -> Result<ResumeTemplate, String> {
+    options
+        .get("template")
+        .map(|value| ResumeTemplate::parse(value))
+        .unwrap_or(Ok(ResumeTemplate::Clean))
+}
+
 fn output_directory(options: &HashMap<String, String>) -> Result<PathBuf, String> {
     let path = PathBuf::from(required(options, "out")?);
     fs::create_dir_all(&path)
@@ -228,6 +251,7 @@ fn write_all(
     formats: &[ExportFormat],
     output: &Path,
     suffix: Option<&str>,
+    template: ResumeTemplate,
 ) -> Result<Vec<String>, String> {
     let base = export::safe_basename(profile);
     let suffix = suffix.filter(|value| !value.is_empty());
@@ -238,7 +262,7 @@ fn write_all(
             None => format!("{base}.{}", format.extension()),
         };
         let path = output.join(filename);
-        export::write(profile, *format, &path)?;
+        export::write_with_template(profile, *format, &path, template)?;
         files.push(path.display().to_string());
     }
     Ok(files)
@@ -324,10 +348,11 @@ fn print_success(command: &str, files: Vec<String>) {
 fn print_help() {
     println!(
         "Reoli Resume Forge v{}\n\n\
-Uso:\n  reoli-cv.exe ui\n  reoli-cv.exe generate --model ID --format pdf,docx --out DIRETORIO\n  \
-reoli-cv.exe tailor --job VAGA.json [--profile PERFIL.json | --model ID] --format pdf,docx --out DIRETORIO\n  \
-reoli-cv.exe batch --jobs VAGAS.json [--model ID] --format pdf --out DIRETORIO\n\n\
+Uso:\n  reoli-cv.exe ui\n  reoli-cv.exe generate --model ID --template clean --format pdf,docx --out DIRETORIO\n  \
+reoli-cv.exe tailor --job VAGA.json [--profile PERFIL.json | --model ID] [--template compact] --format pdf,docx --out DIRETORIO\n  \
+reoli-cv.exe batch --jobs VAGAS.json [--model ID] [--template executive] --format pdf --out DIRETORIO\n\n\
 Modelos: 01_frontend, 02_fullstack_node, 03_fullstack_dotnet, 04_tech_lead, 05_internacional_en\n\
+Templates: clean, compact, executive\n\
 Formatos: pdf, docx, json, md",
         env!("CARGO_PKG_VERSION")
     );
@@ -356,5 +381,13 @@ mod tests {
     #[test]
     fn sanitizes_batch_filename_suffix() {
         assert_eq!(safe_suffix("ACME / Senior React"), "acme_senior_react");
+    }
+
+    #[test]
+    fn parses_the_three_templates() {
+        for name in ["clean", "compact", "executive"] {
+            let options = HashMap::from([("template".into(), name.into())]);
+            assert!(template(&options).is_ok());
+        }
     }
 }

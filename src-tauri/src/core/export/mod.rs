@@ -9,6 +9,28 @@ use std::path::Path;
 
 pub use markdown::to_markdown;
 
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum ResumeTemplate {
+    #[default]
+    Clean,
+    Compact,
+    Executive,
+}
+
+impl ResumeTemplate {
+    pub fn parse(value: &str) -> Result<Self, String> {
+        match value.trim().to_ascii_lowercase().as_str() {
+            "clean" | "clean-slate" => Ok(Self::Clean),
+            "compact" | "compact-linear" => Ok(Self::Compact),
+            "executive" | "executive-accent" => Ok(Self::Executive),
+            other => Err(format!(
+                "template desconhecido: {other}. Use clean, compact ou executive"
+            )),
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "lowercase")]
 pub enum ExportFormat {
@@ -40,18 +62,35 @@ impl ExportFormat {
 }
 
 pub fn render(profile: &ResumeProfile, format: ExportFormat) -> Result<Vec<u8>, String> {
+    render_with_template(profile, format, ResumeTemplate::Clean)
+}
+
+pub fn render_with_template(
+    profile: &ResumeProfile,
+    format: ExportFormat,
+    template: ResumeTemplate,
+) -> Result<Vec<u8>, String> {
     profile.validate()?;
     match format {
-        ExportFormat::Pdf => pdf::render(profile),
-        ExportFormat::Docx => docx::render(profile),
+        ExportFormat::Pdf => pdf::render_with_template(profile, template),
+        ExportFormat::Docx => docx::render_with_template(profile, template),
         ExportFormat::Json => serde_json::to_vec_pretty(profile).map_err(|error| error.to_string()),
         ExportFormat::Markdown => Ok(markdown::to_markdown(profile).into_bytes()),
     }
 }
 
 pub fn write(profile: &ResumeProfile, format: ExportFormat, path: &Path) -> Result<(), String> {
+    write_with_template(profile, format, path, ResumeTemplate::Clean)
+}
+
+pub fn write_with_template(
+    profile: &ResumeProfile,
+    format: ExportFormat,
+    path: &Path,
+    template: ResumeTemplate,
+) -> Result<(), String> {
     validate_output_path(path, format)?;
-    let bytes = render(profile, format)?;
+    let bytes = render_with_template(profile, format, template)?;
     std::fs::write(path, bytes)
         .map_err(|error| format!("falha ao gravar {}: {error}", path.display()))
 }
@@ -123,6 +162,27 @@ mod tests {
             ExportFormat::Markdown,
         ] {
             assert!(!render(&profile, format).unwrap().is_empty());
+        }
+    }
+
+    #[test]
+    fn accepts_the_three_public_templates() {
+        let profile = load_archetype("01_frontend").unwrap();
+        for template in [
+            ResumeTemplate::Clean,
+            ResumeTemplate::Compact,
+            ResumeTemplate::Executive,
+        ] {
+            assert!(
+                !render_with_template(&profile, ExportFormat::Pdf, template)
+                    .unwrap()
+                    .is_empty()
+            );
+            assert!(
+                !render_with_template(&profile, ExportFormat::Docx, template)
+                    .unwrap()
+                    .is_empty()
+            );
         }
     }
 }

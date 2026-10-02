@@ -1,48 +1,59 @@
 use super::super::model::ResumeProfile;
+use super::ResumeTemplate;
 use printpdf::{
-    BuiltinFont, Color, Line, LinePoint, Mm, Op, PdfDocument, PdfFontHandle, PdfPage,
-    PdfSaveOptions, Point, Pt, Rgb, TextItem,
+    Actions, BorderArray, BuiltinFont, Color, ColorArray, HighlightingMode, Line, LinePoint,
+    LinkAnnotation, Mm, Op, PdfDocument, PdfFontHandle, PdfPage, PdfSaveOptions, Point, Pt, Rect,
+    Rgb, TextItem,
 };
 
 const PAGE_WIDTH: f32 = 210.0;
 const PAGE_HEIGHT: f32 = 297.0;
-const MARGIN_X: f32 = 16.0;
-const TOP_Y: f32 = 282.0;
-const BOTTOM_Y: f32 = 15.0;
-const CONTENT_WIDTH: f32 = PAGE_WIDTH - (MARGIN_X * 2.0);
 
-pub fn render(profile: &ResumeProfile) -> Result<Vec<u8>, String> {
-    let mut writer = PdfWriter::new();
-    writer.text(&profile.person.name, 20.0, true, 7.2, MARGIN_X, None);
-    writer.text(&profile.headline, 10.5, true, 4.8, MARGIN_X, None);
+pub fn render_with_template(
+    profile: &ResumeProfile,
+    template: ResumeTemplate,
+) -> Result<Vec<u8>, String> {
+    let theme = PdfTheme::for_template(template);
+    let mut writer = PdfWriter::new(theme);
+    writer.text(
+        &profile.person.name,
+        theme.name_size,
+        true,
+        theme.name_line_height,
+        theme.margin_x,
+        None,
+    );
+    writer.text(
+        &profile.headline,
+        theme.headline_size,
+        true,
+        theme.headline_line_height,
+        theme.margin_x,
+        None,
+    );
     writer.text(
         &join_non_empty([&profile.person.location, &profile.person.work_preference]),
-        8.4,
+        theme.meta_size,
         false,
-        3.7,
-        MARGIN_X,
+        theme.meta_line_height,
+        theme.margin_x,
         None,
     );
     writer.text(
         &join_non_empty([&profile.person.phone, &profile.person.email]),
-        8.4,
+        theme.meta_size,
         false,
-        3.7,
-        MARGIN_X,
+        theme.meta_line_height,
+        theme.margin_x,
         None,
     );
-    writer.text(
-        &join_non_empty([
-            &profile.person.linkedin,
-            &profile.person.portfolio,
-            &profile.person.github,
-        ]),
-        8.0,
-        false,
-        3.7,
-        MARGIN_X,
-        None,
-    );
+    for link in [
+        &profile.person.linkedin,
+        &profile.person.portfolio,
+        &profile.person.github,
+    ] {
+        writer.link(link, link);
+    }
 
     writer.section(profile.section_name("summary", "Resumo Profissional"));
     writer.paragraph(&profile.summary);
@@ -67,18 +78,32 @@ pub fn render(profile: &ResumeProfile) -> Result<Vec<u8>, String> {
 
     writer.section(profile.section_name("experience", "Experiência Profissional"));
     for experience in &profile.experience {
-        writer.text(&experience.company, 10.0, true, 4.3, MARGIN_X, Some(3.0));
-        writer.text(&experience.role, 9.3, true, 4.0, MARGIN_X, None);
+        writer.text(
+            &experience.company,
+            theme.company_size,
+            true,
+            theme.company_line_height,
+            theme.margin_x,
+            Some(theme.record_spacing),
+        );
+        writer.text(
+            &experience.role,
+            theme.role_size,
+            true,
+            theme.role_line_height,
+            theme.margin_x,
+            None,
+        );
         writer.text(
             &join_non_empty([
                 &experience.dates,
                 &experience.location,
                 &experience.work_mode,
             ]),
-            8.2,
+            theme.meta_size,
             false,
-            3.7,
-            MARGIN_X,
+            theme.meta_line_height,
+            theme.margin_x,
             None,
         );
         writer.paragraph(&experience.summary);
@@ -98,7 +123,14 @@ pub fn render(profile: &ResumeProfile) -> Result<Vec<u8>, String> {
     if !profile.projects.is_empty() {
         writer.section(profile.section_name("projects", "Projetos"));
         for project in &profile.projects {
-            writer.text(&project.name, 10.0, true, 4.3, MARGIN_X, Some(2.0));
+            writer.text(
+                &project.name,
+                theme.company_size,
+                true,
+                theme.company_line_height,
+                theme.margin_x,
+                Some(theme.record_spacing),
+            );
             writer.paragraph(&project.description);
             for metric in &project.metrics {
                 writer.bullet(metric);
@@ -131,46 +163,170 @@ pub fn render(profile: &ResumeProfile) -> Result<Vec<u8>, String> {
     Ok(writer.finish(&profile.person.name))
 }
 
+#[derive(Clone, Copy)]
+struct PdfTheme {
+    margin_x: f32,
+    top_y: f32,
+    bottom_y: f32,
+    name_size: f32,
+    name_line_height: f32,
+    headline_size: f32,
+    headline_line_height: f32,
+    meta_size: f32,
+    meta_line_height: f32,
+    body_size: f32,
+    body_line_height: f32,
+    section_size: f32,
+    section_line_height: f32,
+    section_spacing: f32,
+    company_size: f32,
+    company_line_height: f32,
+    role_size: f32,
+    role_line_height: f32,
+    record_spacing: f32,
+    accent: (f32, f32, f32),
+}
+
+impl PdfTheme {
+    fn for_template(template: ResumeTemplate) -> Self {
+        match template {
+            ResumeTemplate::Clean => Self {
+                margin_x: 16.0,
+                top_y: 282.0,
+                bottom_y: 15.0,
+                name_size: 20.0,
+                name_line_height: 7.2,
+                headline_size: 10.5,
+                headline_line_height: 4.8,
+                meta_size: 8.4,
+                meta_line_height: 3.7,
+                body_size: 9.2,
+                body_line_height: 4.1,
+                section_size: 10.5,
+                section_line_height: 4.8,
+                section_spacing: 3.0,
+                company_size: 10.0,
+                company_line_height: 4.3,
+                role_size: 9.3,
+                role_line_height: 4.0,
+                record_spacing: 3.0,
+                accent: (0.12, 0.24, 0.32),
+            },
+            ResumeTemplate::Compact => Self {
+                margin_x: 14.0,
+                top_y: 284.0,
+                bottom_y: 13.0,
+                name_size: 18.0,
+                name_line_height: 6.1,
+                headline_size: 9.8,
+                headline_line_height: 4.2,
+                meta_size: 7.9,
+                meta_line_height: 3.35,
+                body_size: 8.6,
+                body_line_height: 3.65,
+                section_size: 9.3,
+                section_line_height: 4.0,
+                section_spacing: 1.8,
+                company_size: 9.4,
+                company_line_height: 3.85,
+                role_size: 8.8,
+                role_line_height: 3.6,
+                record_spacing: 1.8,
+                accent: (0.16, 0.18, 0.20),
+            },
+            ResumeTemplate::Executive => Self {
+                margin_x: 18.0,
+                top_y: 280.0,
+                bottom_y: 16.0,
+                name_size: 22.0,
+                name_line_height: 7.8,
+                headline_size: 11.0,
+                headline_line_height: 5.0,
+                meta_size: 8.3,
+                meta_line_height: 3.8,
+                body_size: 9.2,
+                body_line_height: 4.15,
+                section_size: 10.8,
+                section_line_height: 4.9,
+                section_spacing: 3.8,
+                company_size: 10.2,
+                company_line_height: 4.4,
+                role_size: 9.4,
+                role_line_height: 4.0,
+                record_spacing: 3.4,
+                accent: (0.09, 0.29, 0.23),
+            },
+        }
+    }
+}
+
 struct PdfWriter {
     pages: Vec<Vec<Op>>,
     current: Vec<Op>,
     y: f32,
+    theme: PdfTheme,
 }
 
 impl PdfWriter {
-    fn new() -> Self {
+    fn new(theme: PdfTheme) -> Self {
         Self {
             pages: Vec::new(),
             current: Vec::new(),
-            y: TOP_Y,
+            y: theme.top_y,
+            theme,
         }
     }
 
     fn paragraph(&mut self, value: &str) {
-        self.text(value, 9.2, false, 4.1, MARGIN_X, Some(1.0));
+        self.text(
+            value,
+            self.theme.body_size,
+            false,
+            self.theme.body_line_height,
+            self.theme.margin_x,
+            Some(1.0),
+        );
     }
 
     fn bullet(&mut self, value: &str) {
-        self.text(&format!("• {value}"), 9.0, false, 3.9, MARGIN_X + 3.0, None);
+        self.text(
+            &format!("• {value}"),
+            self.theme.body_size - 0.2,
+            false,
+            self.theme.body_line_height - 0.2,
+            self.theme.margin_x + 3.0,
+            None,
+        );
     }
 
     fn section(&mut self, title: &str) {
         self.ensure_space(10.0);
-        self.y -= 3.0;
-        self.text(&title.to_uppercase(), 10.5, true, 4.8, MARGIN_X, None);
+        self.y -= self.theme.section_spacing;
+        self.text(
+            &title.to_uppercase(),
+            self.theme.section_size,
+            true,
+            self.theme.section_line_height,
+            self.theme.margin_x,
+            None,
+        );
         self.current.push(Op::SetOutlineColor {
-            col: rgb(0.68, 0.75, 0.72),
+            col: rgb(
+                self.theme.accent.0,
+                self.theme.accent.1,
+                self.theme.accent.2,
+            ),
         });
         self.current.push(Op::SetOutlineThickness { pt: Pt(0.55) });
         self.current.push(Op::DrawLine {
             line: Line {
                 points: vec![
                     LinePoint {
-                        p: Point::new(Mm(MARGIN_X), Mm(self.y + 1.6)),
+                        p: Point::new(Mm(self.theme.margin_x), Mm(self.y + 1.6)),
                         bezier: false,
                     },
                     LinePoint {
-                        p: Point::new(Mm(PAGE_WIDTH - MARGIN_X), Mm(self.y + 1.6)),
+                        p: Point::new(Mm(PAGE_WIDTH - self.theme.margin_x), Mm(self.y + 1.6)),
                         bezier: false,
                     },
                 ],
@@ -194,7 +350,8 @@ impl PdfWriter {
         if let Some(spacing) = before_mm {
             self.y -= spacing;
         }
-        let available_width = CONTENT_WIDTH - (x - MARGIN_X);
+        let content_width = PAGE_WIDTH - (self.theme.margin_x * 2.0);
+        let available_width = content_width - (x - self.theme.margin_x);
         let max_chars = ((available_width / (size * 0.19)).floor() as usize).max(24);
         for line in wrap(value, max_chars) {
             self.ensure_space(line_height_mm + 1.0);
@@ -223,10 +380,35 @@ impl PdfWriter {
         }
     }
 
+    fn link(&mut self, label: &str, target: &str) {
+        if label.trim().is_empty() || !is_safe_link(target) {
+            return;
+        }
+        let size = self.theme.meta_size;
+        let line_height = self.theme.meta_line_height;
+        self.ensure_space(line_height + 1.0);
+        let link_y = self.y;
+        self.text(label, size, false, line_height, self.theme.margin_x, None);
+        self.current.push(Op::LinkAnnotation {
+            link: LinkAnnotation::new(
+                Rect::from_xywh(
+                    Pt::from(Mm(self.theme.margin_x)),
+                    Pt::from(Mm(link_y - line_height + 0.5)),
+                    Pt::from(Mm(PAGE_WIDTH - (self.theme.margin_x * 2.0))),
+                    Pt::from(Mm(line_height)),
+                ),
+                Actions::uri(target.to_string()),
+                Some(BorderArray::Solid([0.0, 0.0, 0.0])),
+                Some(ColorArray::Transparent),
+                Some(HighlightingMode::Outline),
+            ),
+        });
+    }
+
     fn ensure_space(&mut self, needed: f32) {
-        if self.y - needed < BOTTOM_Y {
+        if self.y - needed < self.theme.bottom_y {
             self.pages.push(std::mem::take(&mut self.current));
-            self.y = TOP_Y;
+            self.y = self.theme.top_y;
         }
     }
 
@@ -243,6 +425,10 @@ impl PdfWriter {
             .with_pages(pages)
             .save(&PdfSaveOptions::default(), &mut Vec::new())
     }
+}
+
+fn is_safe_link(value: &str) -> bool {
+    value.starts_with("https://") || value.starts_with("http://")
 }
 
 fn wrap(value: &str, max_chars: usize) -> Vec<String> {
@@ -290,10 +476,15 @@ mod tests {
     use crate::core::archetypes::load_archetype;
 
     #[test]
-    fn pdf_has_valid_header_and_embedded_profile_name() {
-        let bytes = render(&load_archetype("01_frontend").unwrap()).unwrap();
+    fn pdf_has_valid_header_and_clickable_links() {
+        let bytes = render_with_template(
+            &load_archetype("01_frontend").unwrap(),
+            ResumeTemplate::Clean,
+        )
+        .unwrap();
         assert!(bytes.starts_with(b"%PDF-"));
         assert!(bytes.len() > 4_000);
+        assert!(bytes.windows(4).any(|part| part == b"/URI"));
     }
 
     #[test]

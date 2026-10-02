@@ -24,7 +24,7 @@ export function App() {
 
   const exportFile = useCallback(async (format: ExportFormat) => {
     try {
-      const path = await exportResume(workspace.profile, format);
+      const path = await exportResume(workspace.profile, format, workspace.template);
       if (path) notify(`${format.toUpperCase()} exportado com sucesso.`);
     } catch (reason) {
       workspace.setError(messageOf(reason));

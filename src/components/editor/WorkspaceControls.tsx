@@ -50,6 +50,7 @@ export function WorkspaceControls(props: WorkspaceControlsProps) {
           >
             <option value="clean">Clean Slate</option>
             <option value="compact">Compact Linear</option>
+            <option value="executive">Executive Accent</option>
           </select>
           <ChevronDown size={15} aria-hidden="true" />
         </span>
