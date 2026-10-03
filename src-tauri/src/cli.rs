@@ -4,7 +4,7 @@ mod manifest;
 mod options;
 
 use crate::core::export::ResumeTemplate;
-use crate::core::{ResumeProfile, load_archetype, tailor};
+use crate::core::{DEFAULT_ARCHETYPE_ID, ResumeProfile, load_archetype, tailor};
 use discovery::print_json;
 use files::{ConflictPolicy, WriteRequest};
 use manifest::{ManifestOverrides, ResolvedTask};
@@ -136,7 +136,7 @@ fn batch(options: &Options) -> Result<(), String> {
     let default_model = options
         .get("model")
         .cloned()
-        .unwrap_or_else(|| "01_frontend".into());
+        .unwrap_or_else(|| DEFAULT_ARCHETYPE_ID.into());
     let formats = options::formats(options)?;
     let default_template = options::template_option(options)?;
     let dry_run = options::parse_bool(options.get("dry-run"))?;
@@ -399,7 +399,7 @@ fn load_source_profile(options: &Options) -> Result<(ResumeProfile, Option<Strin
     let model = options
         .get("model")
         .cloned()
-        .unwrap_or_else(|| "01_frontend".into());
+        .unwrap_or_else(|| DEFAULT_ARCHETYPE_ID.into());
     Ok((load_archetype(&model)?, Some(model)))
 }
 
@@ -424,7 +424,7 @@ reoliresume validate (--profile ARQUIVO | --job ARQUIVO | --jobs ARQUIVO | --man
 reoliresume templates | models | capabilities\n  \
 reoliresume schema --type profile|job|batch|manifest\n\n\
 Opcoes de saida:\n  --name NOME_BASE\n  --on-conflict error|rename|overwrite\n  --dry-run\n\n\
-Modelos: 01_frontend, 02_fullstack_node, 03_fullstack_dotnet, 04_tech_lead, 05_internacional_en\n\
+Modelo de dados incluído: fullstack (exemplo público e fictício)\n\
 Templates: classic, clean, compact, executive, tech-minimalist, modern-split, executive-bold, academic\n\
 Formatos: pdf, docx, json, md",
         env!("CARGO_PKG_VERSION")
@@ -460,7 +460,7 @@ mod tests {
     #[test]
     fn resolves_template_from_profile_with_classic_fallback() {
         let options = Options::new();
-        let mut profile = load_archetype("01_frontend").unwrap();
+        let mut profile = load_archetype(DEFAULT_ARCHETYPE_ID).unwrap();
         assert_eq!(
             options::resolve_template(&options, &profile).unwrap(),
             ResumeTemplate::Classic

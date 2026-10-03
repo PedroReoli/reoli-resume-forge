@@ -7,7 +7,20 @@ import {
   profileTemplate,
 } from '../domain/resumeLayout';
 import {
+  createSavedProfile,
+  duplicateSavedProfile,
+  loadProfileLibrary,
+  persistProfileLibrary,
+  removeSavedProfile,
+  renameSavedProfile,
+  setActiveSavedProfile,
+  updateSavedProfile,
+  type ProfileLibraryState,
+  type SavedProfileRecord,
+} from '../services/profileLibrary';
+import {
   analyzeMatch,
+  DEFAULT_ARCHETYPE_ID,
   fallbackArchetypes,
   listArchetypes,
   loadArchetype,
@@ -22,12 +35,18 @@ import type {
 } from '../types/resume';
 import { useProfileHistory } from './useProfileHistory';
 
-const INITIAL_ARCHETYPE = '01_frontend';
-
 export function useResumeWorkspace() {
-  const initialProfile = useMemo(() => createBlankProfile(), []);
+  const initialLibrary = useMemo(() => loadProfileLibrary(), []);
+  const initialSavedProfile = activeRecord(initialLibrary);
+  const initialProfile = useMemo(
+    () => initialSavedProfile?.profile ?? createBlankProfile(),
+    [initialSavedProfile],
+  );
+  const [library, setLibrary] = useState(initialLibrary);
   const [archetypes, setArchetypes] = useState<ArchetypeMetadata[]>(fallbackArchetypes);
-  const [archetypeId, setArchetypeId] = useState(INITIAL_ARCHETYPE);
+  const [archetypeId, setArchetypeId] = useState(
+    initialSavedProfile ? 'custom' : DEFAULT_ARCHETYPE_ID,
+  );
   const {
     profile,
     setProfile,
@@ -47,7 +66,16 @@ export function useResumeWorkspace() {
     () => archetypes.find((item) => item.id === archetypeId),
     [archetypeId, archetypes],
   );
+  const currentSavedProfile = useMemo(
+    () => library.profiles.find((item) => item.id === library.activeId) ?? null,
+    [library],
+  );
   const template = profileTemplate(profile);
+
+  const commitLibrary = useCallback((nextLibrary: ProfileLibraryState) => {
+    persistProfileLibrary(nextLibrary);
+    setLibrary(nextLibrary);
+  }, []);
 
   const setTemplate = useCallback((nextTemplate: ResumeTemplate) => {
     setProfile((current) => applyResumeTemplate(current, nextTemplate));
@@ -55,18 +83,21 @@ export function useResumeWorkspace() {
 
   useEffect(() => {
     let active = true;
-    Promise.all([listArchetypes(), loadArchetype(INITIAL_ARCHETYPE)])
+    const profilePromise = initialSavedProfile
+      ? Promise.resolve(initialSavedProfile.profile)
+      : loadArchetype(DEFAULT_ARCHETYPE_ID);
+    Promise.all([listArchetypes(), profilePromise])
       .then(([items, loaded]) => {
         if (!active) return;
         setArchetypes(items);
-        replaceProfile(loaded);
+        if (!initialSavedProfile) replaceProfile(loaded);
       })
       .catch((reason: unknown) => active && setError(messageOf(reason)))
       .finally(() => active && setBusy(false));
     return () => {
       active = false;
     };
-  }, [replaceProfile]);
+  }, [initialSavedProfile, replaceProfile]);
 
   useEffect(() => {
     if (jobDescription.trim().length < 20) {
@@ -82,18 +113,21 @@ export function useResumeWorkspace() {
   }, [jobDescription, profile]);
 
   const selectArchetype = useCallback(async (id: string) => {
-    if (canUndo && !window.confirm('Trocar de arquétipo descarta o histórico de edição atual. Continuar?')) return;
+    if (!confirmProfileReplacement(canUndo, 'Carregar o exemplo público')) return;
     setBusy(true);
     setError(null);
     try {
       replaceProfile(await loadArchetype(id));
+      commitLibrary(setActiveSavedProfile(library, null));
       setArchetypeId(id);
+      setJobDescription('');
+      setReport(null);
     } catch (reason) {
       setError(messageOf(reason));
     } finally {
       setBusy(false);
     }
-  }, [canUndo, replaceProfile]);
+  }, [canUndo, commitLibrary, library, replaceProfile]);
 
   const selectLocale = useCallback(
     async (nextLocale: string) => {
@@ -101,27 +135,84 @@ export function useResumeWorkspace() {
       setProfile((current) => localizeProfile(current, normalized));
       setArchetypeId('custom');
     },
-    [],
+    [setProfile],
   );
 
   const locale = (profile.config.locale as ResumeLocale | undefined) ?? 'pt-BR';
 
-  const newProfile = useCallback(() => {
-    if (canUndo && !window.confirm('Criar um novo perfil descarta o histórico de edição atual. Continuar?')) return;
-    replaceProfile(createBlankProfile(locale));
+  const saveCurrentProfile = useCallback((name?: string): SavedProfileRecord => {
+    if (library.activeId) {
+      const nextLibrary = updateSavedProfile(library, library.activeId, profile);
+      commitLibrary(nextLibrary);
+      return nextLibrary.profiles.find((record) => record.id === library.activeId)!;
+    }
+    if (!name) throw new Error('Escolha um nome antes de salvar este perfil.');
+    const created = createSavedProfile(library, name, profile);
+    commitLibrary(created.library);
+    setArchetypeId('custom');
+    return created.record;
+  }, [commitLibrary, library, profile]);
+
+  const createProfile = useCallback((name: string): SavedProfileRecord | null => {
+    if (!confirmProfileReplacement(canUndo, 'Criar outro perfil')) return null;
+    const created = createSavedProfile(library, name, createBlankProfile(locale));
+    commitLibrary(created.library);
+    replaceProfile(created.record.profile);
     setArchetypeId('custom');
     setJobDescription('');
     setReport(null);
-  }, [canUndo, locale, replaceProfile]);
+    return created.record;
+  }, [canUndo, commitLibrary, library, locale, replaceProfile]);
+
+  const openSavedProfile = useCallback((id: string): SavedProfileRecord | null => {
+    const record = library.profiles.find((item) => item.id === id);
+    if (!record) throw new Error('O perfil salvo não foi encontrado.');
+    if (id === library.activeId) return record;
+    if (!confirmProfileReplacement(canUndo, `Abrir “${record.name}”`)) return null;
+    commitLibrary(setActiveSavedProfile(library, id));
+    replaceProfile(structuredClone(record.profile));
+    setArchetypeId('custom');
+    setJobDescription('');
+    setReport(null);
+    return record;
+  }, [canUndo, commitLibrary, library, replaceProfile]);
+
+  const duplicateProfile = useCallback((id: string | null, name?: string): SavedProfileRecord => {
+    const source = id
+      ? library.profiles.find((record) => record.id === id)
+      : { name: currentSavedProfile?.name ?? profile.person.name ?? 'Perfil', profile };
+    if (!source) throw new Error('O perfil que seria duplicado não foi encontrado.');
+    const created = duplicateSavedProfile(library, source, name);
+    commitLibrary(created.library);
+    replaceProfile(created.record.profile);
+    setArchetypeId('custom');
+    setJobDescription('');
+    setReport(null);
+    return created.record;
+  }, [commitLibrary, currentSavedProfile, library, profile, replaceProfile]);
+
+  const renameProfile = useCallback((id: string, name: string): SavedProfileRecord => {
+    const nextLibrary = renameSavedProfile(library, id, name);
+    commitLibrary(nextLibrary);
+    return nextLibrary.profiles.find((record) => record.id === id)!;
+  }, [commitLibrary, library]);
+
+  const deleteProfile = useCallback((id: string): void => {
+    const record = library.profiles.find((item) => item.id === id);
+    if (!record) return;
+    if (!window.confirm(`Excluir “${record.name}” deste computador? O arquivo JSON exportado não será afetado.`)) return;
+    commitLibrary(removeSavedProfile(library, id));
+  }, [commitLibrary, library]);
 
   const importProfile = useCallback((next: ResumeProfile) => {
-    if (canUndo && !window.confirm('Importar outro perfil descarta o histórico de edição atual. Continuar?')) return;
+    if (!confirmProfileReplacement(canUndo, 'Importar outro perfil')) return;
     const normalized = normalizeResumeProfile(next);
     assertProfile(normalized);
     replaceProfile(normalized);
+    commitLibrary(setActiveSavedProfile(library, null));
     setArchetypeId('custom');
     setReport(null);
-  }, [canUndo, replaceProfile]);
+  }, [canUndo, commitLibrary, library, replaceProfile]);
 
   const applyTailoring = useCallback(async () => {
     if (jobDescription.trim().length < 20) {
@@ -136,7 +227,7 @@ export function useResumeWorkspace() {
     } finally {
       setBusy(false);
     }
-  }, [archetypeId, jobDescription, profile]);
+  }, [archetypeId, jobDescription, profile, setProfile]);
 
   return {
     archetypes,
@@ -158,12 +249,29 @@ export function useResumeWorkspace() {
     busy,
     error,
     setError,
+    savedProfiles: library.profiles,
+    currentProfileId: library.activeId,
+    currentSavedProfile,
+    currentProfileName: currentSavedProfile?.name ?? selectedArchetype?.label ?? profile.person.name,
     selectArchetype,
     selectLocale,
-    newProfile,
+    saveCurrentProfile,
+    createProfile,
+    openSavedProfile,
+    duplicateProfile,
+    renameProfile,
+    deleteProfile,
     importProfile,
     applyTailoring,
   };
+}
+
+function activeRecord(library: ProfileLibraryState): SavedProfileRecord | null {
+  return library.profiles.find((record) => record.id === library.activeId) ?? null;
+}
+
+function confirmProfileReplacement(hasEdits: boolean, action: string): boolean {
+  return !hasEdits || window.confirm(`${action} descarta o histórico de edição atual. Continuar?`);
 }
 
 function assertProfile(value: ResumeProfile): void {

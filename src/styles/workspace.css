@@ -83,6 +83,59 @@
   font-size: 11px;
 }
 
+.profile-library-trigger {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  width: min(210px, 18vw);
+  min-height: 40px;
+  align-items: center;
+  gap: 9px;
+  padding: 0 9px;
+  border: 1px solid #34443b;
+  border-radius: var(--radius-control);
+  background: #0e1612;
+  color: #cbd5cf;
+  text-align: left;
+}
+
+.profile-library-trigger:hover {
+  border-color: #63796b;
+  background: #152019;
+  color: var(--ink);
+}
+
+.profile-library-trigger > span {
+  display: grid;
+  min-width: 0;
+  gap: 1px;
+}
+
+.profile-library-trigger small {
+  color: var(--faint);
+  font-size: 8px;
+}
+
+.profile-library-trigger strong {
+  overflow: hidden;
+  font-size: 10.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-library-trigger em {
+  display: grid;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  place-content: center;
+  border: 1px solid #3d5144;
+  border-radius: 999px;
+  color: var(--accent-bright);
+  font-family: var(--mono);
+  font-size: 8px;
+  font-style: normal;
+}
+
 .quiet-button,
 .tailor-button,
 .icon-button,

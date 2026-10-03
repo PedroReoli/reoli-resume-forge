@@ -23,14 +23,14 @@ export function WorkspaceControls(props: WorkspaceControlsProps) {
     <>
       <div className="workspace-controls" aria-label="Configuração do currículo">
         <label>
-          <span>Arquétipo</span>
+          <span>Ponto de partida</span>
           <span className="select-wrap">
             <select
               value={props.archetypeId}
               disabled={props.disabled}
               onChange={(event) => props.onArchetype(event.target.value)}
             >
-              {props.archetypeId === 'custom' ? <option value="custom">Perfil personalizado</option> : null}
+              {props.archetypeId === 'custom' ? <option value="custom">Perfil local / personalizado</option> : null}
               {props.archetypes.map((item) => (
                 <option key={item.id} value={item.id}>{item.label}</option>
               ))}

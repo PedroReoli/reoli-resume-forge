@@ -601,7 +601,7 @@ mod tests {
     #[test]
     fn docx_is_linear_styled_and_contains_clickable_links() {
         let bytes = render_with_template(
-            &load_archetype("01_frontend").unwrap(),
+            &load_archetype(crate::core::DEFAULT_ARCHETYPE_ID).unwrap(),
             ResumeTemplate::Clean,
         )
         .unwrap();
@@ -631,7 +631,7 @@ mod tests {
 
     #[test]
     fn applies_profile_palette_to_docx_styles() {
-        let mut profile = load_archetype("01_frontend").unwrap();
+        let mut profile = load_archetype(crate::core::DEFAULT_ARCHETYPE_ID).unwrap();
         profile
             .config
             .extra
@@ -644,7 +644,7 @@ mod tests {
 
     #[test]
     fn applies_profile_typeface_to_docx_styles() {
-        let mut profile = load_archetype("01_frontend").unwrap();
+        let mut profile = load_archetype(crate::core::DEFAULT_ARCHETYPE_ID).unwrap();
         profile
             .config
             .extra
@@ -656,7 +656,7 @@ mod tests {
 
     #[test]
     fn applies_profile_density_to_docx_spacing_and_page_margin() {
-        let mut profile = load_archetype("01_frontend").unwrap();
+        let mut profile = load_archetype(crate::core::DEFAULT_ARCHETYPE_ID).unwrap();
         profile.layout.density = "compact".into();
 
         let compact_styles = styles_xml(&profile, ResumeTemplate::Classic);

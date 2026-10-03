@@ -112,10 +112,11 @@ pub fn analyze(profile: &ResumeProfile, job_description: &str) -> Result<MatchRe
 pub fn tailor(
     source: &ResumeProfile,
     job_description: &str,
-    model_id: Option<&str>,
+    _model_id: Option<&str>,
     confirmed_us_overlap: bool,
 ) -> Result<TailorResult, String> {
     let mut profile = source.clone();
+    let international = is_english_profile(&profile);
     let mut report = analyze(source, job_description)?;
     let required = report.job.required_keywords.clone();
     let matched = report.matched.clone();
@@ -181,7 +182,7 @@ pub fn tailor(
         }
     }
     if !matched.is_empty() {
-        let label = if model_id == Some("05_internacional_en") {
+        let label = if international {
             "Relevant expertise"
         } else {
             "Competências alinhadas"
@@ -192,7 +193,7 @@ pub fn tailor(
         );
     }
     profile.target_keywords = matched;
-    apply_international_copy(&mut profile, model_id, confirmed_us_overlap);
+    apply_international_copy(&mut profile, confirmed_us_overlap);
 
     let quantified_percent = if provenance.is_empty() {
         0.0
@@ -207,7 +208,7 @@ pub fn tailor(
             .warnings
             .push("METRIC_RATIO_OUTSIDE_TARGET: preservadas apenas métricas existentes".into());
     }
-    if model_id == Some("05_internacional_en") && !confirmed_us_overlap {
+    if international && !confirmed_us_overlap {
         report
             .warnings
             .push("US_OVERLAP_UNCONFIRMED: disponibilidade não incluída".into());
@@ -466,15 +467,23 @@ fn round_one(value: f64) -> f64 {
 
 fn apply_international_copy(
     profile: &mut ResumeProfile,
-    model_id: Option<&str>,
     confirmed_us_overlap: bool,
 ) {
-    if model_id != Some("05_internacional_en") {
+    if !is_english_profile(profile) {
         return;
     }
     if confirmed_us_overlap && !profile.summary.contains("US Eastern and Pacific") {
         profile.summary.push_str(" Available for asynchronous collaboration and agreed working-hour overlap with US Eastern and Pacific teams.");
     }
+}
+
+fn is_english_profile(profile: &ResumeProfile) -> bool {
+    profile
+        .config
+        .extra
+        .get("locale")
+        .and_then(Value::as_str)
+        .is_some_and(|locale| locale.starts_with("en"))
 }
 
 #[cfg(test)]
@@ -484,7 +493,7 @@ mod tests {
 
     #[test]
     fn weights_required_keywords_more_than_preferred() {
-        let profile = load_archetype("01_frontend").unwrap();
+        let profile = load_archetype(crate::core::DEFAULT_ARCHETYPE_ID).unwrap();
         let report = analyze(
             &profile,
             "Requirements: React is required. Nice to have: Kubernetes and Redis.",
@@ -497,13 +506,13 @@ mod tests {
 
     #[test]
     fn rejects_job_description_outside_limits() {
-        let profile = load_archetype("01_frontend").unwrap();
+        let profile = load_archetype(crate::core::DEFAULT_ARCHETYPE_ID).unwrap();
         assert!(analyze(&profile, "React").is_err());
     }
 
     #[test]
     fn metadata_keywords_are_not_evidence() {
-        let mut profile = load_archetype("01_frontend").unwrap();
+        let mut profile = load_archetype(crate::core::DEFAULT_ARCHETYPE_ID).unwrap();
         profile.target_keywords = vec!["Kubernetes".into()];
         let report = analyze(
             &profile,
@@ -516,11 +525,11 @@ mod tests {
 
     #[test]
     fn tailoring_never_invents_missing_keyword() {
-        let profile = load_archetype("01_frontend").unwrap();
+        let profile = load_archetype(crate::core::DEFAULT_ARCHETYPE_ID).unwrap();
         let result = tailor(
             &profile,
             "Requirements: React and Kubernetes are mandatory for this senior role.",
-            Some("01_frontend"),
+            Some(crate::core::DEFAULT_ARCHETYPE_ID),
             false,
         )
         .unwrap();

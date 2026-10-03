@@ -1,10 +1,6 @@
 import { invoke } from '@tauri-apps/api/core';
 import { save } from '@tauri-apps/plugin-dialog';
-import frontend from '../data/archetypes/01_frontend.json';
-import node from '../data/archetypes/02_fullstack_node.json';
-import dotnet from '../data/archetypes/03_fullstack_dotnet.json';
-import lead from '../data/archetypes/04_tech_lead.json';
-import international from '../data/archetypes/05_internacional_en.json';
+import fullstack from '../data/archetypes/fullstack.json';
 import { normalizeResumeProfile } from '../domain/resumeLayout';
 import { resumeFilename } from '../domain/resumeFilename';
 import type {
@@ -17,19 +13,17 @@ import type {
 } from '../types/resume';
 
 const profiles: Record<string, ResumeProfile> = {
-  '01_frontend': normalizeProfile(frontend),
-  '02_fullstack_node': normalizeProfile(node),
-  '03_fullstack_dotnet': normalizeProfile(dotnet),
-  '04_tech_lead': normalizeProfile(lead),
-  '05_internacional_en': normalizeProfile(international),
+  fullstack: normalizeProfile(fullstack),
 };
 
+export const DEFAULT_ARCHETYPE_ID = 'fullstack';
 export const fallbackArchetypes: ArchetypeMetadata[] = [
-  { id: '01_frontend', label: 'Frontend & Design Systems', locale: 'pt-BR', focus: 'React, Next.js e Design Systems' },
-  { id: '02_fullstack_node', label: 'Full Stack Node.js', locale: 'pt-BR', focus: 'Node.js, APIs e PostgreSQL' },
-  { id: '03_fullstack_dotnet', label: 'Full Stack .NET', locale: 'pt-BR', focus: 'C#, .NET, SQL Server e React' },
-  { id: '04_tech_lead', label: 'Tech Lead', locale: 'pt-BR', focus: 'System Design, liderança e governança' },
-  { id: '05_internacional_en', label: 'International EN', locale: 'en-US', focus: 'Global Full Stack Engineering' },
+  {
+    id: DEFAULT_ARCHETYPE_ID,
+    label: 'Exemplo Full Stack',
+    locale: 'pt-BR',
+    focus: 'React, TypeScript, Node.js, PostgreSQL e entrega contínua',
+  },
 ];
 
 export function isDesktop(): boolean {

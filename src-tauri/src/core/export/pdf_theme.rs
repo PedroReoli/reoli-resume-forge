@@ -337,7 +337,7 @@ mod tests {
 
     #[test]
     fn applies_profile_palette_to_pdf_accent_and_bands() {
-        let mut profile = load_archetype("01_frontend").unwrap();
+        let mut profile = load_archetype(crate::core::DEFAULT_ARCHETYPE_ID).unwrap();
         profile
             .config
             .extra
@@ -355,7 +355,7 @@ mod tests {
 
     #[test]
     fn applies_profile_typeface_to_pdf_fonts() {
-        let mut profile = load_archetype("01_frontend").unwrap();
+        let mut profile = load_archetype(crate::core::DEFAULT_ARCHETYPE_ID).unwrap();
         profile
             .config
             .extra

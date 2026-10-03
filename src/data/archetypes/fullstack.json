@@ -1,0 +1,89 @@
+{
+  "config": {
+    "locale": "pt-BR",
+    "template": "classic",
+    "palette": "template",
+    "typeface": "template",
+    "tech_label": "Tecnologias",
+    "section_names": {
+      "summary": "Resumo Profissional",
+      "skills": "Competências Técnicas",
+      "soft_skills": "Competências Comportamentais",
+      "experience": "Experiência Profissional",
+      "projects": "Projetos",
+      "education": "Formação Acadêmica",
+      "languages": "Idiomas",
+      "certifications": "Certificações"
+    }
+  },
+  "person": {
+    "name": "Pessoa Exemplo",
+    "location": "Brasil",
+    "work_preference": "Remoto ou híbrido",
+    "phone": "+55 (00) 00000-0000",
+    "email": "pessoa@example.com",
+    "linkedin": "https://www.linkedin.com/in/pessoa-exemplo",
+    "portfolio": "https://example.com",
+    "github": "https://github.com/example"
+  },
+  "headline": "Full Stack Engineer | TypeScript • React • Node.js • PostgreSQL",
+  "summary": "Perfil fictício para demonstrar a estrutura do Reoli Resume Forge. Substitua todos os dados por experiências, resultados e competências que você consiga comprovar.",
+  "target_keywords": [
+    "Full Stack",
+    "React",
+    "TypeScript",
+    "Node.js",
+    "PostgreSQL",
+    "APIs REST",
+    "Docker",
+    "Testes Automatizados"
+  ],
+  "skills": {
+    "Frontend": ["React", "TypeScript", "HTML semântico", "CSS"],
+    "Backend & APIs": ["Node.js", "APIs REST", "Autenticação"],
+    "Dados": ["PostgreSQL", "Modelagem relacional"],
+    "Qualidade & Entrega": ["Testes automatizados", "Docker", "CI/CD", "Git"]
+  },
+  "soft_skills": [
+    "Comunicação clara",
+    "Colaboração",
+    "Visão de produto",
+    "Resolução de problemas"
+  ],
+  "experience": [
+    {
+      "company": "Empresa Exemplo",
+      "role": "Full Stack Engineer",
+      "dates": "2023 — presente",
+      "location": "Brasil",
+      "work_mode": "Remoto",
+      "summary": "Exemplo fictício de atuação em um produto web com frontend, backend e dados.",
+      "bullets": [
+        "Implementei fluxos web com React e TypeScript integrados a APIs REST em Node.js.",
+        "Reduzi em 30% o tempo de uma rotina de exemplo após medir gargalos e otimizar consultas PostgreSQL.",
+        "Adicionei testes automatizados e uma esteira de CI para validar mudanças antes da entrega."
+      ],
+      "technologies": ["React", "TypeScript", "Node.js", "PostgreSQL", "Docker"]
+    }
+  ],
+  "projects": [
+    {
+      "name": "Produto Demonstrativo",
+      "description": "Projeto fictício usado somente para mostrar como preencher uma seção de projetos.",
+      "metrics": ["Documente aqui um resultado real e verificável."],
+      "technologies": ["React", "Node.js"]
+    }
+  ],
+  "education": [
+    {
+      "degree": "Curso ou formação",
+      "institution": "Instituição de exemplo",
+      "dates": "Ano de conclusão"
+    }
+  ],
+  "languages": [
+    { "language": "Português", "level": "Nativo" }
+  ],
+  "certifications": [],
+  "custom_sections": []
+}

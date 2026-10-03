@@ -1,13 +1,8 @@
 use super::model::ResumeProfile;
 use serde::Serialize;
 
-const FRONTEND: &str = include_str!("../../../src/data/archetypes/01_frontend.json");
-const FULLSTACK_NODE: &str = include_str!("../../../src/data/archetypes/02_fullstack_node.json");
-const FULLSTACK_DOTNET: &str =
-    include_str!("../../../src/data/archetypes/03_fullstack_dotnet.json");
-const TECH_LEAD: &str = include_str!("../../../src/data/archetypes/04_tech_lead.json");
-const INTERNATIONAL_EN: &str =
-    include_str!("../../../src/data/archetypes/05_internacional_en.json");
+pub const DEFAULT_ARCHETYPE_ID: &str = "fullstack";
+const FULLSTACK: &str = include_str!("../../../src/data/archetypes/fullstack.json");
 
 #[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -18,38 +13,12 @@ pub struct ArchetypeMetadata {
     pub focus: &'static str,
 }
 
-const ARCHETYPES: [ArchetypeMetadata; 5] = [
-    ArchetypeMetadata {
-        id: "01_frontend",
-        label: "Frontend & Design Systems",
-        locale: "pt-BR",
-        focus: "React, Next.js, TypeScript, Design Systems e Web Performance",
-    },
-    ArchetypeMetadata {
-        id: "02_fullstack_node",
-        label: "Full Stack Node.js",
-        locale: "pt-BR",
-        focus: "Node.js, NestJS, APIs, PostgreSQL e AWS",
-    },
-    ArchetypeMetadata {
-        id: "03_fullstack_dotnet",
-        label: "Full Stack .NET",
-        locale: "pt-BR",
-        focus: "C#, .NET, SQL Server, Clean Architecture e React",
-    },
-    ArchetypeMetadata {
-        id: "04_tech_lead",
-        label: "Tech Lead",
-        locale: "pt-BR",
-        focus: "System Design, liderança, mentoria e governança",
-    },
-    ArchetypeMetadata {
-        id: "05_internacional_en",
-        label: "International EN",
-        locale: "en-US",
-        focus: "Global Full Stack and Frontend Engineering",
-    },
-];
+const ARCHETYPES: [ArchetypeMetadata; 1] = [ArchetypeMetadata {
+    id: DEFAULT_ARCHETYPE_ID,
+    label: "Exemplo Full Stack",
+    locale: "pt-BR",
+    focus: "React, TypeScript, Node.js, PostgreSQL e entrega contínua",
+}];
 
 pub fn list_archetypes() -> Vec<ArchetypeMetadata> {
     ARCHETYPES.to_vec()
@@ -57,11 +26,7 @@ pub fn list_archetypes() -> Vec<ArchetypeMetadata> {
 
 pub fn load_archetype(id: &str) -> Result<ResumeProfile, String> {
     let raw = match id {
-        "01_frontend" => FRONTEND,
-        "02_fullstack_node" => FULLSTACK_NODE,
-        "03_fullstack_dotnet" => FULLSTACK_DOTNET,
-        "04_tech_lead" => TECH_LEAD,
-        "05_internacional_en" => INTERNATIONAL_EN,
+        DEFAULT_ARCHETYPE_ID => FULLSTACK,
         _ => return Err(format!("arquétipo desconhecido: {id}")),
     };
 
@@ -76,12 +41,12 @@ mod tests {
     use super::*;
 
     #[test]
-    fn loads_every_embedded_archetype() {
-        for item in list_archetypes() {
-            let profile = load_archetype(item.id).expect("arquétipo deveria ser válido");
-            assert!(!profile.person.name.trim().is_empty());
-            assert!(profile.person.portfolio.starts_with("https://"));
-        }
+    fn loads_the_single_neutral_public_example() {
+        assert_eq!(list_archetypes().len(), 1);
+        let profile = load_archetype(DEFAULT_ARCHETYPE_ID).expect("exemplo deveria ser válido");
+        assert_eq!(profile.person.name, "Pessoa Exemplo");
+        assert!(profile.person.email.ends_with("@example.com"));
+        assert!(profile.person.portfolio.starts_with("https://"));
     }
 
     #[test]

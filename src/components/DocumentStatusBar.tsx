@@ -9,7 +9,7 @@ interface DocumentStatusBarProps {
 
 const SAVE_LABELS: Record<DocumentSaveState, string> = {
   loaded: 'Perfil carregado',
-  saved: 'Perfil salvo em JSON',
+  saved: 'Perfil salvo localmente',
   dirty: 'Alterações não salvas',
 };
 

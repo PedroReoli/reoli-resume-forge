@@ -81,7 +81,7 @@ mod tests {
 
     #[test]
     fn pdf_preview_uses_the_exact_export_bytes() {
-        let profile = crate::core::load_archetype("01_frontend").unwrap();
+        let profile = crate::core::load_archetype(crate::core::DEFAULT_ARCHETYPE_ID).unwrap();
         let expected =
             export::render_with_template(&profile, ExportFormat::Pdf, ResumeTemplate::Classic)
                 .unwrap();

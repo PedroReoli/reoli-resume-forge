@@ -3,7 +3,7 @@ use super::files::{
     resolve_path, validate_output_name,
 };
 use super::options::parse_formats;
-use crate::core::ResumeProfile;
+use crate::core::{DEFAULT_ARCHETYPE_ID, ResumeProfile};
 use crate::core::export::{ExportFormat, ResumeTemplate};
 use serde::Deserialize;
 use std::path::{Path, PathBuf};
@@ -322,7 +322,7 @@ fn resolve_task(
         return Err(format!("job {} nao possui job_description", index + 1));
     }
     let base_model = if task.base_model.trim().is_empty() {
-        "01_frontend".into()
+        DEFAULT_ARCHETYPE_ID.into()
     } else {
         task.base_model
     };
@@ -403,13 +403,13 @@ mod tests {
     #[test]
     fn overlays_only_values_explicitly_provided_by_the_job() {
         let defaults: TaskSpec = serde_json::from_str(
-            r#"{"base_model":"01_frontend","template":"classic","output":{"directory":"out"}}"#,
+            r#"{"base_model":"fullstack","template":"classic","output":{"directory":"out"}}"#,
         )
         .unwrap();
         let item: TaskSpec =
             serde_json::from_str(r#"{"template":"compact","output":{"folder":"acme"}}"#).unwrap();
         let merged = defaults.overlay(item);
-        assert_eq!(merged.base_model, "01_frontend");
+        assert_eq!(merged.base_model, DEFAULT_ARCHETYPE_ID);
         assert_eq!(merged.template, "compact");
         assert_eq!(merged.output.directory, "out");
         assert_eq!(merged.output.folder, "acme");

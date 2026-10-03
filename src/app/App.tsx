@@ -9,6 +9,10 @@ import { ProfileEditor } from '../components/editor/ProfileEditor';
 import { SectionNavigator } from '../components/editor/SectionNavigator';
 import { WorkspaceControls } from '../components/editor/WorkspaceControls';
 import { PreviewPane } from '../components/preview/PreviewPane';
+import {
+  ProfileLibraryDialog,
+  type ProfileDialogIntent,
+} from '../components/profiles/ProfileLibraryDialog';
 import { useResumeWorkspace } from '../hooks/useResumeWorkspace';
 import { exportResume, resumeToMarkdown } from '../services/tauriBridge';
 import type { ExportFormat, ResumeProfile } from '../types/resume';
@@ -19,24 +23,21 @@ export function App() {
   const [notice, setNotice] = useState<string | null>(null);
   const [mobileView, setMobileView] = useState<'editor' | 'preview'>('editor');
   const [pageCount, setPageCount] = useState<number | null>(null);
+  const [profileDialog, setProfileDialog] = useState<{ open: boolean; intent: ProfileDialogIntent }>({
+    open: false,
+    intent: 'browse',
+  });
   const profileFingerprint = useMemo(() => JSON.stringify(workspace.profile), [workspace.profile]);
-  const [saveCheckpoint, setSaveCheckpoint] = useState(() => ({
-    generation: workspace.profileGeneration,
-    fingerprint: profileFingerprint,
-    saved: false,
-  }));
-
-  useEffect(() => {
-    setSaveCheckpoint((current) => current.generation === workspace.profileGeneration
-      ? current
-      : { generation: workspace.profileGeneration, fingerprint: profileFingerprint, saved: false });
-  }, [profileFingerprint, workspace.profileGeneration]);
-
-  const currentCheckpoint = saveCheckpoint.generation === workspace.profileGeneration;
-  const hasUnsavedChanges = currentCheckpoint && saveCheckpoint.fingerprint !== profileFingerprint;
+  const savedFingerprint = useMemo(
+    () => workspace.currentSavedProfile ? JSON.stringify(workspace.currentSavedProfile.profile) : null,
+    [workspace.currentSavedProfile],
+  );
+  const hasUnsavedChanges = savedFingerprint
+    ? savedFingerprint !== profileFingerprint
+    : workspace.canUndo;
   const saveState: DocumentSaveState = hasUnsavedChanges
     ? 'dirty'
-    : currentCheckpoint && saveCheckpoint.saved ? 'saved' : 'loaded';
+    : workspace.currentProfileId ? 'saved' : 'loaded';
 
   const notify = useCallback((message: string) => {
     setNotice(message);
@@ -47,15 +48,21 @@ export function App() {
     try {
       const path = await exportResume(workspace.profile, format, workspace.template);
       if (path) {
-        if (format === 'json') {
-          setSaveCheckpoint({
-            generation: workspace.profileGeneration,
-            fingerprint: JSON.stringify(workspace.profile),
-            saved: true,
-          });
-        }
         notify(exportSuccessMessage(format));
       }
+    } catch (reason) {
+      workspace.setError(messageOf(reason));
+    }
+  }, [notify, workspace]);
+
+  const saveLocalProfile = useCallback(() => {
+    try {
+      if (!workspace.currentProfileId) {
+        setProfileDialog({ open: true, intent: 'save' });
+        return;
+      }
+      const saved = workspace.saveCurrentProfile();
+      notify(`“${saved.name}” salvo neste computador.`);
     } catch (reason) {
       workspace.setError(messageOf(reason));
     }
@@ -86,11 +93,11 @@ export function App() {
       if (key === 'p') void exportFile('pdf');
       if (key === 'd') void exportFile('docx');
       if (key === 'm') void copyMarkdown();
-      if (key === 's') void exportFile('json');
+      if (key === 's') saveLocalProfile();
     };
     window.addEventListener('keydown', shortcuts);
     return () => window.removeEventListener('keydown', shortcuts);
-  }, [copyMarkdown, exportFile, workspace.redoProfile, workspace.undoProfile]);
+  }, [copyMarkdown, exportFile, saveLocalProfile, workspace.redoProfile, workspace.undoProfile]);
 
   const importJson = async (file: File | undefined) => {
     if (!file) return;
@@ -114,16 +121,23 @@ export function App() {
         hasUnsavedChanges={hasUnsavedChanges}
         onUndo={workspace.undoProfile}
         onRedo={workspace.redoProfile}
-        onSave={() => void exportFile('json')}
+        onSave={saveLocalProfile}
         onImport={() => fileInput.current?.click()}
-        onNew={workspace.newProfile}
+        onNew={() => setProfileDialog({ open: true, intent: 'create' })}
+        onManageProfiles={() => setProfileDialog({ open: true, intent: 'browse' })}
+        currentProfileName={workspace.currentProfileName}
+        savedProfileCount={workspace.savedProfiles.length}
       />
       <input
         ref={fileInput}
         className="visually-hidden"
         type="file"
         accept="application/json,.json"
-        onChange={(event) => void importJson(event.target.files?.[0])}
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          event.currentTarget.value = '';
+          void importJson(file);
+        }}
       />
       <nav className="mobile-view-toggle" aria-label="Área visível">
         <button type="button" aria-pressed={mobileView === 'editor'} onClick={() => setMobileView('editor')}>
@@ -178,6 +192,35 @@ export function App() {
         </div>
       </div>
       <DocumentStatusBar busy={workspace.busy} saveState={saveState} />
+      <ProfileLibraryDialog
+        open={profileDialog.open}
+        intent={profileDialog.intent}
+        profiles={workspace.savedProfiles}
+        activeId={workspace.currentProfileId}
+        currentName={workspace.currentProfileName}
+        suggestedName={workspace.profile.person.name}
+        onClose={() => setProfileDialog({ open: false, intent: 'browse' })}
+        onOpenProfile={(id) => Boolean(workspace.openSavedProfile(id))}
+        onCreateProfile={(name) => Boolean(workspace.createProfile(name))}
+        onSaveAs={(name) => {
+          const saved = workspace.saveCurrentProfile(name);
+          notify(`“${saved.name}” salvo neste computador.`);
+        }}
+        onDuplicateProfile={(id, name) => {
+          const saved = workspace.duplicateProfile(id, name);
+          notify(`Cópia “${saved.name}” criada.`);
+        }}
+        onRenameProfile={(id, name) => {
+          const saved = workspace.renameProfile(id, name);
+          notify(`Perfil renomeado para “${saved.name}”.`);
+        }}
+        onDeleteProfile={workspace.deleteProfile}
+        onImportJson={() => {
+          setProfileDialog({ open: false, intent: 'browse' });
+          fileInput.current?.click();
+        }}
+        onExportJson={() => void exportFile('json')}
+      />
       <AnimatePresence>
         {(workspace.error || notice) ? (
           <motion.div
@@ -207,7 +250,7 @@ function isEditableTarget(target: EventTarget | null): boolean {
 }
 
 function exportSuccessMessage(format: ExportFormat): string {
-  if (format === 'json') return 'Perfil salvo como JSON.';
+  if (format === 'json') return 'Perfil exportado como JSON.';
   if (format === 'markdown') return 'Markdown exportado com sucesso.';
   return `${format.toUpperCase()} exportado com sucesso.`;
 }

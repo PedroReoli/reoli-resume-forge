@@ -41,6 +41,8 @@
   .header-actions { margin-left: auto; }
   .app-header .quiet-button { min-width: 38px; padding: 0 9px; font-size: 0; }
   .app-header .quiet-button svg { width: 17px; height: 17px; }
+  .profile-library-trigger { width: 40px; grid-template-columns: 1fr; padding: 0; place-items: center; }
+  .profile-library-trigger > span, .profile-library-trigger > em { display: none; }
   .workspace { display: flex; flex-direction: column; }
   .mobile-view-toggle {
     position: sticky;
@@ -139,6 +141,18 @@
   .focused-compose { border-right: 0; border-bottom: 1px solid var(--line); }
   .focused-editor > footer { align-items: flex-start; flex-direction: column; }
   .section-kind-grid { grid-template-columns: 1fr; }
+  .profile-library-backdrop { padding: 8px; }
+  .profile-library-dialog { max-height: calc(100vh - 16px); }
+  .profile-library-dialog > header { padding: 14px; }
+  .profile-library-title p { max-width: 240px; }
+  .profile-library-current { display: grid; margin: 12px 14px 8px; }
+  .profile-library-toolbar { grid-template-columns: 1fr 1fr; padding: 0 14px 12px; }
+  .profile-library-form { grid-template-columns: 1fr; padding: 12px 14px; }
+  .profile-library-form > div { justify-content: flex-end; }
+  .profile-library-list-heading { padding-right: 14px; padding-left: 14px; }
+  .profile-library-list { padding-right: 8px; padding-left: 8px; }
+  .profile-library-open { grid-template-columns: auto minmax(0, 1fr); }
+  .profile-library-open em { display: none; }
 }
 
 @media (max-width: 360px) {

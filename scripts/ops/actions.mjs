@@ -122,7 +122,7 @@ export function runCliSmoke() {
   mkdirSync(output, { recursive: true });
   return runCli([
     'generate',
-    '--model', '01_frontend',
+    '--model', 'fullstack',
     '--template', 'clean',
     '--format', 'pdf,docx,json,md',
     '--on-conflict', 'overwrite',

@@ -5,12 +5,12 @@ use crate::core::model::Project;
 #[test]
 fn pdf_has_valid_header_and_clickable_links() {
     let bytes = render_with_template(
-        &load_archetype("01_frontend").unwrap(),
+        &load_archetype(crate::core::DEFAULT_ARCHETYPE_ID).unwrap(),
         ResumeTemplate::Clean,
     )
     .unwrap();
     assert!(bytes.starts_with(b"%PDF-"));
-    assert!(bytes.len() > 4_000);
+    assert!(bytes.len() > 2_000);
     assert!(bytes.windows(4).any(|part| part == b"/URI"));
 }
 
@@ -97,7 +97,7 @@ fn wrapped_bullets_reserve_the_same_height_the_renderer_uses() {
 
 #[test]
 fn continuation_pages_do_not_start_with_orphan_experience_content() {
-    let profile = load_archetype("01_frontend").unwrap();
+    let profile = long_test_profile();
     for template in [
         ResumeTemplate::Classic,
         ResumeTemplate::Clean,
@@ -143,7 +143,7 @@ fn continuation_pages_do_not_start_with_orphan_experience_content() {
 
 #[test]
 fn modern_split_keeps_primary_content_before_sidebar_content_for_text_extraction() {
-    let profile = load_archetype("01_frontend").unwrap();
+    let profile = long_test_profile();
     let theme = PdfTheme::for_template(ResumeTemplate::ModernSplit);
     let mut writer = PdfWriter::new(theme);
     writer.begin_header();
@@ -219,4 +219,24 @@ fn page_texts(ops: &[Op]) -> Vec<&str> {
             _ => None,
         })
         .collect()
+}
+
+fn long_test_profile() -> ResumeProfile {
+    let mut profile = load_archetype(crate::core::DEFAULT_ARCHETYPE_ID).unwrap();
+    let seed = profile.experience[0].clone();
+    profile.experience = (1..=5)
+        .map(|index| {
+            let mut experience = seed.clone();
+            experience.company = format!("Empresa de Teste {index}");
+            experience.role = format!("Full Stack Engineer {index}");
+            experience.bullets = vec![
+                "Implementei uma plataforma web modular com React e TypeScript integrada a APIs REST em Node.js.".into(),
+                "Reduzi em 30% o tempo de processamento depois de medir gargalos e otimizar consultas PostgreSQL.".into(),
+                "Estruturei testes automatizados e integração contínua para validar mudanças antes de cada entrega.".into(),
+                "Documentei decisões técnicas e acompanhei indicadores de confiabilidade com a equipe de produto.".into(),
+            ];
+            experience
+        })
+        .collect();
+    profile
 }

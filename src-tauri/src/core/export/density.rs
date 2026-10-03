@@ -25,7 +25,7 @@ mod tests {
 
     #[test]
     fn reads_supported_density_and_falls_back_safely() {
-        let mut profile = load_archetype("01_frontend").unwrap();
+        let mut profile = load_archetype(crate::core::DEFAULT_ARCHETYPE_ID).unwrap();
 
         profile.layout.density = "compact".into();
         assert_eq!(

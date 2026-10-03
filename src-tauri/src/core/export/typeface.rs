@@ -41,7 +41,7 @@ mod tests {
 
     #[test]
     fn reads_only_supported_typeface_presets() {
-        let mut profile = load_archetype("01_frontend").unwrap();
+        let mut profile = load_archetype(crate::core::DEFAULT_ARCHETYPE_ID).unwrap();
         assert_eq!(profile_typeface(&profile), None);
 
         profile

@@ -170,14 +170,14 @@ mod tests {
 
     #[test]
     fn derives_filename_from_current_profile_instead_of_fixed_identity() {
-        let mut profile = load_archetype("01_frontend").unwrap();
+        let mut profile = load_archetype(crate::core::DEFAULT_ARCHETYPE_ID).unwrap();
         profile.person.name = "Ada Lovelace".into();
         assert_eq!(safe_basename(&profile), "curriculo_ada_lovelace");
     }
 
     #[test]
     fn every_format_renders_non_empty_bytes() {
-        let profile = load_archetype("01_frontend").unwrap();
+        let profile = load_archetype(crate::core::DEFAULT_ARCHETYPE_ID).unwrap();
         for format in [
             ExportFormat::Pdf,
             ExportFormat::Docx,
@@ -190,7 +190,7 @@ mod tests {
 
     #[test]
     fn accepts_every_public_template() {
-        let profile = load_archetype("01_frontend").unwrap();
+        let profile = load_archetype(crate::core::DEFAULT_ARCHETYPE_ID).unwrap();
         for template in [
             ResumeTemplate::Classic,
             ResumeTemplate::Clean,
@@ -216,7 +216,7 @@ mod tests {
 
     #[test]
     fn reads_the_template_stored_in_a_profile() {
-        let mut profile = load_archetype("01_frontend").unwrap();
+        let mut profile = load_archetype(crate::core::DEFAULT_ARCHETYPE_ID).unwrap();
         profile
             .config
             .extra
@@ -230,7 +230,7 @@ mod tests {
 
     #[test]
     fn preserves_visual_settings_in_editable_json_variants() {
-        let mut profile = load_archetype("01_frontend").unwrap();
+        let mut profile = load_archetype(crate::core::DEFAULT_ARCHETYPE_ID).unwrap();
         profile
             .config
             .extra
@@ -249,7 +249,7 @@ mod tests {
 
     #[test]
     fn section_order_visibility_and_custom_content_reach_text_exports() {
-        let mut profile = load_archetype("01_frontend").unwrap();
+        let mut profile = load_archetype(crate::core::DEFAULT_ARCHETYPE_ID).unwrap();
         profile
             .custom_sections
             .push(crate::core::model::CustomSection {
