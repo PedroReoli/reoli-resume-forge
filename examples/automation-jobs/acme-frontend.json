@@ -4,6 +4,6 @@
   "job_title": "Senior Frontend Engineer",
   "job_description": "React, TypeScript, Next.js, testes automatizados, acessibilidade e CI/CD sao requisitos importantes.",
   "extra_text": "Priorizar evidencias de Design Systems, Core Web Vitals e componentes reutilizaveis.",
-  "base_model": "01_frontend",
+  "base_model": "fullstack",
   "template": "tech-minimalist"
 }

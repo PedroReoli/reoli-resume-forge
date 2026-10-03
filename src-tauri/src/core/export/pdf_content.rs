@@ -172,7 +172,7 @@ mod tests {
     fn width_wrapping_keeps_long_urls_inside_the_requested_width() {
         let width = 54.0;
         let lines = wrap_to_width(
-            "https://www.linkedin.com/in/pedro-lucas-reis-a93945171/",
+            "https://www.linkedin.com/in/pessoa-exemplo-com-url-longa/",
             width,
             8.3,
             BuiltinFont::Helvetica,
@@ -186,7 +186,7 @@ mod tests {
         );
         assert_eq!(
             lines.join(""),
-            "https://www.linkedin.com/in/pedro-lucas-reis-a93945171/"
+            "https://www.linkedin.com/in/pessoa-exemplo-com-url-longa/"
         );
     }
 }

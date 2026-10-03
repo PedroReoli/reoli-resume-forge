@@ -67,4 +67,4 @@ Os diálogos compartilham `useDialogFocus`: foco inicial previsível, contençã
 
 ## Executável único
 
-`main.rs` inspeciona o primeiro argumento. Sem argumento ou com `ui`, inicia o Tauri; nos demais casos, executa a CLI sem abrir janela. O bundle do frontend e os cinco arquétipos são incorporados em `reoliresume.exe`. O instalador NSIS por usuário inclui o bootstrapper do WebView2 e registra `$INSTDIR` no `PATH`; o uninstall remove essa entrada. O portátil continua disponível sem sidecars, usando o WebView2 já instalado para a GUI.
+`main.rs` inspeciona o primeiro argumento. Sem argumento ou com `ui`, inicia o Tauri; nos demais casos, executa a CLI sem abrir janela. O bundle do frontend e um único exemplo Full Stack fictício são incorporados em `reoliresume.exe`; perfis reais ficam na biblioteca local ou em arquivos JSON externos. O instalador NSIS por usuário inclui o bootstrapper do WebView2 e registra `$INSTDIR` no `PATH`; o uninstall remove essa entrada. O portátil continua disponível sem sidecars, usando o WebView2 já instalado para a GUI.

@@ -48,10 +48,10 @@ reoliresume generate `
 Ou use um arquétipo embarcado:
 
 ```powershell
-reoliresume generate --model 01_frontend --format pdf --out .\saida
+reoliresume generate --model fullstack --format pdf --out .\saida
 ```
 
-`--name` define o nome-base sem extensão. Se `--profile` e `--model` forem informados juntos, o perfil fornece o conteúdo e o modelo serve como metadado do tailoring.
+`fullstack` é o único exemplo de conteúdo embarcado e contém apenas dados fictícios. Para qualquer currículo real ou especialização, use `--profile` com um JSON independente. `--name` define o nome-base sem extensão. Se `--profile` e `--model` forem informados juntos, o perfil fornece o conteúdo e o modelo serve como metadado do tailoring.
 
 ## Adaptação para uma vaga
 
@@ -75,7 +75,7 @@ Use `--confirmed-us-overlap` somente quando a pessoa confirmou disponibilidade r
 ```powershell
 reoliresume batch `
   --jobs .\examples\jobs.json `
-  --model 01_frontend `
+  --model fullstack `
   --template compact `
   --format pdf,docx,json `
   --on-conflict rename `
@@ -102,7 +102,7 @@ Exemplo:
   "version": 1,
   "continue_on_error": true,
   "defaults": {
-    "profile": "./profiles/pedro.json",
+    "profile": "./profiles/candidato.json",
     "formats": ["pdf", "docx", "json", "md"],
     "on_conflict": "rename",
     "output": {
@@ -116,7 +116,7 @@ Exemplo:
       "template": "tech-minimalist",
       "output": {
         "folder": "acme",
-        "name": "pedro-acme-frontend"
+        "name": "candidato-acme-frontend"
       }
     },
     {
@@ -128,7 +128,7 @@ Exemplo:
       "output": {
         "directory": "D:/Entregas",
         "folder": "northwind",
-        "name": "pedro-northwind-backend"
+        "name": "candidato-northwind-backend"
       }
     }
   ]
@@ -143,7 +143,7 @@ Um JSON de vaga referenciado é independente:
   "job_title": "Senior Frontend Engineer",
   "job_description": "React, TypeScript, testes e acessibilidade.",
   "extra_text": "Priorizar Design Systems e Core Web Vitals.",
-  "base_model": "01_frontend",
+  "base_model": "fullstack",
   "template": "tech-minimalist"
 }
 ```
@@ -195,15 +195,13 @@ Os schemas versionados ficam em `schemas/`. Uma IA pode consultar `capabilities`
 
 Todos preservam texto selecionável e links clicáveis em PDF/DOCX.
 
-## Modelos embarcados
+## Exemplo de conteúdo embarcado
 
 | ID | Foco |
 | --- | --- |
-| `01_frontend` | React, TypeScript, Design Systems e performance |
-| `02_fullstack_node` | Node.js, APIs, bancos de dados e cloud |
-| `03_fullstack_dotnet` | C#, .NET, SQL Server e React |
-| `04_tech_lead` | System Design, liderança e governança |
-| `05_internacional_en` | Currículo em inglês para vagas globais |
+| `fullstack` | Exemplo fictício e neutro de React, TypeScript, Node.js, PostgreSQL e entrega contínua |
+
+Os oito templates são layouts visuais e continuam disponíveis para qualquer perfil. Novos perfis de conteúdo não exigem alteração no binário: crie ou exporte um JSON pela interface e informe seu caminho com `--profile`.
 
 ## Utilitários
 

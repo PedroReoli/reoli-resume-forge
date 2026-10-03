@@ -262,7 +262,7 @@ mod tests {
 
     #[test]
     fn rejects_output_names_that_can_escape_or_break_windows_paths() {
-        assert!(validate_output_name("pedro-acme-frontend").is_ok());
+        assert!(validate_output_name("candidato-acme-frontend").is_ok());
         assert!(validate_output_name("../escape").is_err());
         assert!(validate_output_name("arquivo?.pdf").is_err());
     }

@@ -3,7 +3,7 @@
   "company": "Northwind",
   "job_title": "Full Stack Engineer",
   "job_description": "Node.js, APIs REST, PostgreSQL, Docker, AWS e observabilidade sao requisitos da vaga.",
-  "base_model": "02_fullstack_node",
+  "base_model": "fullstack",
   "template": "compact",
   "formats": ["pdf", "docx", "json"]
 }

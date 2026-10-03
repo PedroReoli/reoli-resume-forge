@@ -16,7 +16,7 @@
       "source": "./automation-jobs/acme-frontend.json",
       "output": {
         "folder": "acme",
-        "name": "pedro-acme-frontend"
+        "name": "candidato-acme-frontend"
       }
     },
     {
@@ -25,7 +25,7 @@
       "output": {
         "directory": "../output/automation-custom",
         "folder": "northwind",
-        "name": "pedro-northwind-fullstack"
+        "name": "candidato-northwind-fullstack"
       }
     },
     {
@@ -33,7 +33,7 @@
       "company": "Contoso",
       "job_title": "Tech Lead",
       "job_description": "Lideranca tecnica, arquitetura, observabilidade, cloud e mentoria.",
-      "base_model": "04_tech_lead",
+      "base_model": "fullstack",
       "template": "executive-bold",
       "formats": "pdf,json",
       "output": {

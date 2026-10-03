@@ -5,7 +5,8 @@ Editor desktop e compilador headless, local-first, para criar currículos legív
 ## O que entrega
 
 - GUI Dark Tech em split view, com sumário responsivo, editor estruturado e prova A4 que renderiza no Tauri o mesmo PDF produzido pelo core Rust. A edição inline continua disponível como modo rápido e explicitamente aproximado.
-- Cinco arquétipos nativos: frontend, full stack Node.js, full stack .NET, tech lead e internacional em inglês.
+- Um exemplo público Full Stack, totalmente fictício e neutro, usado apenas como ponto de partida.
+- Biblioteca local extensível para criar, salvar, abrir, clonar, renomear e excluir quantos perfis forem necessários, sem alterar o exemplo público.
 - Matcher ATS determinístico, com requisitos obrigatórios ponderados, 306 competências em 13 áreas profissionais e indicação dos termos atendidos/ausentes.
 - Tailoring conservador: reordena apenas evidências existentes e nunca fabrica experiências, tecnologias ou métricas.
 - Oito layouts em uma galeria visual comparativa: **Classic Reoli**, Tech Minimalist, Modern Split, Executive Bold, Academic, Clean Slate, Compact Linear e Executive Accent; a escolha acompanha a variante JSON salva.
@@ -29,7 +30,7 @@ Instale `ReoliResumeSetup-*.exe` e abra um terminal novo. `reoliresume` sem argu
 ```powershell
 reoliresume generate --profile .\examples\profile.example.json --template classic --format pdf,docx --out .\dist
 reoliresume tailor --job .\examples\job.json --profile .\examples\profile.example.json --template executive --format pdf,docx --out .\dist
-reoliresume batch --jobs .\examples\jobs.json --model 01_frontend --format pdf --out .\lote
+reoliresume batch --jobs .\examples\jobs.json --model fullstack --format pdf --out .\lote
 reoliresume run --manifest .\examples\automation-manifest.json --dry-run
 reoliresume
 ```
@@ -38,13 +39,13 @@ O instalador registra o diretório do aplicativo no `PATH` do usuário e remove 
 
 ## Interface
 
-1. Escolha um arquétipo e compare os oito layouts pela galeria visual. A escolha fica em rascunho até **Usar modelo**; cancelar ou pressionar `Esc` preserva o currículo atual. Também é possível importar um perfil JSON.
+1. Comece pelo exemplo fictício Full Stack, crie um perfil em branco ou importe um JSON. O botão **Perfil** abre a biblioteca local, onde cada variação pode ser salva, clonada, renomeada, aberta ou excluída de forma independente.
 2. Em **Formatação do documento**, comece pela mesa de oito aparências prontas — no mobile, deslize a faixa de miniaturas — ou abra **Ajustes finos** para combinar qualquer layout com uma das seis paletas e quatro famílias tipográficas. Depois, reordene, oculte ou adicione seções pelo sumário; em telas estreitas, a faixa compacta permanece visível e acompanha automaticamente o bloco em edição.
 3. Expanda somente a experiência ou projeto em edição; mova, duplique ou remova fichas para priorizar evidências e altere os campos à esquerda ou no modal de foco. O modo **Editar** permite ajustes inline rápidos; volte a **PDF fiel** para revisar geometria, fontes e quebras reais. Use `Ctrl+Z` e `Ctrl+Y` fora dos campos para navegar pelo histórico.
 4. Cole a descrição completa da vaga para calcular obrigatórios, desejáveis, senioridade, forças e lacunas.
 5. Use **Criar versão adaptada** para priorizar fatos já presentes no perfil.
 6. Confira o indicador `N / 2 A4` no modo **PDF fiel**. A contagem vem do arquivo efetivamente compilado. Quando houver excesso ou espaço ocioso, abra o assistente para aplicar a densidade recomendada sem apagar conteúdo; a mudança entra no histórico e pode ser desfeita.
-7. Salve a versão editável com `Ctrl+S` (JSON); conteúdo, estrutura e template serão restaurados na importação. O cabeçalho e a barra de status indicam alterações pendentes, e o nome sugerido usa a pessoa do perfil. Depois, revise a auditoria ATS e exporte com `Ctrl+P` (PDF), `Ctrl+D` (DOCX) ou `Ctrl+M` (Markdown).
+7. Salve o perfil atual na biblioteca local com `Ctrl+S`. Para backup, portabilidade ou automação, use **Exportar JSON**; conteúdo, estrutura e template serão restaurados ao importar esse arquivo. Depois, revise a auditoria ATS e exporte com `Ctrl+P` (PDF), `Ctrl+D` (DOCX) ou `Ctrl+M` (Markdown).
 
 No aplicativo desktop, o preview inicia em **PDF fiel** e **Ajustado**. O PDF é gerado localmente pelo mesmo compilador Rust da exportação e desenhado em canvas pelo PDF.js, sem upload ou servidor. Use `–` ou `+` para assumir controle manual do zoom; o botão de encaixe restaura a escala responsiva. No navegador de desenvolvimento, o modo editável funciona como fallback aproximado porque o core Tauri não está disponível.
 
@@ -93,4 +94,4 @@ O core Rust não depende do React. GUI e CLI chamam as mesmas funções de anál
 
 ## Licença
 
-[MIT](LICENSE). Os arquétipos incluídos são dados editáveis de demonstração do mantenedor; qualquer pessoa pode criar ou importar seu próprio perfil sem alterar o código.
+[MIT](LICENSE). O único perfil incluído é um exemplo Full Stack fictício com dados reservados para documentação. Perfis reais permanecem locais e não precisam ser adicionados ao código-fonte.

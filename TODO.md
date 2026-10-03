@@ -3,7 +3,7 @@
 ## v1.0.0 — concluído
 
 - [x] Scaffold Tauri v2 + React 19 + TypeScript strict + Tailwind CSS.
-- [x] Cinco arquétipos nativos e importação de perfil JSON.
+- [x] Perfis de exemplo e importação de perfil JSON.
 - [x] Core ATS isolado da interface, com testes unitários.
 - [x] Tailoring conservador sem invenção de evidências.
 - [x] Split view responsivo e edição A4 bidirecional.
@@ -60,9 +60,45 @@
 - [x] Operations Console com builds portátil, instalável e release completa.
 - [x] Pipeline de release publicando portátil, instalador e checksums.
 
+## v2.2.0 — implementação concluída, release pendente
+
+- [x] Distribuição pública reduzida a um único exemplo Full Stack fictício, sem dados pessoais do mantenedor.
+- [x] Biblioteca local extensível para criar, salvar, abrir, clonar, renomear e excluir perfis independentes.
+- [x] `Ctrl+S` salva o perfil em edição localmente; importação e exportação JSON permanecem disponíveis para backup e automação.
+- [x] CLI, manifesto e exemplos públicos padronizados no modelo neutro `fullstack`, mantendo perfis externos por job.
+- [x] Fluxo da biblioteca validado em desktop e viewport móvel, incluindo persistência após recarregar.
+
+## Fechamento da v2.2.0 — fazer no próximo ciclo
+
+### P0 — obrigatório antes de publicar
+
+- [ ] Definir a compatibilidade dos IDs antigos da CLI (`01_frontend`, `02_fullstack_node`, `03_fullstack_dotnet`, `04_tech_lead` e `05_internacional_en`): criar aliases ocultos apontando para o exemplo neutro ou registrar a remoção como mudança incompatível. O comando `models` deve continuar exibindo somente `fullstack`.
+- [ ] Atualizar a versão de `2.1.0` para `2.2.0` em `package.json`, `package-lock.json`, `src-tauri/Cargo.toml`, `src-tauri/Cargo.lock`, `src-tauri/tauri.conf.json` e na barra de status da interface.
+- [ ] Executar `npm run verify` e registrar a passagem conjunta de lint, build TypeScript/Vite, testes de interface, testes do Operations Console e testes Rust.
+- [ ] Executar `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings` sem warnings.
+- [ ] Executar `npm run build:release` e confirmar os novos artefatos `release/bin/reoliresume.exe` e `release/installer/ReoliResumeSetup-2.2.0.exe`, incluindo seus arquivos SHA-256.
+- [ ] Validar o binário compilado com `version`, `capabilities`, `models`, `templates`, `schema`, `validate --manifest`, `run --manifest --dry-run` e uma geração real por manifesto. A aceitação exige `models` com apenas `fullstack`, saída JSON válida e PDF/DOCX/JSON/Markdown nos caminhos configurados.
+- [ ] Fazer uma inspeção visual final de pelo menos um PDF linear e do `modern-split`, verificando régua dos títulos, alinhamento, quebras de página, texto selecionável e links clicáveis.
+- [ ] Testar o instalador em um usuário ou máquina Windows limpa: instalar, abrir por duplo clique, executar `reoliresume version` em um terminal novo, gerar um currículo e desinstalar confirmando a remoção do `PATH`.
+
+### P1 — recomendado após o fechamento
+
+- [ ] Automatizar testes da biblioteca local para nome duplicado, armazenamento corrompido, exclusão do perfil ativo, persistência e importação/exportação.
+- [ ] Transformar o fluxo manual criar → salvar → clonar → renomear → recarregar → excluir em teste end-to-end executado no CI.
+- [ ] Avaliar divisão de código do frontend para reduzir o aviso de chunk JavaScript acima de 500 kB, sem atrasar a release se o tempo de abertura continuar aceitável.
+- [ ] Assinar instalador e portátil com Authenticode e documentar certificado, timestamp e rotação segura.
+
+### Estado validado nesta etapa
+
+- [x] `npm run lint`, `npm run build` e os 55 testes Rust passaram após a implementação da biblioteca e do perfil neutro.
+- [x] Os 28 testes de interface passaram após a atualização dos exemplos públicos.
+- [x] Todos os JSONs em `examples/` foram parseados com sucesso.
+- [x] Validação manual responsiva não encontrou erros no console e confirmou persistência, clonagem, renomeação e exclusão.
+- [ ] A release 2.2.0 ainda não foi compilada nem homologada; os executáveis 2.1.0 existentes são anteriores a esta etapa.
+
 ## Próximos ciclos
 
-- [ ] Assinatura Authenticode para releases públicos.
+- [ ] Catálogo de perfis iniciais distribuídos separadamente, sem dados pessoais e sem aumentar o conteúdo embarcado no executável.
 - [ ] Catálogo de templates mantidos pela comunidade além dos oito nativos.
 - [ ] Validação visual automatizada de regressões do A4.
 - [ ] Importador assistido de currículos existentes.

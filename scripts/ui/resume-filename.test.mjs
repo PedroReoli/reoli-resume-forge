@@ -3,7 +3,7 @@ import test from 'node:test';
 import { resumeFilename } from '../../src/domain/resumeFilename.ts';
 
 test('cria nome reconhecível para a variante editável', () => {
-  assert.equal(resumeFilename('Pedro Lucas Reis', 'json'), 'curriculo_pedro_lucas_reis.json');
+  assert.equal(resumeFilename('Pessoa Exemplo', 'json'), 'curriculo_pessoa_exemplo.json');
 });
 
 test('normaliza acentos e extensão Markdown', () => {

@@ -14,7 +14,7 @@ Tauri v2 com core e CLI em Rust, interface React 19 com TypeScript strict e Tail
 
 - Profissionais de diferentes áreas, ao criar, adaptar, revisar e exportar currículos para vagas específicas.
 - Agentes de IA e automações locais, ao gerar currículos individualmente ou em lote pela CLI `reoliresume`.
-- Contribuidores open source, ao evoluir arquétipos, exportadores e regras de matching sem acessar dados privados externos ao repositório.
+- Contribuidores open source, ao evoluir templates, exportadores e regras de matching sem acessar dados privados externos ao repositório.
 
 ## Product Purpose
 
@@ -22,16 +22,17 @@ O Reoli Resume Forge transforma perfis profissionais estruturados e descrições
 
 ## Positioning
 
-O diferencial é um motor local e determinístico que combina cinco arquétipos comprovados, cobertura ponderada de keywords, reordenação de evidências existentes e exportação multiformato no mesmo executável usado pela interface desktop.
+O diferencial é um motor local e determinístico que combina perfis independentes, oito layouts visuais, cobertura ponderada de keywords, reordenação de evidências existentes e exportação multiformato no mesmo executável usado pela interface desktop.
 
 ## Operating Context
 
-O fluxo principal é selecionar um arquétipo, editar seções, colar uma Job Description, revisar termos atendidos e ausentes, acompanhar o preview paginado e exportar. Automações usam `generate`, `tailor`, `batch` e `ui`, com arquivos JSON locais e saídas em diretórios escolhidos pelo operador.
+O fluxo principal é abrir, criar ou clonar um perfil local, escolher o layout, editar seções, colar uma Job Description, revisar termos atendidos e ausentes, acompanhar o preview paginado e exportar. Automações usam `generate`, `tailor`, `batch`, `run --manifest` e `ui`, com arquivos JSON locais e saídas em diretórios escolhidos pelo operador.
 
 ## Capabilities and Constraints
 
-- Cinco arquétipos nativos: frontend, full stack Node.js, full stack .NET, tech lead e internacional em inglês.
-- Três layouts ATS-friendly: Clean Slate, Compact Linear e Executive Accent.
+- Um exemplo Full Stack fictício embarcado; perfis reais e especializados são criados localmente ou fornecidos em JSON.
+- Biblioteca local extensível com criação, salvamento, clonagem, renomeação, abertura, exclusão, importação e exportação de perfis.
+- Oito layouts nativos, com indicação explícita de risco ATS para opções visuais em duas colunas.
 - Score ATS de 0 a 100 baseado em requisitos reconhecidos, com maior peso para termos obrigatórios.
 - Tailoring só pode reordenar ou destacar evidências existentes; não pode fabricar fatos.
 - Entradas JSON, textos de vaga e caminhos de saída devem ter schema, limites e proteção contra path traversal.
@@ -48,7 +49,7 @@ O fluxo principal é selecionar um arquétipo, editar seções, colar uma Job De
 
 ## Evidence on Hand
 
-- O motor e os arquétipos foram migrados de fontes privadas validadas, que não são dependências do runtime nem fazem parte da distribuição Open Source.
+- O motor e as regras de composição foram migrados de fontes privadas validadas, que não são dependências do runtime nem fazem parte da distribuição Open Source.
 - Não existem depoimentos, clientes do produto, preço ou benchmarks próprios do aplicativo; a interface não deve inventá-los.
 
 ## Product Principles
