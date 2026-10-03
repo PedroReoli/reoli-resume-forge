@@ -27,11 +27,16 @@
     }
   },
   "bundle": {
-    "active": false,
-    "targets": "all",
+    "active": true,
+    "targets": ["nsis"],
     "windows": {
       "webviewInstallMode": {
-        "type": "skip"
+        "type": "embedBootstrapper"
+      },
+      "nsis": {
+        "installMode": "currentUser",
+        "installerHooks": "./windows/installer-hooks.nsh",
+        "startMenuFolder": "Reoli"
       }
     }
   }
