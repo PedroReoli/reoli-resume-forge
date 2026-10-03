@@ -8,13 +8,13 @@ import { formatBytes, inspectReleaseArtifacts } from './actions.mjs';
 
 test('valida o checksum do executável portátil', () => {
   const directory = mkdtempSync(join(tmpdir(), 'reoli-ops-'));
-  const executablePath = join(directory, 'reoli-cv.exe');
-  const checksumPath = join(directory, 'reoli-cv.sha256');
+  const executablePath = join(directory, 'reoliresume.exe');
+  const checksumPath = join(directory, 'reoliresume.sha256');
   const bytes = Buffer.from('portable-binary');
   const sha256 = createHash('sha256').update(bytes).digest('hex');
 
   writeFileSync(executablePath, bytes);
-  writeFileSync(checksumPath, `${sha256}  reoli-cv.exe\n`);
+  writeFileSync(checksumPath, `${sha256}  reoliresume.exe\n`);
 
   const result = inspectReleaseArtifacts({ executablePath, checksumPath });
   assert.equal(result.state, 'ready');
@@ -29,10 +29,10 @@ test('distingue release ausente e checksum inválido', () => {
   assert.equal(missing.state, 'missing');
 
   const directory = mkdtempSync(join(tmpdir(), 'reoli-ops-'));
-  const executablePath = join(directory, 'reoli-cv.exe');
-  const checksumPath = join(directory, 'reoli-cv.sha256');
+  const executablePath = join(directory, 'reoliresume.exe');
+  const checksumPath = join(directory, 'reoliresume.sha256');
   writeFileSync(executablePath, 'changed');
-  writeFileSync(checksumPath, `${'0'.repeat(64)}  reoli-cv.exe\n`);
+  writeFileSync(checksumPath, `${'0'.repeat(64)}  reoliresume.exe\n`);
   assert.equal(inspectReleaseArtifacts({ executablePath, checksumPath }).state, 'invalid');
 });
 

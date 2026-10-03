@@ -9,7 +9,8 @@ test('mantém Tauri Dev como ação direta padrão de desenvolvimento', () => {
 });
 
 test('aceita apenas aliases declarados no catálogo', () => {
-  assert.equal(normalizeDirectAction('BUILD'), 'build');
+  assert.equal(normalizeDirectAction('BUILD'), 'build-release');
+  assert.equal(normalizeDirectAction('installer'), 'build-installer');
   assert.equal(normalizeDirectAction(' desconhecido '), null);
   assert.ok(Object.isFrozen(directActions));
 });

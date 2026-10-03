@@ -8,8 +8,8 @@ import { captureProcess, failure, runProcess, success, warning } from './termina
 
 const currentDirectory = dirname(fileURLToPath(import.meta.url));
 export const projectRoot = resolve(currentDirectory, '..', '..');
-export const releaseExecutable = resolve(projectRoot, 'release', 'bin', 'reoli-cv.exe');
-const releaseChecksum = resolve(projectRoot, 'release', 'bin', 'reoli-cv.sha256');
+export const releaseExecutable = resolve(projectRoot, 'release', 'bin', 'reoliresume.exe');
+const releaseChecksum = resolve(projectRoot, 'release', 'bin', 'reoliresume.sha256');
 const packageJson = JSON.parse(readFileSync(resolve(projectRoot, 'package.json'), 'utf8'));
 const npmCli = process.env.npm_execpath;
 const cargoExecutable = process.platform === 'win32' ? 'cargo.exe' : 'cargo';
@@ -125,6 +125,7 @@ export function runCliSmoke() {
     '--model', '01_frontend',
     '--template', 'clean',
     '--format', 'pdf,docx,json,md',
+    '--on-conflict', 'overwrite',
     '--out', output,
   ], 'Smoke test da CLI');
 }
@@ -156,6 +157,14 @@ export function buildPortable() {
   return npm('build:portable', 'Build portátil Windows');
 }
 
+export function buildInstaller() {
+  return npm('build:installer', 'Instalador Windows NSIS');
+}
+
+export function buildRelease() {
+  return npm('build:release', 'Release completa Windows');
+}
+
 export function runDoctor() {
   const checks = [
     ['Node.js', process.version],
@@ -185,7 +194,7 @@ export function runDoctor() {
 }
 
 export function openReleaseDirectory() {
-  const directory = resolve(projectRoot, 'release', 'bin');
+  const directory = resolve(projectRoot, 'release');
   mkdirSync(directory, { recursive: true });
   if (process.platform !== 'win32') {
     warning(`Diretório da release: ${directory}`);
@@ -193,6 +202,6 @@ export function openReleaseDirectory() {
   }
   const child = spawn('explorer.exe', [directory], { detached: true, stdio: 'ignore' });
   child.unref();
-  success('Pasta release/bin aberta no Explorer.');
+  success('Pasta release aberta no Explorer.');
   return true;
 }

@@ -10,7 +10,10 @@ export const directActions = Object.freeze({
   verify: 'verify',
   rust: 'rust',
   audit: 'audit',
-  build: 'build',
+  build: 'build-release',
+  portable: 'build-portable',
+  installer: 'build-installer',
+  'build-release': 'build-release',
   doctor: 'doctor',
   folder: 'folder',
 });
@@ -30,7 +33,9 @@ export const directUsage = [
   ['verify', 'executa lint, build web e testes'],
   ['rust', 'executa fmt, Clippy e testes Rust'],
   ['audit', 'audita dependências npm'],
-  ['build', 'gera release/bin/reoli-cv.exe'],
+  ['build', 'gera o executavel portatil e o instalador Windows'],
+  ['portable', 'gera release/bin/reoliresume.exe'],
+  ['installer', 'gera release/installer/ReoliResumeSetup-*.exe'],
   ['doctor', 'diagnostica o ambiente local'],
   ['folder', 'abre release/bin no Explorer'],
 ];

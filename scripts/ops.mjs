@@ -1,6 +1,8 @@
 import process from 'node:process';
 import {
+  buildInstaller,
   buildPortable,
+  buildRelease,
   openRelease,
   openReleaseDirectory,
   projectSnapshot,
@@ -25,7 +27,9 @@ const actions = {
   verify: runVerify,
   rust: runRustQuality,
   audit: runAudit,
-  build: buildPortable,
+  'build-portable': buildPortable,
+  'build-installer': buildInstaller,
+  'build-release': buildRelease,
   doctor: runDoctor,
   folder: openReleaseDirectory,
 };
@@ -45,14 +49,14 @@ function renderMainMenu() {
   renderBanner();
   section('DESENVOLVIMENTO');
   option('1', 'ABRIR DESKTOP', 'Tauri Dev + hot reload  [PADRÃO / ENTER]', color.green);
-  option('2', 'EXECUTAR RELEASE', 'Abre release/bin/reoli-cv.exe');
+  option('2', 'EXECUTAR RELEASE', 'Abre release/bin/reoliresume.exe');
   option('3', 'CLI & AUTOMAÇÃO', 'Help, versão e smoke multiformato', color.blue);
   section('QUALIDADE');
   option('4', 'VALIDAÇÕES', 'Verify, Rust rigoroso e auditoria', color.yellow);
   option('5', 'DIAGNÓSTICO', 'Node, npm, Rust, Cargo, Git e checksum');
   section('ENTREGA');
-  option('6', 'BUILD PORTÁTIL', 'Compila o executável único Windows', color.magenta);
-  option('7', 'ABRIR RELEASE/BIN', 'Mostra os artefatos no Explorer');
+  option('6', 'BUILD COMPLETO', 'Valida, compila portátil e instalador NSIS', color.magenta);
+  option('7', 'MAIS BUILDS', 'Portátil, instalador ou pasta de artefatos');
   console.log(`\n  ${color.dim}[0] Sair · aliases: npm run ops -- doctor | verify | build${color.reset}`);
   console.log(`  ${divider()}`);
 }
@@ -93,6 +97,26 @@ async function qualityMenu() {
   }
 }
 
+async function buildMenu() {
+  while (true) {
+    renderBanner();
+    section('ENTREGA WINDOWS');
+    option('1', 'RELEASE COMPLETA', 'Verify + portátil + instalador + checksums', color.magenta);
+    option('2', 'SOMENTE PORTÁTIL', 'Gera release/bin/reoliresume.exe');
+    option('3', 'SOMENTE INSTALADOR', 'Gera setup NSIS com comando global');
+    option('4', 'ABRIR ARTEFATOS', 'Abre release/bin no Explorer');
+    option('0', 'VOLTAR', 'Menu principal');
+    const choice = await ask(`\n  ${color.cyan}›${color.reset} Escolha [1]: `, '1');
+    if (choice === '0') return;
+    if (choice === '1') buildRelease();
+    else if (choice === '2') buildPortable();
+    else if (choice === '3') buildInstaller();
+    else if (choice === '4') openReleaseDirectory();
+    else failure('Opção inválida.');
+    await ask(`  ${color.dim}Pressione Enter para continuar...${color.reset}`);
+  }
+}
+
 function printHelp() {
   console.log('\nReoli Resume Forge Operations Console\n');
   console.log('Uso:');
@@ -114,11 +138,11 @@ async function interactiveMenu() {
     else if (choice === '3') await cliMenu();
     else if (choice === '4') await qualityMenu();
     else if (choice === '5') runDoctor();
-    else if (choice === '6') buildPortable();
-    else if (choice === '7') openReleaseDirectory();
+    else if (choice === '6') buildRelease();
+    else if (choice === '7') await buildMenu();
     else failure('Opção inválida.');
 
-    if (!['3', '4'].includes(choice)) {
+    if (!['3', '4', '7'].includes(choice)) {
       await ask(`  ${color.dim}Pressione Enter para voltar ao menu...${color.reset}`);
     }
   }
