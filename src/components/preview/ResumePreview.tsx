@@ -29,14 +29,36 @@ export function ResumePreview({ profile, template, onProfile }: ResumePreviewPro
           <InlineEditable label="Nome" value={profile.person.name} onChange={(value) => updatePerson('name', value)} className="resume-name" />
           <InlineEditable label="Headline" value={profile.headline} onChange={(headline) => onProfile({ ...profile, headline })} className="resume-headline" />
         </div>
-        <div className="resume-contact">
-          <InlineEditable label="E-mail" value={profile.person.email} onChange={(value) => updatePerson('email', value)} />
-          <InlineEditable label="Telefone" value={profile.person.phone} onChange={(value) => updatePerson('phone', value)} />
-          <InlineEditable label="Localização" value={profile.person.location} onChange={(value) => updatePerson('location', value)} />
-          <InlineEditable label="LinkedIn" value={profile.person.linkedin} onChange={(value) => updatePerson('linkedin', value)} />
-          <InlineEditable label="Portfólio" value={profile.person.portfolio} onChange={(value) => updatePerson('portfolio', value)} />
-          <InlineEditable label="GitHub" value={profile.person.github} onChange={(value) => updatePerson('github', value)} />
-        </div>
+        {template === 'classic' ? (
+          <div className="resume-contact resume-contact-classic">
+            <div className="resume-contact-line">
+              <InlineEditable label="Localização" value={profile.person.location} onChange={(value) => updatePerson('location', value)} />
+              <ContactSeparator />
+              <InlineEditable label="Preferência de trabalho" value={profile.person.work_preference} onChange={(value) => updatePerson('work_preference', value)} />
+            </div>
+            <div className="resume-contact-line">
+              <InlineEditable label="Telefone" value={profile.person.phone} onChange={(value) => updatePerson('phone', value)} />
+              <ContactSeparator />
+              <InlineEditable label="E-mail" value={profile.person.email} onChange={(value) => updatePerson('email', value)} />
+            </div>
+            <div className="resume-contact-line resume-contact-links">
+              <InlineEditable label="LinkedIn" value={profile.person.linkedin} onChange={(value) => updatePerson('linkedin', value)} />
+              <ContactSeparator />
+              <InlineEditable label="Portfólio" value={profile.person.portfolio} onChange={(value) => updatePerson('portfolio', value)} />
+              <ContactSeparator />
+              <InlineEditable label="GitHub" value={profile.person.github} onChange={(value) => updatePerson('github', value)} />
+            </div>
+          </div>
+        ) : (
+          <div className="resume-contact">
+            <InlineEditable label="E-mail" value={profile.person.email} onChange={(value) => updatePerson('email', value)} />
+            <InlineEditable label="Telefone" value={profile.person.phone} onChange={(value) => updatePerson('phone', value)} />
+            <InlineEditable label="Localização" value={profile.person.location} onChange={(value) => updatePerson('location', value)} />
+            <InlineEditable label="LinkedIn" value={profile.person.linkedin} onChange={(value) => updatePerson('linkedin', value)} />
+            <InlineEditable label="Portfólio" value={profile.person.portfolio} onChange={(value) => updatePerson('portfolio', value)} />
+            <InlineEditable label="GitHub" value={profile.person.github} onChange={(value) => updatePerson('github', value)} />
+          </div>
+        )}
       </header>
 
       {template === 'modern-split' ? (
@@ -51,4 +73,8 @@ export function ResumePreview({ profile, template, onProfile }: ResumePreviewPro
       )}
     </article>
   );
+}
+
+function ContactSeparator() {
+  return <span className="resume-contact-separator" aria-hidden="true">|</span>;
 }

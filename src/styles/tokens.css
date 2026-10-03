@@ -20,4 +20,7 @@
   --paper-ink: #171b18;
   --paper-muted: #565e59;
   --mono: "JetBrains Mono Variable", "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+  --radius-control: 5px;
+  --radius-panel: 8px;
+  --radius-floating: 10px;
 }

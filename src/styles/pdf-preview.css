@@ -10,7 +10,7 @@
   gap: 2px;
   padding: 2px;
   border: 1px solid var(--line);
-  border-radius: 3px;
+  border-radius: var(--radius-control);
   background: #0d1310;
 }
 
@@ -21,7 +21,7 @@
   gap: 5px;
   padding: 0 7px;
   border: 0;
-  border-radius: 2px;
+  border-radius: 4px;
   background: transparent;
   color: #849089;
   font-size: 9px;
@@ -103,7 +103,7 @@
   gap: 7px;
   padding: 7px 9px;
   border: 1px solid #405148;
-  border-radius: 3px;
+  border-radius: var(--radius-control);
   background: rgb(12 18 14 / 90%);
   box-shadow: 0 8px 28px rgb(0 0 0 / 30%);
   color: #aab8af;

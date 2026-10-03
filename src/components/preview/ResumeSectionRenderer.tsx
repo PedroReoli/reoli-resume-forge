@@ -41,9 +41,9 @@ export function ResumeSectionRenderer({ profile, sectionId, onProfile }: ResumeS
           {profile.education.map((item, index) => (
             <p className="education-line" key={`${item.degree}-${index}`}>
               <InlineEditable label="Curso" value={item.degree} onChange={(degree) => updateCollection(profile, onProfile, 'education', index, { degree })} />
-              <span> · </span>
+              <span> | </span>
               <InlineEditable label="Instituição" value={item.institution} onChange={(institution) => updateCollection(profile, onProfile, 'education', index, { institution })} />
-              <span> · </span>
+              <span> | </span>
               <InlineEditable label="Período da formação" value={item.dates} onChange={(dates) => updateCollection(profile, onProfile, 'education', index, { dates })} />
             </p>
           ))}
@@ -57,7 +57,7 @@ export function ResumeSectionRenderer({ profile, sectionId, onProfile }: ResumeS
     return (
       <ResumeSection title={sectionLabel(profile, sectionId)} sectionId={sectionId}>
         <ul className="simple-resume-list">
-          {profile.certifications.map((item, index) => <li key={`${item.name}-${index}`}><strong>{item.name}</strong><span>{[item.issuer, item.date].filter(Boolean).join(' · ')}</span></li>)}
+          {profile.certifications.map((item, index) => <li key={`${item.name}-${index}`}>{[item.name, item.issuer, item.date].filter(Boolean).join(' | ')}</li>)}
         </ul>
       </ResumeSection>
     );
@@ -68,7 +68,7 @@ export function ResumeSectionRenderer({ profile, sectionId, onProfile }: ResumeS
     return (
       <ResumeSection title={sectionLabel(profile, sectionId)} sectionId={sectionId}>
         <ul className="simple-resume-list inline-list">
-          {profile.languages.map((item) => <li key={`${item.language}-${item.level}`}><strong>{item.language}</strong><span>{item.level}</span></li>)}
+          {profile.languages.map((item) => <li key={`${item.language}-${item.level}`}>{item.language}: {item.level}</li>)}
         </ul>
       </ResumeSection>
     );
@@ -97,7 +97,7 @@ function SkillsSection({ profile, onProfile }: { profile: ResumeProfile; onProfi
   }));
   const update = (group: string, next: string) => onProfile({
     ...profile,
-    skills: { ...profile.skills, [group]: next.split('·').map((item) => item.trim()).filter(Boolean) },
+    skills: { ...profile.skills, [group]: splitSkillValues(next) },
   });
 
   return (
@@ -123,8 +123,8 @@ function SkillsSection({ profile, onProfile }: { profile: ResumeProfile; onProfi
         <div className="resume-skills">
           {groups.map(({ group, values }) => (
             <p key={group}>
-              <strong>{group}</strong>
-              <InlineEditable label={`Competências: ${group}`} value={values.join(' · ')} onChange={(next) => update(group, next)} />
+              <strong>{group}:</strong>
+              <InlineEditable label={`Competências: ${group}`} value={values.join(', ')} onChange={(next) => update(group, next)} />
             </p>
           ))}
         </div>
@@ -150,7 +150,10 @@ function ExperienceSection({ profile, onProfile }: { profile: ResumeProfile; onP
                   <InlineEditable label="Empresa" value={item.company} onChange={(company) => update(index, { company })} className="resume-company" />
                   <InlineEditable label="Cargo" value={item.role} onChange={(role) => update(index, { role })} className="resume-role" />
                 </div>
-                <InlineEditable label="Período" value={item.dates} onChange={(dates) => update(index, { dates })} className="resume-date" />
+                <div className="resume-date">
+                  <InlineEditable label="Período" value={item.dates} onChange={(dates) => update(index, { dates })} />
+                  {[item.location, item.work_mode].filter(Boolean).map((value) => <span key={value}> | {value}</span>)}
+                </div>
               </div>
               <InlineEditable multiline label="Contexto da experiência" value={item.summary} onChange={(summary) => update(index, { summary })} className="resume-paragraph" />
               {profile.layout.experience_style === 'paragraphs' ? (
@@ -214,4 +217,8 @@ function hasMetric(value: string): boolean {
 
 function splitSentences(value: string): string[] {
   return value.split(/(?<=[.!?])\s+/).map((item) => item.trim()).filter(Boolean);
+}
+
+function splitSkillValues(value: string): string[] {
+  return value.split(/\s*(?:·|;|\n|,(?=\s))\s*/).map((item) => item.trim()).filter(Boolean);
 }

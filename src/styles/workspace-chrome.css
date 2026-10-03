@@ -1,7 +1,9 @@
 .history-actions {
   gap: 2px;
+  overflow: hidden;
   padding: 2px;
   border: 1px solid var(--line);
+  border-radius: var(--radius-control);
   background: #0d1310;
 }
 
@@ -38,6 +40,7 @@
   max-height: calc(100vh - 36px);
   overflow: auto;
   border: 1px solid #46574e;
+  border-radius: var(--radius-floating);
   background: #0e1511;
   box-shadow: 0 24px 70px rgb(0 0 0 / 65%);
 }
@@ -60,20 +63,20 @@
 .section-dialog header p, .focused-editor header p { margin: 4px 0 0; color: var(--muted); font-size: 10px; }
 .section-dialog > .field { margin: 15px 17px; }
 .section-kind-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; padding: 15px 17px 0; }
-.section-kind-grid button { min-height: 38px; border: 1px solid var(--line); background: #101813; color: var(--muted); font-size: 10px; }
+.section-kind-grid button { min-height: 38px; border: 1px solid var(--line); border-radius: var(--radius-control); background: #101813; color: var(--muted); font-size: 10px; }
 .section-kind-grid button[aria-checked="true"] { border-color: #66806d; background: #1b2b21; color: var(--accent-bright); }
 
 .focused-editor { width: min(980px, 100%); }
 .focused-editor-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.65fr); min-height: 430px; }
 .focused-compose { padding: 17px; border-right: 1px solid var(--line); }
 .formatting-toolbar { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
-.formatting-toolbar button { display: flex; min-height: 30px; align-items: center; gap: 6px; padding: 0 8px; border: 1px solid var(--line); background: #111915; color: var(--muted); font-size: 9.5px; }
+.formatting-toolbar button { display: flex; min-height: 30px; align-items: center; gap: 6px; padding: 0 8px; border: 1px solid var(--line); border-radius: var(--radius-control); background: #111915; color: var(--muted); font-size: 9.5px; }
 .focused-compose textarea { width: 100%; min-height: 300px; padding: 14px; resize: vertical; border: 1px solid #3a4940; background: #090e0b; font-family: var(--mono); font-size: 12px; line-height: 1.65; }
 .editor-counter { display: flex; justify-content: space-between; margin-top: 6px; color: var(--faint); font-family: var(--mono); font-size: 8.5px; }
 .keyword-suggestions { display: grid; gap: 7px; margin-top: 13px; }
 .keyword-suggestions > span { color: var(--muted); font-size: 10px; }
 .keyword-suggestions > div { display: flex; flex-wrap: wrap; gap: 5px; }
-.keyword-suggestions button { min-height: 26px; padding: 0 7px; border: 1px solid #3d5144; background: #142019; color: #bcd3c2; font-size: 9px; }
+.keyword-suggestions button { min-height: 26px; padding: 0 7px; border: 1px solid #3d5144; border-radius: var(--radius-control); background: #142019; color: #bcd3c2; font-size: 9px; }
 .keyword-suggestions small { color: #8d998f; font-size: 9px; }
 .focused-context-preview { padding: 24px; background: #f6f5ef; color: #1c2420; }
 .focused-context-preview > span { color: #6c756f; font-family: var(--mono); font-size: 8px; }
@@ -110,7 +113,7 @@
   gap: 9px;
   padding: 10px;
   border: 1px solid #3c4942;
-  border-radius: 8px;
+  border-radius: var(--radius-floating);
   background: rgb(11 16 13 / 94%);
   box-shadow: 0 18px 50px rgb(0 0 0 / 48%);
   backdrop-filter: blur(18px);
@@ -125,7 +128,7 @@
   gap: 9px;
   padding: 0 13px;
   border: 1px solid var(--line);
-  border-radius: 4px;
+  border-radius: var(--radius-panel);
   background: #121915;
   text-align: left;
 }
@@ -191,6 +194,7 @@ kbd { color: var(--muted); font-family: var(--mono); font-size: 9px; font-weight
   gap: 10px;
   padding: 12px 13px;
   border: 1px solid #486050;
+  border-radius: var(--radius-panel);
   background: #142019;
   box-shadow: 0 14px 36px rgb(0 0 0 / 45%);
   color: #d7e8da;

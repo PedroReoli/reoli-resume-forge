@@ -9,6 +9,10 @@
   .template-quick-switcher { grid-template-columns: 28px minmax(105px, 145px) 28px; }
 }
 
+@media (min-width: 1321px) and (max-width: 1600px) {
+  .workspace { grid-template-columns: minmax(680px, 48%) minmax(0, 52%); }
+}
+
 @media (min-width: 1041px) and (max-width: 1180px) {
   .save-profile-button {
     width: 36px;
@@ -61,6 +65,8 @@
   }
   .mobile-view-toggle button + button { border-left: 0; }
   .mobile-view-toggle button[aria-pressed="true"] { border-color: #52645a; background: #17231c; color: var(--accent-bright); }
+  .mobile-view-toggle button:first-child { border-radius: var(--radius-control) 0 0 var(--radius-control); }
+  .mobile-view-toggle button:last-child { border-radius: 0 var(--radius-control) var(--radius-control) 0; }
   .workspace.mobile-editor .preview-column { display: none; }
   .workspace.mobile-preview .editor-pane { display: none; }
   .editor-pane { overflow: visible; border-right: 0; }
@@ -81,6 +87,7 @@
   .navigator-list { display: flex; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
   .navigator-list::-webkit-scrollbar { display: none; }
   .navigator-item { min-width: 154px; grid-template-columns: minmax(0, 1fr) auto; border-right: 1px solid var(--line); border-bottom: 0; }
+  .navigator-item + .navigator-item { margin-top: 0; }
   .navigator-item.is-active { box-shadow: inset 0 -2px var(--accent); }
   .navigator-add { justify-content: center; padding: 0; border-top: 0; border-left: 1px solid var(--line-strong); }
   .navigator-add span { display: none; }

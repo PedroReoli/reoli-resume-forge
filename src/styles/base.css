@@ -19,6 +19,7 @@ button,
 input,
 textarea,
 select {
+  border-radius: var(--radius-control);
   color: inherit;
   font: inherit;
 }
