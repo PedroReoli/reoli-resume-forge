@@ -1,0 +1,44 @@
+{
+  "$schema": "../schemas/manifest.schema.json",
+  "version": 1,
+  "continue_on_error": true,
+  "defaults": {
+    "profile": "./profile.example.json",
+    "formats": ["pdf", "docx", "json", "md"],
+    "on_conflict": "rename",
+    "output": {
+      "directory": "../output/automation"
+    }
+  },
+  "jobs": [
+    {
+      "id": "acme-frontend",
+      "source": "./automation-jobs/acme-frontend.json",
+      "output": {
+        "folder": "acme",
+        "name": "pedro-acme-frontend"
+      }
+    },
+    {
+      "id": "northwind-fullstack",
+      "source": "./automation-jobs/northwind-fullstack.json",
+      "output": {
+        "directory": "../output/automation-custom",
+        "folder": "northwind",
+        "name": "pedro-northwind-fullstack"
+      }
+    },
+    {
+      "id": "vaga-inline",
+      "company": "Contoso",
+      "job_title": "Tech Lead",
+      "job_description": "Lideranca tecnica, arquitetura, observabilidade, cloud e mentoria.",
+      "base_model": "04_tech_lead",
+      "template": "executive-bold",
+      "formats": "pdf,json",
+      "output": {
+        "folder": "contoso"
+      }
+    }
+  ]
+}

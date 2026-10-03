@@ -1,0 +1,9 @@
+{
+  "$schema": "../../schemas/job.schema.json",
+  "company": "Acme",
+  "job_title": "Senior Frontend Engineer",
+  "job_description": "React, TypeScript, Next.js, testes automatizados, acessibilidade e CI/CD sao requisitos importantes.",
+  "extra_text": "Priorizar evidencias de Design Systems, Core Web Vitals e componentes reutilizaveis.",
+  "base_model": "01_frontend",
+  "template": "tech-minimalist"
+}

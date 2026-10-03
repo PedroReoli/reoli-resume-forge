@@ -1,88 +1,201 @@
-# Referência da CLI `reoli-cv`
+# Referência da CLI `reoliresume`
 
-## Convenções
+## Contrato para automações
 
-- Saída de sucesso: JSON em `stdout`.
-- Erro: mensagem em `stderr` e código de saída `2`.
-- `--format` aceita uma lista separada por vírgulas: `pdf,docx,json,md`.
-- `--template` aceita os oito IDs da tabela abaixo. Quando omitido, a CLI usa `config.template` do perfil e, para perfis antigos sem esse campo, `classic`.
-- A CLI respeita `config.palette` do perfil em PDF e DOCX. A paleta é parte da variante, não uma flag efêmera; perfis antigos usam as cores nativas do template.
-- A CLI também respeita `config.typeface`: `modern-sans`, `editorial-serif` e `technical-mono` são convertidas para famílias seguras em PDF e DOCX; `template` mantém a tipografia nativa do layout.
-- A CLI aplica `layout.density` (`compact`, `balanced` ou `relaxed`) às margens, entrelinhas e espaçamento dos PDF/DOCX. Perfis antigos ou valores desconhecidos usam `balanced`.
-- Aparências prontas escolhidas na GUI são salvas como campos normais de template, paleta e layout; ao receber essa variante JSON, a CLI reproduz a composição sem exigir uma flag de aparência.
-- `--out` aponta para um diretório. Ele é criado quando necessário.
+- Sucesso: JSON em `stdout` e exit code `0`.
+- Erro: JSON em `stderr` e exit code `2`.
+- Nenhum comando headless abre prompts interativos.
 - Entradas locais são limitadas a 1 MiB.
+- Lotes e manifestos aceitam de 1 a 500 jobs.
+- `--format` aceita `pdf,docx,json,md`.
+- `--on-conflict` aceita `error`, `rename` ou `overwrite`; o padrão seguro é `error`.
+- `--dry-run` valida e calcula caminhos sem criar diretórios ou arquivos.
 
-## `ui`
-
-Abre a interface desktop. Também é o comportamento padrão sem argumentos.
+Depois de instalar, abra um terminal novo para que o Windows carregue o `PATH` atualizado:
 
 ```powershell
-reoli-cv.exe ui
-reoli-cv.exe
+reoliresume version
+reoliresume capabilities
 ```
 
-## `generate`
-
-Gera o arquétipo sem tailoring.
+O portátil também funciona sem instalação:
 
 ```powershell
-reoli-cv.exe generate --model 01_frontend --template clean --format pdf,docx --out .\dist
+& ".\reoliresume.exe" capabilities
 ```
 
-Opções obrigatórias: `--model`, `--out`. O formato padrão é `pdf`; os arquétipos nativos sem template explícito usam `classic`.
+## Interface desktop
 
-## `tailor`
-
-Analisa uma vaga e reordena evidências do perfil.
+Sem argumentos ou com `ui`, o mesmo binário abre a interface:
 
 ```powershell
-reoli-cv.exe tailor `
-  --job .\examples\job.json `
-  --profile .\examples\profile.example.json `
-  --template executive `
+reoliresume
+reoliresume ui
+```
+
+## Geração direta
+
+Gere a partir de um perfil JSON arbitrário:
+
+```powershell
+reoliresume generate `
+  --profile .\perfil.json `
+  --template classic `
+  --format pdf,docx,json,md `
+  --out .\saida
+```
+
+Ou use um arquétipo embarcado:
+
+```powershell
+reoliresume generate --model 01_frontend --format pdf --out .\saida
+```
+
+`--name` define o nome-base sem extensão. Se `--profile` e `--model` forem informados juntos, o perfil fornece o conteúdo e o modelo serve como metadado do tailoring.
+
+## Adaptação para uma vaga
+
+```powershell
+reoliresume tailor `
+  --job .\vaga.json `
+  --profile .\perfil.json `
+  --template executive-bold `
   --format pdf,docx,json `
-  --out .\dist
+  --out .\saida
 ```
 
-Use `--model ID` no lugar de `--profile` para partir de um arquétipo. Se ambos forem omitidos, o padrão é `01_frontend`. `--job` aceita texto simples ou JSON com uma das chaves: `job_description`, `jobDescription`, `jd_text` ou `description`.
+`--job` aceita texto simples ou JSON com `job_description`, `jobDescription`, `jd_text` ou `description`. A resposta inclui `score`, `matched`, `missing`, `detectedDomains` e `files`.
 
-A flag `--confirmed-us-overlap` deve ser usada somente quando a pessoa confirmou disponibilidade real de sobreposição com o horário dos Estados Unidos:
+Use `--confirmed-us-overlap` somente quando a pessoa confirmou disponibilidade real de sobreposição com o horário dos Estados Unidos.
+
+## Lote simples
+
+`batch` processa um array JSON no mesmo diretório de saída:
 
 ```powershell
-reoli-cv.exe tailor --job vaga.json --model 05_internacional_en --confirmed-us-overlap --out .\dist
+reoliresume batch `
+  --jobs .\examples\jobs.json `
+  --model 01_frontend `
+  --template compact `
+  --format pdf,docx,json `
+  --on-conflict rename `
+  --out .\lote
 ```
 
-O JSON de sucesso inclui `score`, `matched`, `missing` e `detectedDomains`. Cada domínio informa `id`, `label` e `matchedKeywords`, permitindo que automações distingam, por exemplo, uma vaga de Supply Chain de uma vaga Jurídica sem inferir competências ausentes do perfil.
+Cada item aceita `company`, `job_title`, `job_description`, `base_model`, perfil embutido em `profile`, `template` e `confirmed_us_overlap`. Os nomes recebem índice estável para que vagas repetidas não se sobrescrevam.
 
-## `batch`
+## Manifesto mestre
 
-Processa de 1 a 500 vagas descritas por um array JSON.
+`run --manifest` é o modo recomendado para agentes de IA. Um único arquivo mestre pode apontar para diversos JSONs independentes, e cada job pode escolher perfil, modelo, texto adicional, template, formatos, diretório, subpasta e nome-base próprios.
 
 ```powershell
-reoli-cv.exe batch --jobs .\examples\jobs.json --model 02_fullstack_node --template compact --format pdf --out .\lote
+reoliresume validate --manifest .\automacao.json
+reoliresume run --manifest .\automacao.json --dry-run
+reoliresume run --manifest .\automacao.json
 ```
 
-Cada item aceita `company`, `job_title`, `job_description`, `base_model`, `profile`, `template` e `confirmed_us_overlap`. Um perfil embutido no item tem precedência sobre o modelo; um template no item tem precedência sobre `--template`. Cada resultado do lote também informa `detectedDomains`.
+Exemplo:
 
-A resolução do modelo visual segue esta ordem: `template` da vaga no lote, `--template`, `config.template` do perfil e, por último, `classic`.
+```json
+{
+  "$schema": "./schemas/manifest.schema.json",
+  "version": 1,
+  "continue_on_error": true,
+  "defaults": {
+    "profile": "./profiles/pedro.json",
+    "formats": ["pdf", "docx", "json", "md"],
+    "on_conflict": "rename",
+    "output": {
+      "directory": "./curriculos"
+    }
+  },
+  "jobs": [
+    {
+      "id": "acme-frontend",
+      "source": "./vagas/acme.json",
+      "template": "tech-minimalist",
+      "output": {
+        "folder": "acme",
+        "name": "pedro-acme-frontend"
+      }
+    },
+    {
+      "id": "northwind-backend",
+      "source": "./vagas/northwind.json",
+      "profile": "./profiles/backend.json",
+      "template": "compact",
+      "formats": ["pdf", "json"],
+      "output": {
+        "directory": "D:/Entregas",
+        "folder": "northwind",
+        "name": "pedro-northwind-backend"
+      }
+    }
+  ]
+}
+```
+
+Um JSON de vaga referenciado é independente:
+
+```json
+{
+  "company": "Acme",
+  "job_title": "Senior Frontend Engineer",
+  "job_description": "React, TypeScript, testes e acessibilidade.",
+  "extra_text": "Priorizar Design Systems e Core Web Vitals.",
+  "base_model": "01_frontend",
+  "template": "tech-minimalist"
+}
+```
+
+### Resolução de caminhos e precedência
+
+- Caminhos no manifesto são relativos ao diretório do manifesto.
+- Caminhos dentro de um JSON referenciado são relativos ao próprio JSON.
+- `output.folder` deve ser relativo e não aceita `..`.
+- `output.name` é um nome-base, sem extensão e sem caracteres inválidos do Windows.
+- Um job do manifesto sobrescreve o JSON referenciado; o JSON referenciado sobrescreve `defaults`.
+- Flags da CLI sobrescrevem todo o manifesto. `--out` troca a raiz global, mas preserva a subpasta de cada job.
+- `continue_on_error: true` processa os jobs restantes e ainda retorna exit code `2` quando algum falha.
+- Jobs com `enabled: false` são ignorados.
+
+O exemplo completo está em `examples/automation-manifest.json`.
+
+## Validação e descoberta para IA
+
+```powershell
+reoliresume validate --profile .\perfil.json
+reoliresume validate --job .\vaga.json
+reoliresume validate --jobs .\vagas.json
+reoliresume validate --manifest .\automacao.json
+
+reoliresume templates
+reoliresume models
+reoliresume capabilities
+reoliresume schema --type profile
+reoliresume schema --type job
+reoliresume schema --type batch
+reoliresume schema --type manifest
+```
+
+Os schemas versionados ficam em `schemas/`. Uma IA pode consultar `capabilities`, pedir o schema adequado, validar a entrada e somente depois executar a geração.
 
 ## Templates
 
-| ID | Característica |
-| --- | --- |
-| `classic` | Padrão Reoli do Vault: Arial, azul-marinho, cabeçalho central e divisores finos |
-| `tech-minimalist` | Alta densidade, tipografia técnica e ênfase em stack e métricas |
-| `modern-split` | Sidebar visual em duas colunas; prefira Classic/Compact em ATS legados |
-| `executive-bold` | Faixa institucional e hierarquia forte para liderança |
-| `academic` | Leitura cronológica com ênfase em formação, cursos e publicações |
-| `clean` | Leitura arejada, hierarquia editorial e margens equilibradas |
-| `compact` | Maior densidade, tipografia sem serifa e espaçamento reduzido |
-| `executive` | Destaque executivo em verde profundo e hierarquia ampliada |
+| ID | Leitura ATS | Característica |
+| --- | --- | --- |
+| `classic` | Baixo risco | Padrão Reoli do Vault, linear e sóbrio |
+| `clean` | Baixo risco | Hierarquia editorial arejada |
+| `compact` | Baixo risco | Alta densidade e leitura linear |
+| `executive` | Baixo risco | Destaque executivo em verde profundo |
+| `tech-minimalist` | Baixo risco | Ênfase em stack e métricas |
+| `modern-split` | Risco médio | Duas colunas visuais; evite em ATS antigos |
+| `executive-bold` | Baixo risco | Hierarquia forte para liderança |
+| `academic` | Baixo risco | Formação, cursos e publicações |
 
-Todos preservam texto selecionável e links clicáveis em PDF/DOCX. `modern-split` usa duas colunas visuais; os demais mantêm leitura linear conservadora.
+Todos preservam texto selecionável e links clicáveis em PDF/DOCX.
 
-## Modelos
+## Modelos embarcados
 
 | ID | Foco |
 | --- | --- |
@@ -95,6 +208,6 @@ Todos preservam texto selecionável e links clicáveis em PDF/DOCX. `modern-spli
 ## Utilitários
 
 ```powershell
-reoli-cv.exe help
-reoli-cv.exe version
+reoliresume help
+reoliresume version
 ```

@@ -7,7 +7,8 @@ O Reoli Resume Forge separa regras de negócio, adaptação de plataforma e apre
 ```mermaid
 flowchart LR
   UI[React 19 GUI] --> IPC[Comandos Tauri]
-  CLI[CLI headless] --> CORE[Core Rust]
+  CLI[CLI headless] --> MANIFEST[Validação e manifesto]
+  MANIFEST --> CORE[Core Rust]
   IPC --> CORE
   DATA[Arquétipos JSON e catálogo ATS] --> CORE
   CORE --> ATS[Parser e score ATS]
@@ -26,7 +27,7 @@ flowchart LR
 | UI | `src/components/`, `src/hooks/` | Edição modular, prova PDF A4, fallback editável, acessibilidade e atalhos |
 | Bridge | `src/services/tauriBridge.ts` | Contrato IPC e fallback visual no navegador de desenvolvimento |
 | Core | `src-tauri/src/core/` | Modelos, validação, ATS, tailoring e exportação |
-| Adaptadores | `src-tauri/src/commands.rs`, `cli.rs` | Entrada pela GUI ou pelo terminal |
+| Adaptadores | `src-tauri/src/commands.rs`, `src-tauri/src/cli.rs`, `src-tauri/src/cli/` | Entrada pela GUI, parsing headless, schemas, manifesto e filesystem |
 | Bootstrap | `src-tauri/src/main.rs`, `lib.rs` | Dispatch do modo e inicialização do Tauri |
 
 ## Fluxo de dados
@@ -38,13 +39,15 @@ flowchart LR
 5. Ao adaptar, o core ordena bullets e tecnologias pela relevância, com proveniência e sem criar texto novo.
 6. A prova do desktop chama `render_pdf_preview`, que usa `render_with_template` e devolve o PDF em memória. O frontend preserva a última prova válida enquanto aguarda 180 ms de debounce, carrega o documento com PDF.js e renderiza cada página em canvas com escala adequada ao DPR.
 7. A exportação chama o mesmo `render_with_template` para gravar o arquivo. Portanto, ordem, visibilidade, seções, template, paleta, tipografia, margens e quebras observados na prova são os do PDF exportado; somente o identificador interno do documento é regenerado.
+8. Na automação, `run --manifest` resolve `defaults`, carrega cada JSON independente, aplica overrides do job e da CLI, valida perfil/template/formatos e executa o mesmo tailoring/exportador. Cada resultado mantém ID, score, keywords, domínios e caminhos para consumo por outra IA.
 
 ## Limites de segurança
 
 - A aplicação não contém backend, autenticação, telemetria ou sincronização externa.
-- A CLI rejeita entradas acima de 1 MiB e lotes vazios ou acima de 500 vagas.
+- A CLI rejeita entradas acima de 1 MiB e lotes/manifestos vazios ou acima de 500 jobs.
 - O core limita tamanho do resumo e quantidade de experiências/projetos.
-- O caminho de exportação da GUI vem do diálogo nativo; na CLI, o diretório é criado e canonizado antes da gravação.
+- O caminho de exportação da GUI vem do diálogo nativo; na CLI, o diretório é criado e canonizado antes da gravação. Subpastas do manifesto rejeitam caminhos absolutos e `..`; nomes-base rejeitam caracteres inválidos do Windows.
+- O padrão de conflito é `error`; `rename` e `overwrite` exigem escolha explícita. `--dry-run` não cria diretórios nem arquivos.
 - Keywords declaradas em `target_keywords` não contam sozinhas como evidência; a comprovação deve existir no conteúdo profissional.
 - Tailoring apenas seleciona e reordena bullets existentes.
 
@@ -64,4 +67,4 @@ Os diálogos compartilham `useDialogFocus`: foco inicial previsível, contençã
 
 ## Executável único
 
-`main.rs` inspeciona o primeiro argumento. Sem argumento ou com `ui`, inicia o Tauri; nos demais casos, executa a CLI sem abrir janela. O bundle do frontend e os cinco arquétipos são incorporados ao binário. O WebView2 é uma dependência do sistema Windows, não um sidecar distribuído.
+`main.rs` inspeciona o primeiro argumento. Sem argumento ou com `ui`, inicia o Tauri; nos demais casos, executa a CLI sem abrir janela. O bundle do frontend e os cinco arquétipos são incorporados em `reoliresume.exe`. O instalador NSIS por usuário inclui o bootstrapper do WebView2 e registra `$INSTDIR` no `PATH`; o uninstall remove essa entrada. O portátil continua disponível sem sidecars, usando o WebView2 já instalado para a GUI.

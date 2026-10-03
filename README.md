@@ -1,6 +1,6 @@
 # Reoli Resume Forge
 
-Editor desktop e compilador headless, local-first, para criar currículos legíveis por pessoas e por sistemas ATS. A interface e a CLI vivem no mesmo executável Windows: `reoli-cv.exe`.
+Editor desktop e compilador headless, local-first, para criar currículos legíveis por pessoas e por sistemas ATS. A interface e a CLI vivem no mesmo executável Windows: `reoliresume.exe`.
 
 ## O que entrega
 
@@ -19,21 +19,22 @@ Editor desktop e compilador headless, local-first, para criar currículos legív
 - Exportação consistente em PDF, DOCX, Markdown e JSON, com texto selecionável, hyperlinks reais e paginação que protege títulos e repete a identidade de experiências ou projetos quando um bloco continua na página seguinte.
 - Auditoria documental herdada do Vault: até duas páginas, resumo enxuto, bullets legíveis, links válidos e alerta para layouts de maior risco ATS.
 - Assistente de orçamento A4 no preview: mostra a contagem real, recomenda uma densidade adequada em um clique e preserva todo o conteúdo com desfazer disponível. A densidade escolhida também controla margens e ritmo tipográfico nos arquivos PDF e DOCX.
-- CLI `generate`, `tailor`, `batch` e `ui` para automações locais.
+- CLI `generate`, `tailor`, `batch`, `run --manifest`, `validate` e `ui` para automações locais e agentes com terminal.
 - Nenhuma conta, telemetria ou transmissão de dados pessoais.
 
 ## Uso rápido
 
-Baixe `reoli-cv.exe` para qualquer pasta. Um duplo clique abre a interface. No terminal:
+Instale `ReoliResumeSetup-*.exe` e abra um terminal novo. `reoliresume` sem argumentos abre a interface; com subcomandos, funciona como CLI headless:
 
 ```powershell
-.\reoli-cv.exe generate --model 01_frontend --template classic --format pdf,docx --out .\dist
-.\reoli-cv.exe tailor --job .\examples\job.json --profile .\examples\profile.example.json --template executive --format pdf,docx --out .\dist
-.\reoli-cv.exe batch --jobs .\examples\jobs.json --model 01_frontend --format pdf --out .\lote
-.\reoli-cv.exe ui
+reoliresume generate --profile .\examples\profile.example.json --template classic --format pdf,docx --out .\dist
+reoliresume tailor --job .\examples\job.json --profile .\examples\profile.example.json --template executive --format pdf,docx --out .\dist
+reoliresume batch --jobs .\examples\jobs.json --model 01_frontend --format pdf --out .\lote
+reoliresume run --manifest .\examples\automation-manifest.json --dry-run
+reoliresume
 ```
 
-O arquivo é distribuído sem sidecars. A GUI usa o Microsoft Edge WebView2 instalado no Windows 10/11; a CLI headless não abre a WebView. Veja a [referência da CLI](docs/cli-reference.md).
+O instalador registra o diretório do aplicativo no `PATH` do usuário e remove essa entrada no uninstall. Ele inclui o bootstrapper oficial do WebView2 para máquinas que ainda não possuem o runtime; a CLI headless não abre a WebView. Também existe um executável portátil sem sidecars. Veja a [referência da CLI](docs/cli-reference.md).
 
 ## Interface
 
@@ -63,15 +64,19 @@ npm run ops
 npm run tauri:dev
 npm run verify
 npm run build:portable
+npm run build:installer
+npm run build:release
 ```
 
 `npm run ops` abre o Operations Console. Pressione `Enter` para iniciar o desktop com Tauri Dev, ou escolha os submenus de CLI, qualidade, diagnóstico e build. As mesmas ações aceitam aliases diretos, por exemplo `npm run ops -- verify`, `npm run ops -- doctor` e `npm run ops -- build`.
 
-O último comando grava o binário e seu checksum em `release/bin/`:
+Os builds gravam artefatos e checksums separados:
 
 ```text
-release/bin/reoli-cv.exe
-release/bin/reoli-cv.sha256
+release/bin/reoliresume.exe
+release/bin/reoliresume.sha256
+release/installer/ReoliResumeSetup-2.1.0.exe
+release/installer/ReoliResumeSetup-2.1.0.sha256
 ```
 
 ## Arquitetura e segurança
@@ -81,6 +86,7 @@ O core Rust não depende do React. GUI e CLI chamam as mesmas funções de anál
 - [Arquitetura](docs/architecture.md)
 - [Algoritmo ATS](docs/ats-algorithm.md)
 - [SOP de build e release](docs/build-release-sop.md)
+- [Schemas JSON para agentes](schemas/manifest.schema.json)
 - [Assets e fontes](docs/assets.md)
 - [Como contribuir](docs/contributing.md)
 - [Roadmap público](TODO.md)

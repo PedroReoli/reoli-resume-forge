@@ -11,6 +11,7 @@ temp_skills/
 node_modules/
 dist/
 release/bin/
+release/installer/
 src-tauri/target/
 *.log
 

@@ -10,7 +10,7 @@
 - [x] Exportadores PDF, DOCX, Markdown e JSON.
 - [x] Três layouts ATS-friendly com links clicáveis: Clean, Compact e Executive.
 - [x] CLI `generate`, `tailor`, `batch` e `ui` no mesmo binário.
-- [x] Empacotamento portátil em `release/bin/reoli-cv.exe` com SHA-256.
+- [x] Empacotamento portátil em `release/bin/reoliresume.exe` com SHA-256.
 - [x] Documentação pública e automação de CI/release.
 
 ## v2.0.0 — concluído
@@ -45,6 +45,20 @@
 - [x] Prova canônica no Tauri renderizando o PDF real do core Rust, com contagem de páginas e alternância para edição rápida.
 - [x] Alinhamento do cabeçalho PDF por métricas de glifos e réguas de seção mais leves.
 - [x] Catálogo ATS v2 extensível com 306 competências em 13 áreas profissionais e detecção automática de domínio.
+
+## v2.1.0 — concluído
+
+- [x] Binário renomeado para `reoliresume.exe`, mantendo GUI e CLI no mesmo arquivo.
+- [x] `generate --profile` para gerar diretamente de qualquer perfil JSON válido.
+- [x] Manifesto mestre `run --manifest` com até 500 JSONs independentes.
+- [x] Template, perfil/modelo, texto adicional, formatos, diretório, subpasta e nome-base configuráveis por job.
+- [x] Precedência determinística entre defaults, JSON referenciado, job e flags da CLI.
+- [x] `validate`, `models`, `templates`, `schema` e `capabilities` com saída JSON para agentes.
+- [x] `--dry-run` e políticas de conflito `error`, `rename` e `overwrite`.
+- [x] Schemas JSON públicos para perfil, vaga, lote e manifesto.
+- [x] Instalador NSIS por usuário com WebView2 e registro limpo no `PATH`.
+- [x] Operations Console com builds portátil, instalável e release completa.
+- [x] Pipeline de release publicando portátil, instalador e checksums.
 
 ## Próximos ciclos
 

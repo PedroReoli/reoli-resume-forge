@@ -13,7 +13,7 @@ Tauri v2 com core e CLI em Rust, interface React 19 com TypeScript strict e Tail
 ## Users
 
 - Profissionais de diferentes áreas, ao criar, adaptar, revisar e exportar currículos para vagas específicas.
-- Agentes de IA e automações locais, ao gerar currículos individualmente ou em lote pela CLI `reoli-cv`.
+- Agentes de IA e automações locais, ao gerar currículos individualmente ou em lote pela CLI `reoliresume`.
 - Contribuidores open source, ao evoluir arquétipos, exportadores e regras de matching sem acessar dados privados externos ao repositório.
 
 ## Product Purpose
