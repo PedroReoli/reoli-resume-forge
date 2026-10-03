@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reoli.dev/schemas/job-v1.json",
+  "title": "Reoli Resume Job",
+  "type": "object",
+  "required": ["job_description"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "id": { "type": "string" },
+    "company": { "type": "string" },
+    "job_title": { "type": "string" },
+    "job_description": { "type": "string", "minLength": 1 },
+    "extra_text": { "type": "string" },
+    "base_model": { "type": "string" },
+    "profile": {
+      "oneOf": [
+        { "type": "string", "description": "Caminho relativo ao JSON da vaga" },
+        { "$ref": "./profile.schema.json" }
+      ]
+    },
+    "template": { "enum": ["classic", "clean", "compact", "executive", "tech-minimalist", "modern-split", "executive-bold", "academic"] },
+    "formats": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "array", "items": { "enum": ["pdf", "docx", "json", "md"] }, "minItems": 1 }
+      ]
+    },
+    "confirmed_us_overlap": { "type": "boolean" },
+    "on_conflict": { "enum": ["error", "rename", "overwrite"] },
+    "output": { "$ref": "#/$defs/output" }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "output": {
+      "type": "object",
+      "properties": {
+        "directory": { "type": "string" },
+        "folder": { "type": "string" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 120 }
+      },
+      "additionalProperties": false
+    }
+  }
+}

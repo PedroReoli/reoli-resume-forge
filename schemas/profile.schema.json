@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reoli.dev/schemas/resume-profile-v1.json",
+  "title": "Reoli Resume Profile",
+  "type": "object",
+  "required": ["person", "headline", "summary", "experience"],
+  "properties": {
+    "config": {
+      "type": "object",
+      "properties": {
+        "template": { "$ref": "#/$defs/template" },
+        "palette": { "type": "string" },
+        "typeface": { "type": "string" },
+        "tech_label": { "type": "string" },
+        "section_names": { "type": "object", "additionalProperties": { "type": "string" } }
+      },
+      "additionalProperties": true
+    },
+    "layout": {
+      "type": "object",
+      "properties": {
+        "section_order": { "type": "array", "maxItems": 40, "items": { "type": "string" } },
+        "hidden_sections": { "type": "array", "items": { "type": "string" } },
+        "skills_style": { "enum": ["categorized", "table", "tags", "levels"] },
+        "experience_style": { "enum": ["bullets", "paragraph", "metrics"] },
+        "projects_style": { "enum": ["bullets", "paragraph", "metrics"] },
+        "density": { "enum": ["compact", "balanced", "relaxed"] },
+        "emphasize_metrics": { "type": "boolean" },
+        "skill_levels": { "type": "object" }
+      },
+      "additionalProperties": false
+    },
+    "person": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "location": { "type": "string" },
+        "work_preference": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "linkedin": { "type": "string" },
+        "portfolio": { "type": "string" },
+        "github": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "headline": { "type": "string", "minLength": 1 },
+    "summary": { "type": "string", "minLength": 1, "maxLength": 4000 },
+    "target_keywords": { "type": "array", "items": { "type": "string" } },
+    "skills": { "type": "object" },
+    "soft_skills": { "type": "array", "items": { "type": "string" } },
+    "experience": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 30,
+      "items": { "$ref": "#/$defs/experience" }
+    },
+    "projects": { "type": "array", "maxItems": 30, "items": { "$ref": "#/$defs/project" } },
+    "education": { "type": "array", "items": { "$ref": "#/$defs/education" } },
+    "languages": { "type": "array", "items": { "$ref": "#/$defs/language" } },
+    "certifications": { "type": "array", "items": { "$ref": "#/$defs/certification" } },
+    "custom_sections": {
+      "type": "array",
+      "maxItems": 20,
+      "items": { "$ref": "#/$defs/customSection" }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "template": {
+      "enum": ["classic", "clean", "compact", "executive", "tech-minimalist", "modern-split", "executive-bold", "academic"]
+    },
+    "experience": {
+      "type": "object",
+      "properties": {
+        "company": { "type": "string" }, "role": { "type": "string" },
+        "dates": { "type": "string" }, "location": { "type": "string" },
+        "work_mode": { "type": "string" }, "summary": { "type": "string" },
+        "bullets": { "type": "array", "items": { "type": "string" } },
+        "technologies": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "project": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" }, "description": { "type": "string" },
+        "metrics": { "type": "array", "items": { "type": "string" } },
+        "technologies": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "education": {
+      "type": "object",
+      "properties": { "degree": { "type": "string" }, "institution": { "type": "string" }, "dates": { "type": "string" } },
+      "additionalProperties": false
+    },
+    "language": {
+      "type": "object",
+      "properties": { "language": { "type": "string" }, "level": { "type": "string" } },
+      "additionalProperties": false
+    },
+    "certification": {
+      "type": "object",
+      "properties": { "name": { "type": "string" }, "issuer": { "type": "string" }, "date": { "type": "string" } },
+      "additionalProperties": false
+    },
+    "customSection": {
+      "type": "object",
+      "required": ["id", "title"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 }, "title": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "kind": { "type": "string" }, "items": { "type": "array", "maxItems": 100, "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    }
+  }
+}

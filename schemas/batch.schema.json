@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reoli.dev/schemas/batch-v1.json",
+  "title": "Reoli Resume Simple Batch",
+  "type": "array",
+  "minItems": 1,
+  "maxItems": 500,
+  "items": {
+    "type": "object",
+    "required": ["job_description"],
+    "properties": {
+      "company": { "type": "string" },
+      "job_title": { "type": "string" },
+      "job_description": { "type": "string", "minLength": 1 },
+      "base_model": { "type": "string" },
+      "profile": { "$ref": "./profile.schema.json" },
+      "template": { "type": "string" },
+      "confirmed_us_overlap": { "type": "boolean" }
+    },
+    "additionalProperties": false
+  }
+}

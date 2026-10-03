@@ -1,12 +1,17 @@
-use crate::core::export::{self, ExportFormat, ResumeTemplate};
-use crate::core::{ResumeProfile, load_archetype, tailor};
-use serde::Deserialize;
-use serde_json::{Value, json};
-use std::collections::HashMap;
-use std::fs;
-use std::path::{Path, PathBuf};
+mod discovery;
+mod files;
+mod manifest;
+mod options;
 
-const MAX_INPUT_BYTES: u64 = 1_048_576;
+use crate::core::export::ResumeTemplate;
+use crate::core::{ResumeProfile, load_archetype, tailor};
+use discovery::print_json;
+use files::{ConflictPolicy, WriteRequest};
+use manifest::{ManifestOverrides, ResolvedTask};
+use options::Options;
+use serde::Deserialize;
+use serde_json::json;
+use std::path::{Path, PathBuf};
 
 #[derive(Debug, Deserialize)]
 struct BatchJob {
@@ -37,94 +42,119 @@ pub fn is_ui_request(args: &[String]) -> bool {
 
 pub fn run(args: &[String]) -> Result<(), String> {
     let command = args.first().map(String::as_str).unwrap_or("help");
-    let options = parse_options(&args[1..])?;
+    let options = options::parse_options(&args[1..])?;
     match command {
         "generate" => generate(&options),
         "tailor" => tailor_one(&options),
         "batch" => batch(&options),
+        "run" | "manifest" => run_manifest(&options),
+        "validate" => validate(&options),
+        "templates" => discovery::print_templates(),
+        "models" => discovery::print_models(),
+        "schema" => discovery::print_schema(options::required(&options, "type")?),
+        "capabilities" => discovery::print_capabilities(),
         "help" | "--help" | "-h" => {
             print_help();
             Ok(())
         }
-        "version" | "--version" | "-V" => {
-            println!("reoli-cv {}", env!("CARGO_PKG_VERSION"));
-            Ok(())
-        }
+        "version" | "--version" | "-V" => print_json(json!({
+            "ok": true,
+            "command": "version",
+            "program": "reoliresume",
+            "version": env!("CARGO_PKG_VERSION"),
+        })),
         other => Err(format!(
-            "comando desconhecido: {other}. Execute `reoli-cv help` para ver o uso."
+            "comando desconhecido: {other}. Execute `reoliresume help` para ver o uso"
         )),
     }
 }
 
-fn generate(options: &HashMap<String, String>) -> Result<(), String> {
-    let model = required(options, "model")?;
-    let profile = load_archetype(model)?;
-    let formats = formats(options)?;
-    let template = resolve_template(options, &profile)?;
-    let output = output_directory(options)?;
-    let files = write_all(&profile, &formats, &output, None, template)?;
-    print_success("generate", files);
-    Ok(())
+fn generate(options: &Options) -> Result<(), String> {
+    let (profile, _) = load_source_profile(options)?;
+    let formats = options::formats(options)?;
+    let template = options::resolve_template(options, &profile)?;
+    let dry_run = options::parse_bool(options.get("dry-run"))?;
+    let output = files::output_directory(options, dry_run)?;
+    let files = files::write_all(WriteRequest {
+        profile: &profile,
+        formats: &formats,
+        output: &output,
+        basename: options.get("name").map(String::as_str),
+        suffix: None,
+        template,
+        conflict: ConflictPolicy::from_options(options)?,
+        dry_run,
+    })?;
+    print_json(json!({
+        "ok": true,
+        "command": "generate",
+        "dryRun": dry_run,
+        "files": files,
+    }))
 }
 
-fn tailor_one(options: &HashMap<String, String>) -> Result<(), String> {
-    let job_path = required(options, "job")?;
-    let job_description = read_job(Path::new(job_path))?;
+fn tailor_one(options: &Options) -> Result<(), String> {
+    let job_path = options::required(options, "job")?;
+    let job_description = files::read_job(Path::new(job_path))?;
     let (profile, model_id) = load_source_profile(options)?;
     let result = tailor(
         &profile,
         &job_description,
         model_id.as_deref(),
-        parse_bool(options.get("confirmed-us-overlap"))?,
+        options::parse_bool(options.get("confirmed-us-overlap"))?,
     )?;
-    let formats = formats(options)?;
-    let template = resolve_template(options, &result.profile)?;
-    let output = output_directory(options)?;
-    let files = write_all(&result.profile, &formats, &output, None, template)?;
-    println!(
-        "{}",
-        serde_json::to_string_pretty(&json!({
-            "ok": true,
-            "command": "tailor",
-            "score": result.report.score,
-            "matched": result.report.matched,
-            "missing": result.report.missing,
-            "detectedDomains": result.report.job.detected_domains,
-            "files": files,
-        }))
-        .map_err(|error| error.to_string())?
-    );
-    Ok(())
+    let formats = options::formats(options)?;
+    let template = options::resolve_template(options, &result.profile)?;
+    let dry_run = options::parse_bool(options.get("dry-run"))?;
+    let output = files::output_directory(options, dry_run)?;
+    let files = files::write_all(WriteRequest {
+        profile: &result.profile,
+        formats: &formats,
+        output: &output,
+        basename: options.get("name").map(String::as_str),
+        suffix: None,
+        template,
+        conflict: ConflictPolicy::from_options(options)?,
+        dry_run,
+    })?;
+    print_json(json!({
+        "ok": true,
+        "command": "tailor",
+        "dryRun": dry_run,
+        "score": result.report.score,
+        "matched": result.report.matched,
+        "missing": result.report.missing,
+        "detectedDomains": result.report.job.detected_domains,
+        "files": files,
+    }))
 }
 
-fn batch(options: &HashMap<String, String>) -> Result<(), String> {
-    let jobs_path = required(options, "jobs")?;
-    let raw = read_limited(Path::new(jobs_path))?;
-    let jobs: Vec<BatchJob> =
-        serde_json::from_str(&raw).map_err(|error| format!("lote JSON inválido: {error}"))?;
-    if jobs.is_empty() || jobs.len() > 500 {
-        return Err("o lote deve conter entre 1 e 500 vagas".into());
-    }
+fn batch(options: &Options) -> Result<(), String> {
+    let jobs_path = options::required(options, "jobs")?;
+    let jobs: Vec<BatchJob> = files::read_json(Path::new(jobs_path), "lote")?;
+    validate_batch_jobs(&jobs)?;
     let default_model = options
         .get("model")
         .cloned()
         .unwrap_or_else(|| "01_frontend".into());
-    let formats = formats(options)?;
-    let default_template = template_option(options)?;
-    let output = output_directory(options)?;
+    let formats = options::formats(options)?;
+    let default_template = options::template_option(options)?;
+    let dry_run = options::parse_bool(options.get("dry-run"))?;
+    let output = files::output_directory(options, dry_run)?;
+    let conflict = ConflictPolicy::from_options(options)?;
     let mut results = Vec::with_capacity(jobs.len());
 
     for (index, job) in jobs.into_iter().enumerate() {
-        if job.job_description.trim().is_empty() {
-            return Err(format!("vaga {} não possui descrição", index + 1));
-        }
         let model = if job.base_model.trim().is_empty() {
             default_model.as_str()
         } else {
             job.base_model.as_str()
         };
         let profile = match job.profile {
-            Some(profile) => profile,
+            Some(profile) => {
+                profile.validate()?;
+                profile
+            }
             None => load_archetype(model)?,
         };
         let tailored = tailor(
@@ -133,8 +163,8 @@ fn batch(options: &HashMap<String, String>) -> Result<(), String> {
             Some(model),
             job.confirmed_us_overlap,
         )?;
-        let suffix = safe_suffix(&format!("{} {}", job.company, job.job_title));
-        let job_template = if job.template.trim().is_empty() {
+        let suffix = batch_suffix(index, &job.company, &job.job_title);
+        let template = if job.template.trim().is_empty() {
             match default_template {
                 Some(template) => template,
                 None => ResumeTemplate::from_profile(&tailored.profile)?.unwrap_or_default(),
@@ -142,43 +172,228 @@ fn batch(options: &HashMap<String, String>) -> Result<(), String> {
         } else {
             ResumeTemplate::parse(&job.template)?
         };
-        let files = write_all(
-            &tailored.profile,
-            &formats,
-            &output,
-            Some(&suffix),
-            job_template,
-        )?;
+        let files = files::write_all(WriteRequest {
+            profile: &tailored.profile,
+            formats: &formats,
+            output: &output,
+            basename: None,
+            suffix: Some(&suffix),
+            template,
+            conflict,
+            dry_run,
+        })?;
         results.push(json!({
             "index": index + 1,
             "company": job.company,
             "jobTitle": job.job_title,
             "score": tailored.report.score,
             "detectedDomains": tailored.report.job.detected_domains,
+            "matched": tailored.report.matched,
+            "missing": tailored.report.missing,
             "files": files,
         }));
     }
-    println!(
-        "{}",
-        serde_json::to_string_pretty(&json!({
-            "ok": true,
-            "command": "batch",
-            "count": results.len(),
-            "results": results,
-        }))
-        .map_err(|error| error.to_string())?
-    );
+    print_json(json!({
+        "ok": true,
+        "command": "batch",
+        "dryRun": dry_run,
+        "count": results.len(),
+        "results": results,
+    }))
+}
+
+fn run_manifest(options: &Options) -> Result<(), String> {
+    let manifest_path = PathBuf::from(options::required(options, "manifest")?);
+    let current_directory = std::env::current_dir()
+        .map_err(|error| format!("nao foi possivel identificar o diretorio atual: {error}"))?;
+    let manifest_path = if manifest_path.is_absolute() {
+        manifest_path
+    } else {
+        current_directory.join(manifest_path)
+    };
+    let continue_on_error = options
+        .get("continue-on-error")
+        .map(|_| options::parse_bool(options.get("continue-on-error")))
+        .transpose()?;
+    let output_override = options
+        .get("out")
+        .map(|value| files::resolve_path(&current_directory, value))
+        .transpose()?
+        .map(|path| path.display().to_string());
+    let profile_override = options
+        .get("profile")
+        .map(|value| files::resolve_path(&current_directory, value))
+        .transpose()?
+        .map(|path| path.display().to_string());
+    let loaded = manifest::load_manifest(
+        &manifest_path,
+        ManifestOverrides {
+            output_root: output_override.as_deref(),
+            profile: profile_override.as_deref(),
+            model: options.get("model").map(String::as_str),
+            template: options.get("template").map(String::as_str),
+            formats: options.get("format").map(String::as_str),
+            conflict: options.get("on-conflict").map(String::as_str),
+            continue_on_error,
+        },
+    )?;
+    let dry_run = options::parse_bool(options.get("dry-run"))?;
+    let mut results = Vec::with_capacity(loaded.tasks.len());
+    let mut failed = 0_usize;
+    for task in &loaded.tasks {
+        match execute_manifest_task(task, dry_run) {
+            Ok(result) => results.push(result),
+            Err(error) => {
+                failed += 1;
+                results.push(json!({
+                    "ok": false,
+                    "index": task.index + 1,
+                    "id": task.id,
+                    "source": task.source,
+                    "error": error,
+                }));
+                if !loaded.continue_on_error {
+                    break;
+                }
+            }
+        }
+    }
+    let succeeded = results.len() - failed;
+    print_json(json!({
+        "ok": failed == 0,
+        "command": "run",
+        "manifest": loaded.path,
+        "dryRun": dry_run,
+        "requested": loaded.tasks.len(),
+        "processed": results.len(),
+        "succeeded": succeeded,
+        "failed": failed,
+        "results": results,
+    }))?;
+    if failed > 0 {
+        return Err(format!("{failed} job(s) do manifesto falharam"));
+    }
     Ok(())
 }
 
-fn load_source_profile(
-    options: &HashMap<String, String>,
-) -> Result<(ResumeProfile, Option<String>), String> {
+fn execute_manifest_task(task: &ResolvedTask, dry_run: bool) -> Result<serde_json::Value, String> {
+    let profile = task.load_profile()?;
+    let tailored = tailor(
+        &profile,
+        &task.job_description,
+        Some(&task.base_model),
+        task.confirmed_us_overlap,
+    )?;
+    let suffix = if task.output_name.is_some() {
+        None
+    } else {
+        Some(batch_suffix(task.index, &task.company, &task.job_title))
+    };
+    let files = files::write_all(WriteRequest {
+        profile: &tailored.profile,
+        formats: &task.formats,
+        output: &task.output_directory,
+        basename: task.output_name.as_deref(),
+        suffix: suffix.as_deref(),
+        template: task.template,
+        conflict: task.conflict,
+        dry_run,
+    })?;
+    Ok(json!({
+        "ok": true,
+        "index": task.index + 1,
+        "id": task.id,
+        "source": task.source,
+        "company": task.company,
+        "jobTitle": task.job_title,
+        "template": task.template,
+        "formats": task.formats,
+        "score": tailored.report.score,
+        "matched": tailored.report.matched,
+        "missing": tailored.report.missing,
+        "detectedDomains": tailored.report.job.detected_domains,
+        "files": files,
+    }))
+}
+
+fn validate(options: &Options) -> Result<(), String> {
+    let supplied = ["profile", "job", "jobs", "manifest"]
+        .into_iter()
+        .filter(|key| options.contains_key(*key))
+        .collect::<Vec<_>>();
+    if supplied.len() != 1 {
+        return Err(
+            "validate exige exatamente uma entrada: --profile, --job, --jobs ou --manifest".into(),
+        );
+    }
+    let (kind, count) = match supplied[0] {
+        "profile" => {
+            files::read_profile(Path::new(options::required(options, "profile")?))?;
+            ("profile", 1)
+        }
+        "job" => {
+            files::read_job(Path::new(options::required(options, "job")?))?;
+            ("job", 1)
+        }
+        "jobs" => {
+            let jobs: Vec<BatchJob> =
+                files::read_json(Path::new(options::required(options, "jobs")?), "lote")?;
+            validate_batch_jobs(&jobs)?;
+            ("batch", jobs.len())
+        }
+        "manifest" => {
+            let path = Path::new(options::required(options, "manifest")?);
+            let loaded = manifest::load_manifest(
+                path,
+                ManifestOverrides {
+                    output_root: None,
+                    profile: None,
+                    model: None,
+                    template: None,
+                    formats: None,
+                    conflict: None,
+                    continue_on_error: None,
+                },
+            )?;
+            for task in &loaded.tasks {
+                task.load_profile()?;
+            }
+            ("manifest", loaded.tasks.len())
+        }
+        _ => unreachable!(),
+    };
+    print_json(json!({
+        "ok": true,
+        "command": "validate",
+        "type": kind,
+        "count": count,
+    }))
+}
+
+fn validate_batch_jobs(jobs: &[BatchJob]) -> Result<(), String> {
+    if jobs.is_empty() || jobs.len() > manifest::MAX_MANIFEST_JOBS {
+        return Err(format!(
+            "o lote deve conter entre 1 e {} vagas",
+            manifest::MAX_MANIFEST_JOBS
+        ));
+    }
+    for (index, job) in jobs.iter().enumerate() {
+        if job.job_description.trim().is_empty() {
+            return Err(format!("vaga {} nao possui descricao", index + 1));
+        }
+        if let Some(profile) = &job.profile {
+            profile.validate()?;
+        }
+        if !job.template.trim().is_empty() {
+            ResumeTemplate::parse(&job.template)?;
+        }
+    }
+    Ok(())
+}
+
+fn load_source_profile(options: &Options) -> Result<(ResumeProfile, Option<String>), String> {
     if let Some(path) = options.get("profile") {
-        let raw = read_limited(Path::new(path))?;
-        let profile: ResumeProfile =
-            serde_json::from_str(&raw).map_err(|error| format!("perfil JSON inválido: {error}"))?;
-        profile.validate()?;
+        let profile = files::read_profile(Path::new(path))?;
         return Ok((profile, options.get("model").cloned()));
     }
     let model = options
@@ -188,184 +403,27 @@ fn load_source_profile(
     Ok((load_archetype(&model)?, Some(model)))
 }
 
-fn read_job(path: &Path) -> Result<String, String> {
-    let raw = read_limited(path)?;
-    if path.extension().and_then(|value| value.to_str()) == Some("json") {
-        let value: Value =
-            serde_json::from_str(&raw).map_err(|error| format!("vaga JSON inválida: {error}"))?;
-        for key in [
-            "job_description",
-            "jobDescription",
-            "jd_text",
-            "description",
-        ] {
-            if let Some(text) = value.get(key).and_then(Value::as_str) {
-                return Ok(text.to_string());
-            }
-        }
-        return Err("vaga JSON não contém job_description, jd_text ou description".into());
+fn batch_suffix(index: usize, company: &str, job_title: &str) -> String {
+    let label = options::safe_label(&format!("{company} {job_title}"));
+    if label.is_empty() {
+        format!("{:03}", index + 1)
+    } else {
+        format!("{:03}_{label}", index + 1)
     }
-    Ok(raw)
-}
-
-fn read_limited(path: &Path) -> Result<String, String> {
-    let metadata = fs::metadata(path)
-        .map_err(|error| format!("não foi possível acessar {}: {error}", path.display()))?;
-    if !metadata.is_file() {
-        return Err(format!("entrada não é um arquivo: {}", path.display()));
-    }
-    if metadata.len() > MAX_INPUT_BYTES {
-        return Err(format!("entrada excede 1 MiB: {}", path.display()));
-    }
-    fs::read_to_string(path)
-        .map_err(|error| format!("não foi possível ler {}: {error}", path.display()))
-}
-
-fn formats(options: &HashMap<String, String>) -> Result<Vec<ExportFormat>, String> {
-    let raw = options.get("format").map(String::as_str).unwrap_or("pdf");
-    let mut result = Vec::new();
-    for value in raw.split(',') {
-        let format = ExportFormat::parse(value)?;
-        if !result.contains(&format) {
-            result.push(format);
-        }
-    }
-    if result.is_empty() {
-        return Err("informe ao menos um formato".into());
-    }
-    Ok(result)
-}
-
-fn template_option(options: &HashMap<String, String>) -> Result<Option<ResumeTemplate>, String> {
-    options
-        .get("template")
-        .map(|value| ResumeTemplate::parse(value))
-        .transpose()
-}
-
-fn resolve_template(
-    options: &HashMap<String, String>,
-    profile: &ResumeProfile,
-) -> Result<ResumeTemplate, String> {
-    if let Some(template) = template_option(options)? {
-        return Ok(template);
-    }
-    Ok(ResumeTemplate::from_profile(profile)?.unwrap_or_default())
-}
-
-fn output_directory(options: &HashMap<String, String>) -> Result<PathBuf, String> {
-    let path = PathBuf::from(required(options, "out")?);
-    fs::create_dir_all(&path)
-        .map_err(|error| format!("não foi possível criar {}: {error}", path.display()))?;
-    path.canonicalize()
-        .map_err(|error| format!("não foi possível resolver {}: {error}", path.display()))
-}
-
-fn write_all(
-    profile: &ResumeProfile,
-    formats: &[ExportFormat],
-    output: &Path,
-    suffix: Option<&str>,
-    template: ResumeTemplate,
-) -> Result<Vec<String>, String> {
-    let base = export::safe_basename(profile);
-    let suffix = suffix.filter(|value| !value.is_empty());
-    let mut files = Vec::with_capacity(formats.len());
-    for format in formats {
-        let filename = match suffix {
-            Some(suffix) => format!("{base}_{suffix}.{}", format.extension()),
-            None => format!("{base}.{}", format.extension()),
-        };
-        let path = output.join(filename);
-        export::write_with_template(profile, *format, &path, template)?;
-        files.push(path.display().to_string());
-    }
-    Ok(files)
-}
-
-fn parse_options(args: &[String]) -> Result<HashMap<String, String>, String> {
-    let mut options = HashMap::new();
-    let mut index = 0;
-    while index < args.len() {
-        let key = args[index]
-            .strip_prefix("--")
-            .ok_or_else(|| format!("argumento inesperado: {}", args[index]))?;
-        if key == "confirmed-us-overlap" {
-            let value = args
-                .get(index + 1)
-                .filter(|value| !value.starts_with("--"))
-                .cloned()
-                .unwrap_or_else(|| "true".into());
-            let consumed = usize::from(args.get(index + 1).is_some_and(|v| !v.starts_with("--")));
-            options.insert(key.into(), value);
-            index += 1 + consumed;
-            continue;
-        }
-        let value = args
-            .get(index + 1)
-            .filter(|value| !value.starts_with("--"))
-            .ok_or_else(|| format!("valor ausente para --{key}"))?;
-        if options.insert(key.into(), value.clone()).is_some() {
-            return Err(format!("opção repetida: --{key}"));
-        }
-        index += 2;
-    }
-    Ok(options)
-}
-
-fn required<'a>(options: &'a HashMap<String, String>, key: &str) -> Result<&'a str, String> {
-    options
-        .get(key)
-        .map(String::as_str)
-        .filter(|value| !value.trim().is_empty())
-        .ok_or_else(|| format!("opção obrigatória ausente: --{key}"))
-}
-
-fn parse_bool(value: Option<&String>) -> Result<bool, String> {
-    match value.map(|item| item.as_str()).unwrap_or("false") {
-        "true" | "1" | "yes" => Ok(true),
-        "false" | "0" | "no" => Ok(false),
-        other => Err(format!("valor booleano inválido: {other}")),
-    }
-}
-
-fn safe_suffix(value: &str) -> String {
-    value
-        .trim()
-        .chars()
-        .map(|character| {
-            if character.is_ascii_alphanumeric() {
-                character.to_ascii_lowercase()
-            } else {
-                '_'
-            }
-        })
-        .collect::<String>()
-        .split('_')
-        .filter(|part| !part.is_empty())
-        .take(8)
-        .collect::<Vec<_>>()
-        .join("_")
-}
-
-fn print_success(command: &str, files: Vec<String>) {
-    println!(
-        "{}",
-        serde_json::to_string_pretty(&json!({
-            "ok": true,
-            "command": command,
-            "files": files,
-        }))
-        .expect("serialização de caminhos deve ser válida")
-    );
 }
 
 fn print_help() {
     println!(
         "Reoli Resume Forge v{}\n\n\
-Uso:\n  reoli-cv.exe ui\n  reoli-cv.exe generate --model ID --template classic --format pdf,docx --out DIRETORIO\n  \
-reoli-cv.exe tailor --job VAGA.json [--profile PERFIL.json | --model ID] [--template compact] --format pdf,docx --out DIRETORIO\n  \
-reoli-cv.exe batch --jobs VAGAS.json [--model ID] [--template executive] --format pdf --out DIRETORIO\n\n\
+Uso:\n  reoliresume\n  reoliresume ui\n  \
+reoliresume generate [--profile PERFIL.json | --model ID] --template classic --format pdf,docx --out DIRETORIO\n  \
+reoliresume tailor --job VAGA.json [--profile PERFIL.json | --model ID] [--template compact] --format pdf,docx --out DIRETORIO\n  \
+reoliresume batch --jobs VAGAS.json [--model ID] [--template executive] --format pdf --out DIRETORIO\n  \
+reoliresume run --manifest AUTOMACAO.json [--dry-run] [--out DIRETORIO]\n  \
+reoliresume validate (--profile ARQUIVO | --job ARQUIVO | --jobs ARQUIVO | --manifest ARQUIVO)\n  \
+reoliresume templates | models | capabilities\n  \
+reoliresume schema --type profile|job|batch|manifest\n\n\
+Opcoes de saida:\n  --name NOME_BASE\n  --on-conflict error|rename|overwrite\n  --dry-run\n\n\
 Modelos: 01_frontend, 02_fullstack_node, 03_fullstack_dotnet, 04_tech_lead, 05_internacional_en\n\
 Templates: classic, clean, compact, executive, tech-minimalist, modern-split, executive-bold, academic\n\
 Formatos: pdf, docx, json, md",
@@ -376,6 +434,8 @@ Formatos: pdf, docx, json, md",
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::core::export::ExportFormat;
+    use manifest::ProfileSource;
 
     #[test]
     fn recognizes_ui_mode_without_arguments() {
@@ -385,68 +445,62 @@ mod tests {
     }
 
     #[test]
-    fn parses_repeated_formats_without_duplicates() {
-        let options = HashMap::from([("format".into(), "pdf,docx,pdf".into())]);
+    fn prefixes_batch_filenames_with_a_stable_unique_index() {
         assert_eq!(
-            formats(&options).unwrap(),
-            vec![ExportFormat::Pdf, ExportFormat::Docx]
+            batch_suffix(0, "ACME", "Senior React"),
+            "001_acme_senior_react"
         );
-    }
-
-    #[test]
-    fn sanitizes_batch_filename_suffix() {
-        assert_eq!(safe_suffix("ACME / Senior React"), "acme_senior_react");
-    }
-
-    #[test]
-    fn parses_every_public_template() {
-        for name in [
-            "classic",
-            "clean",
-            "compact",
-            "executive",
-            "tech-minimalist",
-            "modern-split",
-            "executive-bold",
-            "academic",
-        ] {
-            let options = HashMap::from([("template".into(), name.into())]);
-            assert!(template_option(&options).is_ok());
-        }
+        assert_eq!(
+            batch_suffix(1, "ACME", "Senior React"),
+            "002_acme_senior_react"
+        );
+        assert_eq!(batch_suffix(2, "", ""), "003");
     }
 
     #[test]
     fn resolves_template_from_profile_with_classic_fallback() {
-        let options = HashMap::new();
+        let options = Options::new();
         let mut profile = load_archetype("01_frontend").unwrap();
-
         assert_eq!(
-            resolve_template(&options, &profile).unwrap(),
+            options::resolve_template(&options, &profile).unwrap(),
             ResumeTemplate::Classic
         );
-
         profile
             .config
             .extra
             .insert("template".into(), json!("modern-split"));
         assert_eq!(
-            resolve_template(&options, &profile).unwrap(),
+            options::resolve_template(&options, &profile).unwrap(),
             ResumeTemplate::ModernSplit
         );
     }
 
     #[test]
-    fn explicit_template_overrides_the_profile_variant() {
-        let options = HashMap::from([("template".into(), "compact".into())]);
-        let mut profile = load_archetype("01_frontend").unwrap();
-        profile
-            .config
-            .extra
-            .insert("template".into(), json!("modern-split"));
+    fn every_public_template_is_discoverable_and_parseable() {
+        for name in discovery::TEMPLATE_IDS {
+            assert!(ResumeTemplate::parse(name).is_ok());
+        }
+    }
 
+    #[test]
+    fn embedded_and_path_profiles_have_distinct_manifest_contracts() {
+        let embedded: ProfileSource = serde_json::from_value(json!({
+            "person": {"name": "Ada"},
+            "headline": "Engineer",
+            "summary": "Resumo",
+            "experience": [{"company": "Analytical Engines"}]
+        }))
+        .unwrap();
+        let path: ProfileSource = serde_json::from_value(json!("./profile.json")).unwrap();
+        assert!(matches!(embedded, ProfileSource::Embedded(_)));
+        assert!(matches!(path, ProfileSource::Path(_)));
+    }
+
+    #[test]
+    fn export_formats_remain_serializable_for_machine_output() {
         assert_eq!(
-            resolve_template(&options, &profile).unwrap(),
-            ResumeTemplate::Compact
+            serde_json::to_value(ExportFormat::Markdown).unwrap(),
+            "markdown"
         );
     }
 }

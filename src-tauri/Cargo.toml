@@ -1,5 +1,5 @@
 [package]
-name = "reoli-cv"
+name = "reoliresume"
 version = "2.0.0"
 description = "Editor e compilador local de currículos ATS da Reoli"
 authors = ["Pedro Lucas Reis"]
@@ -12,7 +12,7 @@ name = "reoli_resume_forge"
 crate-type = ["lib", "cdylib", "staticlib"]
 
 [[bin]]
-name = "reoli-cv"
+name = "reoliresume"
 path = "src/main.rs"
 
 [build-dependencies]

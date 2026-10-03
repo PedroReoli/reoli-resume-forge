@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reoli.dev/schemas/manifest-v1.json",
+  "title": "Reoli Resume Automation Manifest",
+  "type": "object",
+  "required": ["version", "jobs"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "version": { "const": 1 },
+    "continue_on_error": { "type": "boolean", "default": true },
+    "defaults": { "$ref": "#/$defs/taskDefaults" },
+    "jobs": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 500,
+      "items": { "$ref": "#/$defs/task" }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "formats": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "array", "minItems": 1, "items": { "enum": ["pdf", "docx", "json", "md"] } }
+      ]
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "directory": { "type": "string" },
+        "folder": { "type": "string" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 120 }
+      },
+      "additionalProperties": false
+    },
+    "taskDefaults": {
+      "type": "object",
+      "properties": {
+        "base_model": { "type": "string" },
+        "profile": { "oneOf": [{ "type": "string" }, { "$ref": "./profile.schema.json" }] },
+        "template": { "type": "string" },
+        "formats": { "$ref": "#/$defs/formats" },
+        "confirmed_us_overlap": { "type": "boolean" },
+        "on_conflict": { "enum": ["error", "rename", "overwrite"] },
+        "output": { "$ref": "#/$defs/output" }
+      },
+      "additionalProperties": false
+    },
+    "task": {
+      "type": "object",
+      "properties": {
+        "source": { "type": "string", "description": "Caminho do JSON independente da vaga" },
+        "id": { "type": "string" },
+        "enabled": { "type": "boolean" },
+        "company": { "type": "string" },
+        "job_title": { "type": "string" },
+        "job_description": { "type": "string" },
+        "extra_text": { "type": "string" },
+        "base_model": { "type": "string" },
+        "profile": { "oneOf": [{ "type": "string" }, { "$ref": "./profile.schema.json" }] },
+        "template": { "type": "string" },
+        "formats": { "$ref": "#/$defs/formats" },
+        "confirmed_us_overlap": { "type": "boolean" },
+        "on_conflict": { "enum": ["error", "rename", "overwrite"] },
+        "output": { "$ref": "#/$defs/output" }
+      },
+      "anyOf": [
+        { "required": ["source"] },
+        { "required": ["job_description"] }
+      ],
+      "additionalProperties": false
+    }
+  }
+}

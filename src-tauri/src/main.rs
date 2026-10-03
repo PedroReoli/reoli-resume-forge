@@ -7,7 +7,13 @@ fn main() {
     }
 
     if let Err(error) = reoli_resume_forge::cli::run(&args) {
-        eprintln!("erro: {error}");
+        eprintln!(
+            "{}",
+            serde_json::json!({
+                "ok": false,
+                "error": error,
+            })
+        );
         std::process::exit(2);
     }
 }
@@ -26,7 +32,7 @@ fn hide_private_console_for_ui() {
 
     let mut processes = [0_u32; 2];
     // A console created only for this process is the double-click case. Consoles
-    // shared with PowerShell/cmd remain visible so `reoli-cv ui` does not hide them.
+    // shared with PowerShell/cmd remain visible so `reoliresume ui` does not hide them.
     let count = unsafe { GetConsoleProcessList(processes.as_mut_ptr(), processes.len() as u32) };
     if count == 1 {
         let window = unsafe { GetConsoleWindow() };
