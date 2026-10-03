@@ -1,6 +1,6 @@
 [package]
 name = "reoliresume"
-version = "2.0.0"
+version = "2.1.0"
 description = "Editor e compilador local de currículos ATS da Reoli"
 authors = ["Pedro Lucas Reis"]
 edition = "2024"

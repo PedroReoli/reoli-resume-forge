@@ -17,7 +17,7 @@ export function DocumentStatusBar({ busy, saveState }: DocumentStatusBarProps) {
   const SaveIcon = saveState === 'dirty' ? CircleAlert : FileCheck2;
   return (
     <footer className="status-bar">
-      <span>Reoli Resume Forge <small>v2.0.0</small></span>
+      <span>Reoli Resume Forge <small>v2.1.0</small></span>
       <span className={`document-save-state is-${saveState}`}>
         <SaveIcon size={13} />
         <span>{SAVE_LABELS[saveState]}</span>
