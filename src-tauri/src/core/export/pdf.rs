@@ -4,7 +4,7 @@ use super::density::DensityPreset;
 use super::palette::profile_palette;
 use super::pdf_content::{
     estimate_text_width, is_safe_link, is_split_sidebar_section, join_non_empty, string_values,
-    wrap,
+    wrap, wrap_to_width,
 };
 use super::pdf_theme::PdfTheme;
 use super::typeface::profile_typeface;
@@ -16,6 +16,10 @@ use printpdf::{
 
 const PAGE_WIDTH: f32 = 210.0;
 const PAGE_HEIGHT: f32 = 297.0;
+const SECTION_RULE_THICKNESS_PT: f32 = 0.75;
+const SECTION_RULE_LINE_HEIGHT_RATIO: f32 = 0.60;
+const BULLET_MARKER_INDENT_MM: f32 = 1.0;
+const BULLET_TEXT_INDENT_MM: f32 = 4.0;
 
 mod sections;
 use sections::render_section;
@@ -55,6 +59,7 @@ struct PdfWriter {
     content_right: f32,
     split_layout: bool,
     split_first_page: bool,
+    split_sidebar_ops: Vec<Op>,
     theme: PdfTheme,
     text_color: (f32, f32, f32),
 }
@@ -69,8 +74,9 @@ impl PdfWriter {
             content_right: PAGE_WIDTH - theme.margin_x,
             split_layout: false,
             split_first_page: false,
+            split_sidebar_ops: Vec::new(),
             theme,
-            text_color: (0.12, 0.15, 0.14),
+            text_color: (34.0 / 255.0, 34.0 / 255.0, 34.0 / 255.0),
         }
     }
 
@@ -252,7 +258,7 @@ impl PdfWriter {
     fn end_header(&mut self) {
         if self.theme.header_band {
             self.y = self.y.min(234.0);
-            self.text_color = (0.12, 0.15, 0.14);
+            self.text_color = (34.0 / 255.0, 34.0 / 255.0, 34.0 / 255.0);
         }
     }
 
@@ -275,6 +281,8 @@ impl PdfWriter {
                 .to_polygon(),
             },
         ]);
+
+        let page_ops = std::mem::take(&mut self.current);
 
         let previous_color = self.text_color;
         self.text_color = (0.95, 0.98, 1.0);
@@ -326,6 +334,8 @@ impl PdfWriter {
             }
         }
 
+        self.split_sidebar_ops = std::mem::take(&mut self.current);
+        self.current = page_ops;
         self.text_color = previous_color;
         self.content_x = 76.0;
         self.content_right = 194.0;
@@ -465,23 +475,41 @@ impl PdfWriter {
     }
 
     fn bullet(&mut self, value: &str) {
-        let bullet = format!("• {value}");
-        let needed = self.estimated_text_height(
-            &bullet,
-            self.theme.body_size - 0.2,
-            self.theme.body_line_height - 0.2,
-            self.content_x + 3.0,
-            None,
-        );
+        if value.trim().is_empty() {
+            return;
+        }
+        let size = self.theme.body_size - 0.2;
+        let line_height = self.theme.body_line_height - 0.2;
+        let text_x = self.content_x + BULLET_TEXT_INDENT_MM;
+        let available_width = self.content_right - text_x;
+        let max_chars = self.max_chars_for_width(available_width, size, 24);
+        let lines = wrap(value, max_chars);
+        let needed = lines.len() as f32 * line_height + 1.0;
         self.keep_together_if_possible(needed);
-        self.text(
-            &bullet,
+        for (index, line) in lines.into_iter().enumerate() {
+            self.ensure_space(line_height + 1.0);
+            if index == 0 {
+                self.text_line(
+                    "•",
+                    size,
+                    false,
+                    self.content_x + BULLET_MARKER_INDENT_MM,
+                    self.y,
+                );
+            }
+            self.text_line(&line, size, false, text_x, self.y);
+            self.y -= line_height;
+        }
+    }
+
+    fn estimated_bullet_height(&self, value: &str) -> f32 {
+        self.estimated_text_height(
+            value,
             self.theme.body_size - 0.2,
-            false,
             self.theme.body_line_height - 0.2,
-            self.content_x + 3.0,
+            self.content_x + BULLET_TEXT_INDENT_MM,
             None,
-        );
+        ) + 1.0
     }
 
     fn section(&mut self, title: &str) {
@@ -497,9 +525,7 @@ impl PdfWriter {
         );
         self.y -= self.theme.section_spacing;
         let previous_color = self.text_color;
-        if self.theme.header_band {
-            self.text_color = self.theme.accent;
-        }
+        self.text_color = self.theme.accent;
         self.text(
             &title.to_uppercase(),
             self.theme.section_size,
@@ -516,16 +542,19 @@ impl PdfWriter {
                 self.theme.band_rule.2,
             ),
         });
-        self.current.push(Op::SetOutlineThickness { pt: Pt(0.35) });
+        self.current.push(Op::SetOutlineThickness {
+            pt: Pt(SECTION_RULE_THICKNESS_PT),
+        });
+        let rule_y = self.y + self.theme.section_line_height * SECTION_RULE_LINE_HEIGHT_RATIO;
         self.current.push(Op::DrawLine {
             line: Line {
                 points: vec![
                     LinePoint {
-                        p: Point::new(Mm(self.content_x), Mm(self.y + 1.4)),
+                        p: Point::new(Mm(self.content_x), Mm(rule_y)),
                         bezier: false,
                     },
                     LinePoint {
-                        p: Point::new(Mm(self.content_right), Mm(self.y + 1.4)),
+                        p: Point::new(Mm(self.content_right), Mm(rule_y)),
                         bezier: false,
                     },
                 ],
@@ -608,15 +637,11 @@ impl PdfWriter {
         if label.trim().is_empty() || !is_safe_link(target) {
             return y;
         }
-        let end_y = self.text_block(
-            label,
-            self.theme.meta_size,
-            false,
-            self.theme.meta_line_height,
-            x,
-            width,
-            y,
-        );
+        let mut end_y = y;
+        for line in wrap_to_width(label, width, self.theme.meta_size, self.theme.normal_font) {
+            self.text_line(&line, self.theme.meta_size, false, x, end_y);
+            end_y -= self.theme.meta_line_height;
+        }
         self.current.push(Op::LinkAnnotation {
             link: LinkAnnotation::new(
                 Rect::from_xywh(
@@ -666,6 +691,9 @@ impl PdfWriter {
     }
 
     fn new_page(&mut self) {
+        if self.split_first_page {
+            self.current.append(&mut self.split_sidebar_ops);
+        }
         self.pages.push(std::mem::take(&mut self.current));
         self.y = self.theme.top_y;
         if self.split_first_page {
@@ -680,26 +708,38 @@ impl PdfWriter {
 
     fn draw_split_continuation_mark(&mut self) {
         self.current.extend([
-            Op::SetFillColor {
+            Op::SetOutlineColor {
                 col: rgb(
-                    self.theme.band_color.0,
-                    self.theme.band_color.1,
-                    self.theme.band_color.2,
+                    self.theme.band_rule.0,
+                    self.theme.band_rule.1,
+                    self.theme.band_rule.2,
                 ),
             },
-            Op::DrawPolygon {
-                polygon: Rect::from_xywh(
-                    Pt::from(Mm(0.0)),
-                    Pt::from(Mm(0.0)),
-                    Pt::from(Mm(6.0)),
-                    Pt::from(Mm(PAGE_HEIGHT)),
-                )
-                .to_polygon(),
+            Op::SetOutlineThickness {
+                pt: Pt(SECTION_RULE_THICKNESS_PT),
+            },
+            Op::DrawLine {
+                line: Line {
+                    points: vec![
+                        LinePoint {
+                            p: Point::new(Mm(self.content_x), Mm(PAGE_HEIGHT - 10.0)),
+                            bezier: false,
+                        },
+                        LinePoint {
+                            p: Point::new(Mm(self.content_right), Mm(PAGE_HEIGHT - 10.0)),
+                            bezier: false,
+                        },
+                    ],
+                    is_closed: false,
+                },
             },
         ]);
     }
 
     fn finish(mut self, title: &str) -> Vec<u8> {
+        if self.split_first_page {
+            self.current.append(&mut self.split_sidebar_ops);
+        }
         if !self.current.is_empty() || self.pages.is_empty() {
             self.pages.push(self.current);
         }

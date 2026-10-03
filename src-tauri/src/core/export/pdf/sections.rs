@@ -142,24 +142,17 @@ fn render_experience(writer: &mut PdfWriter, profile: &ResumeProfile, theme: Pdf
         } else {
             let bullets = ordered_metrics(&experience.bullets, &profile.layout.experience_style);
             for (index, bullet) in bullets.iter().enumerate() {
-                let bullet_line = format!("• {bullet}");
-                let mut needed = writer.estimated_text_height(
-                    &bullet_line,
-                    theme.body_size - 0.2,
-                    theme.body_line_height - 0.2,
-                    writer.content_x + 3.0,
-                    None,
-                );
-                if index + 1 == bullets.len() {
-                    if let Some(technologies) = &technology_line {
-                        needed += writer.estimated_text_height(
-                            technologies,
-                            theme.body_size,
-                            theme.body_line_height,
-                            writer.content_x,
-                            Some(1.0),
-                        );
-                    }
+                let mut needed = writer.estimated_bullet_height(bullet);
+                if index + 1 == bullets.len()
+                    && let Some(technologies) = &technology_line
+                {
+                    needed += writer.estimated_text_height(
+                        technologies,
+                        theme.body_size,
+                        theme.body_line_height,
+                        writer.content_x,
+                        Some(1.0),
+                    );
                 }
                 ensure_experience_continuation(writer, experience, needed, theme);
                 writer.bullet(bullet);
@@ -279,13 +272,7 @@ fn render_projects(writer: &mut PdfWriter, profile: &ResumeProfile, theme: PdfTh
             writer.paragraph(&metrics);
         } else {
             for metric in ordered_metrics(&project.metrics, &profile.layout.projects_style) {
-                let needed = writer.estimated_text_height(
-                    &format!("• {metric}"),
-                    theme.body_size - 0.2,
-                    theme.body_line_height - 0.2,
-                    writer.content_x + 3.0,
-                    None,
-                );
+                let needed = writer.estimated_bullet_height(metric);
                 ensure_project_continuation(writer, project, needed, theme);
                 writer.bullet(metric);
             }

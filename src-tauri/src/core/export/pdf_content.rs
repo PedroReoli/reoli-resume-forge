@@ -118,6 +118,43 @@ pub(super) fn wrap(value: &str, max_chars: usize) -> Vec<String> {
     lines
 }
 
+pub(super) fn wrap_to_width(
+    value: &str,
+    max_width: f32,
+    size: f32,
+    font: BuiltinFont,
+) -> Vec<String> {
+    let mut lines = Vec::new();
+    for paragraph in value.lines() {
+        let mut current = String::new();
+        for word in paragraph.split_whitespace() {
+            let candidate = if current.is_empty() {
+                word.to_string()
+            } else {
+                format!("{current} {word}")
+            };
+            if estimate_text_width(&candidate, size, font) <= max_width {
+                current = candidate;
+                continue;
+            }
+            if !current.is_empty() {
+                lines.push(std::mem::take(&mut current));
+            }
+            for character in word.chars() {
+                let candidate = format!("{current}{character}");
+                if !current.is_empty() && estimate_text_width(&candidate, size, font) > max_width {
+                    lines.push(std::mem::take(&mut current));
+                }
+                current.push(character);
+            }
+        }
+        if !current.is_empty() {
+            lines.push(current);
+        }
+    }
+    lines
+}
+
 pub(super) fn join_non_empty<const N: usize>(values: [&String; N]) -> String {
     values
         .into_iter()
@@ -125,4 +162,31 @@ pub(super) fn join_non_empty<const N: usize>(values: [&String; N]) -> String {
         .map(String::as_str)
         .collect::<Vec<_>>()
         .join(" | ")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn width_wrapping_keeps_long_urls_inside_the_requested_width() {
+        let width = 54.0;
+        let lines = wrap_to_width(
+            "https://www.linkedin.com/in/pedro-lucas-reis-a93945171/",
+            width,
+            8.3,
+            BuiltinFont::Helvetica,
+        );
+
+        assert!(lines.len() > 1);
+        assert!(
+            lines
+                .iter()
+                .all(|line| estimate_text_width(line, 8.3, BuiltinFont::Helvetica) <= width)
+        );
+        assert_eq!(
+            lines.join(""),
+            "https://www.linkedin.com/in/pedro-lucas-reis-a93945171/"
+        );
+    }
 }
