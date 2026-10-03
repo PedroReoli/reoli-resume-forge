@@ -138,13 +138,13 @@ fn validate_catalog(catalog: &KeywordCatalog) -> Result<(), String> {
             if normalized.is_empty() {
                 return Err(format!("alias vazio em {}", keyword.canonical));
             }
-            if let Some(owner) = alias_owners.insert(normalized, keyword.canonical.as_str()) {
-                if owner != keyword.canonical {
-                    return Err(format!(
-                        "alias ambíguo entre {owner} e {}",
-                        keyword.canonical
-                    ));
-                }
+            if let Some(owner) = alias_owners.insert(normalized, keyword.canonical.as_str())
+                && owner != keyword.canonical
+            {
+                return Err(format!(
+                    "alias ambíguo entre {owner} e {}",
+                    keyword.canonical
+                ));
             }
         }
     }
