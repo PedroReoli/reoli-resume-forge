@@ -76,8 +76,8 @@ Os builds gravam artefatos e checksums separados:
 ```text
 release/bin/reoliresume.exe
 release/bin/reoliresume.sha256
-release/installer/ReoliResumeSetup-2.1.0.exe
-release/installer/ReoliResumeSetup-2.1.0.sha256
+release/installer/ReoliResumeSetup-2.2.0.exe
+release/installer/ReoliResumeSetup-2.2.0.sha256
 ```
 
 ## Arquitetura e segurança

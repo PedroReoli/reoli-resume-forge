@@ -73,7 +73,7 @@
 ### P0 — obrigatório antes de publicar
 
 - [ ] Definir a compatibilidade dos IDs antigos da CLI (`01_frontend`, `02_fullstack_node`, `03_fullstack_dotnet`, `04_tech_lead` e `05_internacional_en`): criar aliases ocultos apontando para o exemplo neutro ou registrar a remoção como mudança incompatível. O comando `models` deve continuar exibindo somente `fullstack`.
-- [ ] Atualizar a versão de `2.1.0` para `2.2.0` em `package.json`, `package-lock.json`, `src-tauri/Cargo.toml`, `src-tauri/Cargo.lock`, `src-tauri/tauri.conf.json` e na barra de status da interface.
+- [x] Atualizar a versão de `2.1.0` para `2.2.0` em `package.json`, `package-lock.json`, `src-tauri/Cargo.toml`, `src-tauri/Cargo.lock`, `src-tauri/tauri.conf.json` e na barra de status da interface.
 - [ ] Executar `npm run verify` e registrar a passagem conjunta de lint, build TypeScript/Vite, testes de interface, testes do Operations Console e testes Rust.
 - [ ] Executar `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings` sem warnings.
 - [ ] Executar `npm run build:release` e confirmar os novos artefatos `release/bin/reoliresume.exe` e `release/installer/ReoliResumeSetup-2.2.0.exe`, incluindo seus arquivos SHA-256.
