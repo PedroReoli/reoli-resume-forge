@@ -66,11 +66,14 @@ pub(super) fn is_safe_link(value: &str) -> bool {
 }
 
 pub(super) fn estimate_text_width(value: &str, size: f32, font: BuiltinFont) -> f32 {
+    if value.is_empty() {
+        return 0.0;
+    }
     let em_width = value
         .chars()
         .map(|character| glyph_width_em(character, font))
         .sum::<f32>();
-    (em_width * size * 0.352_778).max(1.0)
+    (em_width * size * 0.352_778).max(if value == " " { 0.5 } else { 1.0 })
 }
 
 fn glyph_width_em(character: char, font: BuiltinFont) -> f32 {
@@ -84,16 +87,42 @@ fn glyph_width_em(character: char, font: BuiltinFont) -> f32 {
         return 0.6;
     }
 
-    match character {
-        ' ' => 0.278,
-        'i' | 'l' | 'I' | '.' | ',' | ':' | ';' | '!' | '|' | '\'' => 0.278,
-        'f' | 'j' | 'r' | 't' | '(' | ')' | '[' | ']' => 0.35,
-        '-' | '/' | '\\' => 0.333,
-        'm' | 'w' | 'M' | 'W' | '@' | '%' => 0.85,
-        character if character.is_ascii_digit() => 0.556,
-        character if character.is_uppercase() => 0.667,
-        character if character.is_lowercase() => 0.5,
-        _ => 0.556,
+    let is_bold = matches!(
+        font,
+        BuiltinFont::HelveticaBold
+            | BuiltinFont::HelveticaBoldOblique
+            | BuiltinFont::TimesBold
+            | BuiltinFont::TimesBoldItalic
+    );
+
+    if is_bold {
+        match character {
+            ' ' => 0.278,
+            'i' | 'l' | 'I' | '.' | ',' | ';' | '!' | '|' | '\'' => 0.278,
+            ':' => 0.333,
+            'f' | 't' => 0.333,
+            'j' | 'r' | '(' | ')' | '[' | ']' => 0.389,
+            '-' | '/' | '\\' => 0.333,
+            'c' | 'k' | 's' | 'v' | 'x' | 'y' | 'z' => 0.556,
+            'a' | 'b' | 'd' | 'e' | 'g' | 'h' | 'n' | 'o' | 'p' | 'q' | 'u' => 0.611,
+            'm' | 'w' | 'M' | 'W' | '@' | '%' => 0.944,
+            character if character.is_ascii_digit() => 0.556,
+            character if character.is_uppercase() => 0.722,
+            character if character.is_lowercase() => 0.611,
+            _ => 0.60,
+        }
+    } else {
+        match character {
+            ' ' => 0.278,
+            'i' | 'l' | 'I' | '.' | ',' | ':' | ';' | '!' | '|' | '\'' => 0.278,
+            'f' | 'j' | 'r' | 't' | '(' | ')' | '[' | ']' => 0.35,
+            '-' | '/' | '\\' => 0.333,
+            'm' | 'w' | 'M' | 'W' | '@' | '%' => 0.85,
+            character if character.is_ascii_digit() => 0.556,
+            character if character.is_uppercase() => 0.667,
+            character if character.is_lowercase() => 0.5,
+            _ => 0.556,
+        }
     }
 }
 

@@ -462,7 +462,7 @@ impl PdfWriter {
         if value.trim().is_empty() {
             return 0.0;
         }
-        let available_width = self.content_right - x;
+        let available_width = (self.content_right - x - 2.5).max(10.0);
         let lines = wrap_styled_to_width(
             value,
             false,
@@ -502,7 +502,7 @@ impl PdfWriter {
         let size = self.theme.body_size - 0.2;
         let line_height = self.theme.body_line_height - 0.2;
         let text_x = self.content_x + BULLET_TEXT_INDENT_MM;
-        let available_width = self.content_right - text_x;
+        let available_width = (self.content_right - text_x - 2.5).max(10.0);
         let lines = wrap_styled_to_width(
             value,
             false,
@@ -536,7 +536,7 @@ impl PdfWriter {
         let size = self.theme.body_size - 0.2;
         let line_height = self.theme.body_line_height - 0.2;
         let text_x = self.content_x + BULLET_TEXT_INDENT_MM;
-        let available_width = self.content_right - text_x;
+        let available_width = (self.content_right - text_x - 2.5).max(10.0);
         let lines = wrap_styled_to_width(
             value,
             false,
@@ -614,7 +614,7 @@ impl PdfWriter {
         if let Some(spacing) = before_mm {
             self.y -= spacing;
         }
-        let available_width = self.content_right - x;
+        let available_width = (self.content_right - x - 2.5).max(10.0);
         let lines = wrap_styled_to_width(
             value,
             bold,
@@ -670,8 +670,25 @@ impl PdfWriter {
             } else {
                 self.theme.normal_font
             };
-            self.text_span(&span.text, size, font, current_x, y);
-            current_x += estimate_text_width(&span.text, size, font);
+            let text = &span.text;
+            let leading_spaces = text.chars().take_while(|c| *c == ' ').count();
+            if leading_spaces > 0 {
+                let space_width = estimate_text_width(" ", size, font);
+                current_x += space_width * leading_spaces as f32;
+            }
+            let trimmed = &text[leading_spaces..];
+            if !trimmed.is_empty() {
+                let trailing_spaces = trimmed.chars().rev().take_while(|c| *c == ' ').count();
+                let visible = &trimmed[..trimmed.len() - trailing_spaces];
+                if !visible.is_empty() {
+                    self.text_span(visible, size, font, current_x, y);
+                    current_x += estimate_text_width(visible, size, font);
+                }
+                if trailing_spaces > 0 {
+                    let space_width = estimate_text_width(" ", size, font);
+                    current_x += space_width * trailing_spaces as f32;
+                }
+            }
         }
     }
 

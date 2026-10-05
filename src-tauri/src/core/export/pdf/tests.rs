@@ -277,3 +277,53 @@ fn long_test_profile() -> ResumeProfile {
         .collect();
     profile
 }
+
+#[test]
+fn preserves_space_between_bold_prefix_and_normal_text() {
+    use super::super::pdf_content::estimate_text_width;
+    let theme = PdfTheme::for_template(ResumeTemplate::Classic);
+    let mut writer = PdfWriter::new(theme);
+    writer.paragraph("**Tecnologias:** Electron, React 18, TypeScript");
+
+    let mut text_ops: Vec<(&str, f32)> = Vec::new();
+    let mut current_x = 0.0;
+    for op in &writer.current {
+        match op {
+            Op::SetTextCursor { pos } => {
+                current_x = pos.x.0;
+            }
+            Op::ShowText { items } => {
+                for item in items {
+                    if let TextItem::Text(s) = item {
+                        text_ops.push((s.as_str(), current_x));
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+
+    assert_eq!(text_ops.len(), 2);
+    let (tec_text, tec_x) = text_ops[0];
+    let (elec_text, elec_x) = text_ops[1];
+
+    assert_eq!(tec_text, "Tecnologias:");
+    assert_eq!(elec_text, "Electron, React 18, TypeScript");
+
+    let bold_width = estimate_text_width("Tecnologias:", theme.body_size, theme.bold_font);
+    let space_width = estimate_text_width(" ", theme.body_size, theme.normal_font);
+
+    // Verify electron starts after the bold text PLUS space width
+    assert!(elec_x >= tec_x + bold_width + space_width - 0.01);
+}
+
+#[test]
+fn available_width_keeps_safety_margin_from_right_border() {
+    let theme = PdfTheme::for_template(ResumeTemplate::Classic);
+    let writer = PdfWriter::new(theme);
+    let available_paragraph = (writer.content_right - writer.content_x - 2.5).max(10.0);
+    let available_bullet = (writer.content_right - (writer.content_x + BULLET_TEXT_INDENT_MM) - 2.5).max(10.0);
+
+    assert!((writer.content_right - writer.content_x) - available_paragraph >= 2.49);
+    assert!((writer.content_right - (writer.content_x + BULLET_TEXT_INDENT_MM)) - available_bullet >= 2.49);
+}
