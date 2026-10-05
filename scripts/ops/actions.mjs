@@ -12,6 +12,18 @@ export const releaseExecutable = resolve(projectRoot, 'release', 'bin', 'reolire
 const releaseChecksum = resolve(projectRoot, 'release', 'bin', 'reoliresume.sha256');
 const packageJson = JSON.parse(readFileSync(resolve(projectRoot, 'package.json'), 'utf8'));
 const npmCli = process.env.npm_execpath;
+
+const cargoHome = process.env.CARGO_HOME || (process.env.USERPROFILE ? resolve(process.env.USERPROFILE, '.cargo') : null);
+if (cargoHome) {
+  const cargoBin = resolve(cargoHome, 'bin');
+  if (existsSync(cargoBin)) {
+    const delimiter = process.platform === 'win32' ? ';' : ':';
+    if (!process.env.PATH || !process.env.PATH.toLowerCase().includes(cargoBin.toLowerCase())) {
+      process.env.PATH = `${cargoBin}${delimiter}${process.env.PATH || ''}`;
+    }
+  }
+}
+
 const cargoExecutable = process.platform === 'win32' ? 'cargo.exe' : 'cargo';
 
 function npm(script, label) {

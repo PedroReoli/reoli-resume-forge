@@ -1,4 +1,5 @@
 use super::*;
+use super::super::pdf_content::wrap;
 use crate::core::archetypes::load_archetype;
 use crate::core::model::Project;
 
@@ -85,14 +86,50 @@ fn wrapped_bullets_reserve_the_same_height_the_renderer_uses() {
     let value = "Resultado longo com contexto, métrica e implementação suficiente para ocupar mais de uma linha no currículo";
     let height = writer.estimated_bullet_height(value);
     let text_x = writer.content_x + BULLET_TEXT_INDENT_MM;
-    let max_chars =
-        writer.max_chars_for_width(writer.content_right - text_x, theme.body_size - 0.2, 24);
-    let expected_lines = wrap(value, max_chars).len() as f32;
+    let expected_lines = wrap_styled_to_width(
+        value,
+        false,
+        writer.content_right - text_x,
+        theme.body_size - 0.2,
+        theme.normal_font,
+        theme.bold_font,
+    )
+    .len() as f32;
 
     assert_eq!(
         height,
         expected_lines * (theme.body_line_height - 0.2) + 1.0
     );
+}
+
+#[test]
+fn text_fills_page_width_without_premature_wrapping() {
+    let theme = PdfTheme::for_template(ResumeTemplate::Classic);
+    let available_width = (PAGE_WIDTH - theme.margin_x) - (theme.margin_x + BULLET_TEXT_INDENT_MM);
+    // In classic template, margin_x = 15.75mm, available_width = 174.5mm.
+    // At ~1.36mm per char in Helvetica 9pt, 110 characters should fit in 1 line (~150mm < 174.5mm).
+    let single_line_text = "Desenvolveu servicos escalaveis com arquitetura limpa utilizando Rust e TypeScript com alta performance e confiabilidade.";
+    let lines = wrap_styled_to_width(
+        single_line_text,
+        false,
+        available_width,
+        theme.body_size - 0.2,
+        theme.normal_font,
+        theme.bold_font,
+    );
+    assert_eq!(lines.len(), 1, "texto de 120 caracteres deve caber em uma linha de 174.5mm");
+}
+
+#[test]
+fn renders_inline_bold_with_bold_font_and_clean_text() {
+    let theme = PdfTheme::for_template(ResumeTemplate::Classic);
+    let mut writer = PdfWriter::new(theme);
+    writer.paragraph("Liderou a refatoração do **módulo de pagamentos** reduzindo latência em **45%**.");
+
+    let texts = page_texts(&writer.current);
+    assert!(texts.contains(&"módulo de pagamentos"));
+    assert!(texts.contains(&"45%"));
+    assert!(!texts.iter().any(|t| t.contains("**")));
 }
 
 #[test]

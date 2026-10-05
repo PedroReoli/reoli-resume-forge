@@ -97,6 +97,7 @@ fn glyph_width_em(character: char, font: BuiltinFont) -> f32 {
     }
 }
 
+#[cfg(test)]
 pub(super) fn wrap(value: &str, max_chars: usize) -> Vec<String> {
     let mut lines = Vec::new();
     for paragraph in value.lines() {
@@ -113,6 +114,199 @@ pub(super) fn wrap(value: &str, max_chars: usize) -> Vec<String> {
         }
         if !current.is_empty() {
             lines.push(current);
+        }
+    }
+    lines
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(super) struct TextSpan {
+    pub text: String,
+    pub bold: bool,
+}
+
+pub(super) fn parse_markdown_spans(input: &str, default_bold: bool) -> Vec<TextSpan> {
+    let mut spans = Vec::new();
+    let mut rest = input;
+    let mut current_bold = default_bold;
+
+    while let Some(pos) = rest.find("**") {
+        let before = &rest[..pos];
+        if !before.is_empty() {
+            spans.push(TextSpan {
+                text: before.to_string(),
+                bold: current_bold,
+            });
+        }
+        current_bold = !current_bold;
+        rest = &rest[pos + 2..];
+    }
+    if !rest.is_empty() {
+        spans.push(TextSpan {
+            text: rest.to_string(),
+            bold: current_bold,
+        });
+    }
+    spans
+}
+
+#[derive(Debug, Clone)]
+pub(super) struct StyledWord {
+    pub parts: Vec<TextSpan>,
+}
+
+impl StyledWord {
+    pub fn estimate_width(
+        &self,
+        size: f32,
+        normal_font: BuiltinFont,
+        bold_font: BuiltinFont,
+    ) -> f32 {
+        self.parts
+            .iter()
+            .map(|part| {
+                let font = if part.bold { bold_font } else { normal_font };
+                estimate_text_width(&part.text, size, font)
+            })
+            .sum()
+    }
+}
+
+pub(super) fn tokenize_styled_words(spans: &[TextSpan]) -> Vec<StyledWord> {
+    let mut words: Vec<StyledWord> = Vec::new();
+    let mut current_parts: Vec<TextSpan> = Vec::new();
+
+    for span in spans {
+        let mut part_start = 0;
+        let chars: Vec<(usize, char)> = span.text.char_indices().collect();
+        let mut i = 0;
+        while i < chars.len() {
+            let (byte_idx, ch) = chars[i];
+            if ch.is_whitespace() {
+                if byte_idx > part_start {
+                    let chunk = &span.text[part_start..byte_idx];
+                    current_parts.push(TextSpan {
+                        text: chunk.to_string(),
+                        bold: span.bold,
+                    });
+                }
+                if !current_parts.is_empty() {
+                    words.push(StyledWord {
+                        parts: std::mem::take(&mut current_parts),
+                    });
+                }
+                while i < chars.len() && chars[i].1.is_whitespace() {
+                    i += 1;
+                }
+                part_start = if i < chars.len() {
+                    chars[i].0
+                } else {
+                    span.text.len()
+                };
+            } else {
+                i += 1;
+            }
+        }
+        if part_start < span.text.len() {
+            let chunk = &span.text[part_start..];
+            current_parts.push(TextSpan {
+                text: chunk.to_string(),
+                bold: span.bold,
+            });
+        }
+    }
+    if !current_parts.is_empty() {
+        words.push(StyledWord {
+            parts: current_parts,
+        });
+    }
+    words
+}
+
+fn append_to_line(line: &mut Vec<TextSpan>, text: &str, bold: bool) {
+    if text.is_empty() {
+        return;
+    }
+    if let Some(last) = line.last_mut() {
+        if last.bold == bold {
+            last.text.push_str(text);
+            return;
+        }
+    }
+    line.push(TextSpan {
+        text: text.to_string(),
+        bold,
+    });
+}
+
+pub(super) fn wrap_styled_to_width(
+    value: &str,
+    default_bold: bool,
+    max_width: f32,
+    size: f32,
+    normal_font: BuiltinFont,
+    bold_font: BuiltinFont,
+) -> Vec<Vec<TextSpan>> {
+    let mut lines = Vec::new();
+    for paragraph in value.lines() {
+        let spans = parse_markdown_spans(paragraph, default_bold);
+        let words = tokenize_styled_words(&spans);
+        if words.is_empty() {
+            continue;
+        }
+
+        let mut current_line: Vec<TextSpan> = Vec::new();
+        let mut current_width: f32 = 0.0;
+
+        for word in words {
+            let word_width = word.estimate_width(size, normal_font, bold_font);
+            let first_bold = word.parts.first().map(|p| p.bold).unwrap_or(default_bold);
+            let last_line_bold = current_line
+                .last()
+                .map(|p| p.bold)
+                .unwrap_or(default_bold);
+            let space_bold = last_line_bold && first_bold;
+            let space_font = if space_bold { bold_font } else { normal_font };
+            let space_width = estimate_text_width(" ", size, space_font);
+
+            if !current_line.is_empty() {
+                if current_width + space_width + word_width <= max_width {
+                    append_to_line(&mut current_line, " ", space_bold);
+                    for part in word.parts {
+                        append_to_line(&mut current_line, &part.text, part.bold);
+                    }
+                    current_width += space_width + word_width;
+                    continue;
+                } else {
+                    lines.push(std::mem::take(&mut current_line));
+                    current_width = 0.0;
+                }
+            }
+
+            if word_width <= max_width {
+                for part in word.parts {
+                    append_to_line(&mut current_line, &part.text, part.bold);
+                }
+                current_width = word_width;
+            } else {
+                for part in word.parts {
+                    let font = if part.bold { bold_font } else { normal_font };
+                    for ch in part.text.chars() {
+                        let ch_str = ch.to_string();
+                        let ch_width = estimate_text_width(&ch_str, size, font);
+                        if !current_line.is_empty() && current_width + ch_width > max_width {
+                            lines.push(std::mem::take(&mut current_line));
+                            current_width = 0.0;
+                        }
+                        append_to_line(&mut current_line, &ch_str, part.bold);
+                        current_width += ch_width;
+                    }
+                }
+            }
+        }
+
+        if !current_line.is_empty() {
+            lines.push(current_line);
         }
     }
     lines
@@ -188,5 +382,61 @@ mod tests {
             lines.join(""),
             "https://www.linkedin.com/in/pessoa-exemplo-com-url-longa/"
         );
+    }
+
+    #[test]
+    fn parses_inline_markdown_bold_spans() {
+        let spans = parse_markdown_spans("**Tecnologias:** React, **TypeScript** e Node.js", false);
+        assert_eq!(
+            spans,
+            vec![
+                TextSpan {
+                    text: "Tecnologias:".into(),
+                    bold: true
+                },
+                TextSpan {
+                    text: " React, ".into(),
+                    bold: false
+                },
+                TextSpan {
+                    text: "TypeScript".into(),
+                    bold: true
+                },
+                TextSpan {
+                    text: " e Node.js".into(),
+                    bold: false
+                },
+            ]
+        );
+    }
+
+    #[test]
+    fn wraps_styled_spans_within_target_width() {
+        let width = 60.0;
+        let lines = wrap_styled_to_width(
+            "**Tecnologias:** React, TypeScript, Tailwind CSS, PostgreSQL e Docker para microsserviços.",
+            false,
+            width,
+            9.0,
+            BuiltinFont::Helvetica,
+            BuiltinFont::HelveticaBold,
+        );
+        assert!(lines.len() > 1);
+        for line in &lines {
+            let line_width = line
+                .iter()
+                .map(|span| {
+                    let font = if span.bold {
+                        BuiltinFont::HelveticaBold
+                    } else {
+                        BuiltinFont::Helvetica
+                    };
+                    estimate_text_width(&span.text, 9.0, font)
+                })
+                .sum::<f32>();
+            assert!(line_width <= width);
+        }
+        assert_eq!(lines[0][0].text, "Tecnologias:");
+        assert!(lines[0][0].bold);
     }
 }

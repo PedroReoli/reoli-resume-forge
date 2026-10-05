@@ -4,7 +4,7 @@ use super::density::DensityPreset;
 use super::palette::profile_palette;
 use super::pdf_content::{
     estimate_text_width, is_safe_link, is_split_sidebar_section, join_non_empty, string_values,
-    wrap, wrap_to_width,
+    wrap_styled_to_width, wrap_to_width, TextSpan,
 };
 use super::pdf_theme::PdfTheme;
 use super::typeface::profile_typeface;
@@ -364,17 +364,30 @@ impl PdfWriter {
             return;
         }
         let width = PAGE_WIDTH - (self.theme.margin_x * 2.0);
-        let max_chars = self.max_chars_for_width(width, size, 24);
-        for line in wrap(value, max_chars) {
+        let lines = wrap_styled_to_width(
+            value,
+            bold,
+            width,
+            size,
+            self.theme.normal_font,
+            self.theme.bold_font,
+        );
+        for line in lines {
             self.ensure_space(line_height_mm + 1.0);
-            let font = if bold {
-                self.theme.bold_font
-            } else {
-                self.theme.normal_font
-            };
-            let estimated_width = estimate_text_width(&line, size, font).min(width);
-            let x = ((PAGE_WIDTH - estimated_width) / 2.0).max(self.theme.margin_x);
-            self.text_line(&line, size, bold, x, self.y);
+            let line_width = line
+                .iter()
+                .map(|span| {
+                    let font = if span.bold {
+                        self.theme.bold_font
+                    } else {
+                        self.theme.normal_font
+                    };
+                    estimate_text_width(&span.text, size, font)
+                })
+                .sum::<f32>()
+                .min(width);
+            let x = ((PAGE_WIDTH - line_width) / 2.0).max(self.theme.margin_x);
+            self.render_styled_line(&line, size, x, self.y);
             self.y -= line_height_mm;
         }
     }
@@ -450,15 +463,23 @@ impl PdfWriter {
             return 0.0;
         }
         let available_width = self.content_right - x;
-        let max_chars = self.max_chars_for_width(available_width, size, 24);
-        before_mm.unwrap_or_default() + wrap(value, max_chars).len() as f32 * line_height_mm
+        let lines = wrap_styled_to_width(
+            value,
+            false,
+            available_width,
+            size,
+            self.theme.normal_font,
+            self.theme.bold_font,
+        );
+        before_mm.unwrap_or_default() + lines.len() as f32 * line_height_mm
     }
 
+    #[cfg(test)]
     fn max_chars_for_width(&self, width: f32, size: f32, minimum: usize) -> usize {
         let width_factor = if matches!(self.theme.normal_font, BuiltinFont::Courier) {
             0.22
         } else {
-            0.19
+            0.143
         };
         ((width / (size * width_factor)).floor() as usize).max(minimum)
     }
@@ -482,8 +503,14 @@ impl PdfWriter {
         let line_height = self.theme.body_line_height - 0.2;
         let text_x = self.content_x + BULLET_TEXT_INDENT_MM;
         let available_width = self.content_right - text_x;
-        let max_chars = self.max_chars_for_width(available_width, size, 24);
-        let lines = wrap(value, max_chars);
+        let lines = wrap_styled_to_width(
+            value,
+            false,
+            available_width,
+            size,
+            self.theme.normal_font,
+            self.theme.bold_font,
+        );
         let needed = lines.len() as f32 * line_height + 1.0;
         self.keep_together_if_possible(needed);
         for (index, line) in lines.into_iter().enumerate() {
@@ -497,19 +524,28 @@ impl PdfWriter {
                     self.y,
                 );
             }
-            self.text_line(&line, size, false, text_x, self.y);
+            self.render_styled_line(&line, size, text_x, self.y);
             self.y -= line_height;
         }
     }
 
     fn estimated_bullet_height(&self, value: &str) -> f32 {
-        self.estimated_text_height(
+        if value.trim().is_empty() {
+            return 0.0;
+        }
+        let size = self.theme.body_size - 0.2;
+        let line_height = self.theme.body_line_height - 0.2;
+        let text_x = self.content_x + BULLET_TEXT_INDENT_MM;
+        let available_width = self.content_right - text_x;
+        let lines = wrap_styled_to_width(
             value,
-            self.theme.body_size - 0.2,
-            self.theme.body_line_height - 0.2,
-            self.content_x + BULLET_TEXT_INDENT_MM,
-            None,
-        ) + 1.0
+            false,
+            available_width,
+            size,
+            self.theme.normal_font,
+            self.theme.bold_font,
+        );
+        lines.len() as f32 * line_height + 1.0
     }
 
     fn section(&mut self, title: &str) {
@@ -579,10 +615,17 @@ impl PdfWriter {
             self.y -= spacing;
         }
         let available_width = self.content_right - x;
-        let max_chars = self.max_chars_for_width(available_width, size, 24);
-        for line in wrap(value, max_chars) {
+        let lines = wrap_styled_to_width(
+            value,
+            bold,
+            available_width,
+            size,
+            self.theme.normal_font,
+            self.theme.bold_font,
+        );
+        for line in lines {
             self.ensure_space(line_height_mm + 1.0);
-            self.text_line(&line, size, bold, x, self.y);
+            self.render_styled_line(&line, size, x, self.y);
             self.y -= line_height_mm;
         }
     }
@@ -601,26 +644,45 @@ impl PdfWriter {
         if value.trim().is_empty() {
             return y;
         }
-        let max_chars = self.max_chars_for_width(width, size, 12);
-        for line in wrap(value, max_chars) {
-            self.text_line(&line, size, bold, x, y);
+        let lines = wrap_styled_to_width(
+            value,
+            bold,
+            width,
+            size,
+            self.theme.normal_font,
+            self.theme.bold_font,
+        );
+        for line in lines {
+            self.render_styled_line(&line, size, x, y);
             y -= line_height_mm;
         }
         y
     }
 
-    fn text_line(&mut self, value: &str, size: f32, bold: bool, x: f32, y: f32) {
+    fn render_styled_line(&mut self, spans: &[TextSpan], size: f32, x: f32, y: f32) {
+        let mut current_x = x;
+        for span in spans {
+            if span.text.is_empty() {
+                continue;
+            }
+            let font = if span.bold {
+                self.theme.bold_font
+            } else {
+                self.theme.normal_font
+            };
+            self.text_span(&span.text, size, font, current_x, y);
+            current_x += estimate_text_width(&span.text, size, font);
+        }
+    }
+
+    fn text_span(&mut self, value: &str, size: f32, font: BuiltinFont, x: f32, y: f32) {
         self.current.extend([
             Op::StartTextSection,
             Op::SetTextCursor {
                 pos: Point::new(Mm(x), Mm(y)),
             },
             Op::SetFont {
-                font: PdfFontHandle::Builtin(if bold {
-                    self.theme.bold_font
-                } else {
-                    self.theme.normal_font
-                }),
+                font: PdfFontHandle::Builtin(font),
                 size: Pt(size),
             },
             Op::SetFillColor {
@@ -631,6 +693,15 @@ impl PdfWriter {
             },
             Op::EndTextSection,
         ]);
+    }
+
+    fn text_line(&mut self, value: &str, size: f32, bold: bool, x: f32, y: f32) {
+        let font = if bold {
+            self.theme.bold_font
+        } else {
+            self.theme.normal_font
+        };
+        self.text_span(value, size, font, x, y);
     }
 
     fn link_block(&mut self, label: &str, target: &str, x: f32, width: f32, y: f32) -> f32 {

@@ -13,6 +13,8 @@ use serde::Deserialize;
 use serde_json::json;
 use std::path::{Path, PathBuf};
 
+const MANUAL: &str = include_str!("../MANUAL.md");
+
 #[derive(Debug, Deserialize)]
 struct BatchJob {
     #[serde(default)]
@@ -41,6 +43,11 @@ pub fn is_ui_request(args: &[String]) -> bool {
 }
 
 pub fn run(args: &[String]) -> Result<(), String> {
+    if args.iter().any(|arg| matches!(arg.as_str(), "docs" | "guide" | "manual" | "--docs" | "--guide" | "--doc")) {
+        print_docs();
+        return Ok(());
+    }
+
     let command = args.first().map(String::as_str).unwrap_or("help");
     let options = options::parse_options(&args[1..])?;
     match command {
@@ -53,9 +60,18 @@ pub fn run(args: &[String]) -> Result<(), String> {
         "models" => discovery::print_models(),
         "schema" => discovery::print_schema(options::required(&options, "type")?),
         "capabilities" => discovery::print_capabilities(),
-        "help" | "--help" | "-h" => {
-            print_help();
+        "docs" | "guide" | "manual" | "--docs" | "--guide" | "--doc" => {
+            print_docs();
             Ok(())
+        }
+        "help" | "--help" | "-h" => {
+            if options.contains_key("doc") || options.contains_key("docs") || args.iter().any(|arg| arg == "--doc" || arg == "--docs") {
+                print_docs();
+                Ok(())
+            } else {
+                print_help();
+                Ok(())
+            }
         }
         "version" | "--version" | "-V" => print_json(json!({
             "ok": true,
@@ -412,10 +428,14 @@ fn batch_suffix(index: usize, company: &str, job_title: &str) -> String {
     }
 }
 
+fn print_docs() {
+    println!("{MANUAL}");
+}
+
 fn print_help() {
     println!(
         "Reoli Resume Forge v{}\n\n\
-Uso:\n  reoliresume\n  reoliresume ui\n  \
+Uso:\n  reoliresume\n  reoliresume ui\n  reoliresume docs | guide\n  \
 reoliresume generate [--profile PERFIL.json | --model ID] --template classic --format pdf,docx --out DIRETORIO\n  \
 reoliresume tailor --job VAGA.json [--profile PERFIL.json | --model ID] [--template compact] --format pdf,docx --out DIRETORIO\n  \
 reoliresume batch --jobs VAGAS.json [--model ID] [--template executive] --format pdf --out DIRETORIO\n  \
@@ -436,6 +456,16 @@ mod tests {
     use super::*;
     use crate::core::export::ExportFormat;
     use manifest::ProfileSource;
+
+    #[test]
+    fn docs_command_is_supported_and_manual_is_embedded() {
+        assert!(!MANUAL.is_empty());
+        assert!(MANUAL.contains("Reoli Resume Forge — Manual Completo"));
+        assert!(run(&["docs".into()]).is_ok());
+        assert!(run(&["guide".into()]).is_ok());
+        assert!(run(&["--docs".into()]).is_ok());
+        assert!(run(&["--help".into(), "--doc".into()]).is_ok());
+    }
 
     #[test]
     fn recognizes_ui_mode_without_arguments() {

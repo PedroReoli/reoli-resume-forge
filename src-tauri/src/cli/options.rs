@@ -4,11 +4,14 @@ use std::collections::HashMap;
 
 pub type Options = HashMap<String, String>;
 
-const BOOLEAN_OPTIONS: [&str; 4] = [
+const BOOLEAN_OPTIONS: [&str; 7] = [
     "confirmed-us-overlap",
     "continue-on-error",
     "dry-run",
     "json",
+    "doc",
+    "docs",
+    "help",
 ];
 
 pub fn parse_options(args: &[String]) -> Result<Options, String> {

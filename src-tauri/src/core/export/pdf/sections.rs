@@ -27,7 +27,7 @@ pub(super) fn render_section(
                 );
             } else {
                 for (label, values) in &profile.skills {
-                    writer.paragraph(&format!("{label}: {}", formatted_skills(profile, values)));
+                    writer.paragraph(&format!("**{label}:** {}", formatted_skills(profile, values)));
                 }
             }
         }
@@ -181,7 +181,7 @@ fn experience_technology_line(profile: &ResumeProfile, experience: &Experience) 
     } else {
         &profile.config.tech_label
     };
-    Some(format!("{label}: {}", experience.technologies.join(", ")))
+    Some(format!("**{label}:** {}", experience.technologies.join(", ")))
 }
 
 fn ensure_experience_continuation(
@@ -278,7 +278,12 @@ fn render_projects(writer: &mut PdfWriter, profile: &ResumeProfile, theme: PdfTh
             }
         }
         if !project.technologies.is_empty() {
-            let technologies = project.technologies.join(" | ");
+            let label = if profile.config.tech_label.trim().is_empty() {
+                "Tecnologias"
+            } else {
+                &profile.config.tech_label
+            };
+            let technologies = format!("**{label}:** {}", project.technologies.join(", "));
             let needed = writer.estimated_text_height(
                 &technologies,
                 theme.body_size,
